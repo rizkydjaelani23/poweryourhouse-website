@@ -6,31 +6,31 @@ const COLOURS = [
     name: "Stone Grey",
     family: "Classic Fabrics",
     swatch: "#8c8c8c",
-    photo: "KEGGJPKxcSc",
+    photo: "1698936061086-2bf99c7b9fc5",
   },
   {
     name: "Forest Green",
     family: "Classic Fabrics",
     swatch: "#4a7c59",
-    photo: "fZuleEfeA1Q",
+    photo: "1555041469-a586c61ea9bc",
   },
   {
     name: "Ocean Blue",
     family: "Classic Fabrics",
     swatch: "#2c5f8a",
-    photo: "nL2CbhdingE",
+    photo: "1713283391486-b92cda2562e8",
   },
   {
     name: "Warm Beige",
     family: "Classic Fabrics",
     swatch: "#c4a882",
-    photo: "tk4Mfc0dzic",
+    photo: "1633505899118-4ca6bd143043",
   },
   {
     name: "Mustard",
     family: "Classic Fabrics",
     swatch: "#c89a1a",
-    photo: "m7V-MeCBgm0",
+    photo: "1558211583-d26f610c1eb1",
   },
 ];
 
