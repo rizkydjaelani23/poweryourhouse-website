@@ -3,7 +3,14 @@ import Link from "next/link";
 
 export const metadata: Metadata = {
   title: "About – Power Your House",
-  description: "We're a small, focused software studio building tools that make Shopify merchants more competitive.",
+  description: "We're a small Australian software studio building focused tools that make Shopify furniture and home goods merchants more competitive.",
+  alternates: { canonical: "https://poweryourhouse.io/about" },
+  openGraph: {
+    title: "About – Power Your House",
+    description: "Small Australian software studio. We build focused Shopify apps for furniture and home goods merchants.",
+    url: "https://poweryourhouse.io/about",
+    type: "website",
+  },
 };
 
 const values = [

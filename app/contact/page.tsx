@@ -3,6 +3,13 @@ import type { Metadata } from "next";
 export const metadata: Metadata = {
   title: "Contact – Power Your House",
   description: "Get in touch with the Power Your House team. We reply within 24 hours.",
+  alternates: { canonical: "https://poweryourhouse.io/contact" },
+  openGraph: {
+    title: "Contact – Power Your House",
+    description: "Get in touch with the Power Your House team. We reply within 24 hours.",
+    url: "https://poweryourhouse.io/contact",
+    type: "website",
+  },
 };
 
 const SUPPORT_EMAIL = "hello@poweryourhouse.io";

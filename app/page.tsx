@@ -1,11 +1,55 @@
+import type { Metadata } from "next";
 import Link from "next/link";
 import DemoSection from "./components/DemoSection";
 import ScrollReveal from "./components/ScrollReveal";
 import HeroProductCard from "./components/HeroProductCard";
 
+export const metadata: Metadata = {
+  title: "Power Your House – AI Colour Visualisation for Shopify",
+  description:
+    "Show customers every fabric colour option on your Shopify store — no photoshoots needed. Power Your House builds focused AI tools for furniture and home goods merchants.",
+  alternates: { canonical: "https://poweryourhouse.io" },
+  openGraph: {
+    title: "Power Your House – AI Colour Visualisation for Shopify",
+    description:
+      "Show customers every fabric colour option on your Shopify store — no photoshoots needed.",
+    url: "https://poweryourhouse.io",
+    type: "website",
+  },
+};
+
+const jsonLd = {
+  "@context": "https://schema.org",
+  "@type": "SoftwareApplication",
+  name: "Image Colour Remake",
+  applicationCategory: "BusinessApplication",
+  operatingSystem: "Shopify",
+  url: "https://poweryourhouse.io",
+  description:
+    "AI-powered colour visualisation Shopify app. Replace product fabric colours automatically — show customers every option without expensive photoshoots.",
+  offers: {
+    "@type": "Offer",
+    price: "29.99",
+    priceCurrency: "USD",
+    priceSpecification: {
+      "@type": "UnitPriceSpecification",
+      billingDuration: "P1M",
+    },
+  },
+  publisher: {
+    "@type": "Organization",
+    name: "Power Your House",
+    url: "https://poweryourhouse.io",
+  },
+};
+
 export default function HomePage() {
   return (
     <>
+      <script
+        type="application/ld+json"
+        dangerouslySetInnerHTML={{ __html: JSON.stringify(jsonLd) }}
+      />
       <style>{`
         @keyframes anim-fade-up {
           from { opacity: 0; transform: translateY(24px); }

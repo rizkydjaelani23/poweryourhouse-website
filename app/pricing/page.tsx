@@ -3,7 +3,14 @@ import Link from "next/link";
 
 export const metadata: Metadata = {
   title: "Pricing – Power Your House",
-  description: "One simple plan. Everything you need to show fabric colour previews on your Shopify store.",
+  description: "One simple plan at $29.99/month. Everything you need to show fabric colour previews on your Shopify store. Free trial included.",
+  alternates: { canonical: "https://poweryourhouse.io/pricing" },
+  openGraph: {
+    title: "Pricing – Power Your House",
+    description: "One plan, $29.99/month. Unlimited colour previews, storefront gallery, approval workflow and more. Free trial via Shopify.",
+    url: "https://poweryourhouse.io/pricing",
+    type: "website",
+  },
 };
 
 const features = [
@@ -44,9 +51,23 @@ const faqs = [
   },
 ];
 
+const faqJsonLd = {
+  "@context": "https://schema.org",
+  "@type": "FAQPage",
+  mainEntity: faqs.map((f) => ({
+    "@type": "Question",
+    name: f.q,
+    acceptedAnswer: { "@type": "Answer", text: f.a },
+  })),
+};
+
 export default function PricingPage() {
   return (
     <>
+      <script
+        type="application/ld+json"
+        dangerouslySetInnerHTML={{ __html: JSON.stringify(faqJsonLd) }}
+      />
       {/* Header */}
       <section style={{
         padding: "72px 0 56px",
