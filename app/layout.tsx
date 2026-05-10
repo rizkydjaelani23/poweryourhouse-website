@@ -1,4 +1,5 @@
 import type { Metadata } from "next";
+import Script from "next/script";
 import "./globals.css";
 import Nav from "./components/Nav";
 import Footer from "./components/Footer";
@@ -22,6 +23,12 @@ export default function RootLayout({
   return (
     <html lang="en">
       <body style={{ display: "flex", flexDirection: "column", minHeight: "100vh" }}>
+        <Script
+          defer
+          src="https://umami-production-f0c7.up.railway.app/script.js"
+          data-website-id="a8c80c33-9976-4eb9-b613-bf4524583e6e"
+          strategy="afterInteractive"
+        />
         <Nav />
         <main style={{ flex: 1, paddingTop: "68px" }}>
           {children}
