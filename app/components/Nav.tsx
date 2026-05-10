@@ -1,5 +1,5 @@
 "use client";
-import { useState } from "react";
+import { useState, useEffect } from "react";
 import Link from "next/link";
 import { usePathname } from "next/navigation";
 
@@ -13,6 +13,15 @@ const links = [
 export default function Nav() {
   const pathname = usePathname();
   const [open, setOpen] = useState(false);
+  const [scrolled, setScrolled] = useState(false);
+
+  useEffect(() => {
+    function onScroll() {
+      setScrolled(window.scrollY > 20);
+    }
+    window.addEventListener("scroll", onScroll, { passive: true });
+    return () => window.removeEventListener("scroll", onScroll);
+  }, []);
 
   return (
     <header style={{
@@ -21,11 +30,27 @@ export default function Nav() {
       left: 0,
       right: 0,
       zIndex: 100,
-      background: "rgba(8, 13, 26, 0.85)",
+      background: scrolled ? "rgba(8, 13, 26, 0.95)" : "rgba(8, 13, 26, 0.85)",
       backdropFilter: "blur(16px)",
       WebkitBackdropFilter: "blur(16px)",
-      borderBottom: "1px solid rgba(59, 130, 246, 0.12)",
+      borderBottom: scrolled
+        ? "1px solid rgba(59, 130, 246, 0.2)"
+        : "1px solid rgba(59, 130, 246, 0.12)",
+      transition: "all 0.3s ease",
     }}>
+      {/* Gradient line when scrolled */}
+      {scrolled && (
+        <div style={{
+          position: "absolute",
+          bottom: 0,
+          left: 0,
+          right: 0,
+          height: "1px",
+          background: "linear-gradient(90deg, transparent, #3b82f6, #4f46e5, transparent)",
+          pointerEvents: "none",
+        }} />
+      )}
+
       <div className="container" style={{ display: "flex", alignItems: "center", justifyContent: "space-between", height: "68px" }}>
         {/* Logo */}
         <Link href="/" style={{ display: "flex", alignItems: "center", gap: "10px" }}>
@@ -34,6 +59,7 @@ export default function Nav() {
             background: "linear-gradient(135deg, #3b82f6, #4f46e5)",
             display: "flex", alignItems: "center", justifyContent: "center",
             fontSize: "18px", flexShrink: 0,
+            animation: "pulse-glow 3s ease-in-out infinite",
           }}>⚡</div>
           <span style={{ fontSize: "17px", fontWeight: 800, color: "#fff", letterSpacing: "-0.01em" }}>
             Power Your House
@@ -51,8 +77,22 @@ export default function Nav() {
               color: pathname === l.href ? "#60a5fa" : "#94a3b8",
               background: pathname === l.href ? "rgba(59,130,246,0.1)" : "transparent",
               transition: "color 0.15s, background 0.15s",
+              position: "relative",
             }}>
               {l.label}
+              {pathname === l.href && (
+                <span style={{
+                  position: "absolute",
+                  bottom: "4px",
+                  left: "50%",
+                  transform: "translateX(-50%)",
+                  width: "4px",
+                  height: "4px",
+                  borderRadius: "50%",
+                  background: "#60a5fa",
+                  display: "block",
+                }} />
+              )}
             </Link>
           ))}
           <a
@@ -68,6 +108,7 @@ export default function Nav() {
               fontSize: "14px",
               fontWeight: 700,
               boxShadow: "0 2px 12px rgba(59,130,246,0.35)",
+              transition: "opacity 0.15s, transform 0.15s",
             }}
           >
             Get the App
