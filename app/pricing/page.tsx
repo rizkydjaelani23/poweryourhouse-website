@@ -21,7 +21,7 @@ const plans = [
       "Email support",
     ],
     cta: "Get Started Free",
-    ctaHref: "https://apps.shopify.com",
+    ctaHref: "https://apps.shopify.com/image-colour-remake",
   },
   {
     name: "Starter",
@@ -38,7 +38,7 @@ const plans = [
       "Priority email support",
     ],
     cta: "Start Starter",
-    ctaHref: "https://apps.shopify.com",
+    ctaHref: "https://apps.shopify.com/image-colour-remake",
   },
   {
     name: "Growth",
@@ -56,7 +56,7 @@ const plans = [
       "Priority support (< 24h)",
     ],
     cta: "Start Growth",
-    ctaHref: "https://apps.shopify.com",
+    ctaHref: "https://apps.shopify.com/image-colour-remake",
   },
   {
     name: "Pro",
@@ -73,7 +73,7 @@ const plans = [
       "Early access to new features",
     ],
     cta: "Start Pro",
-    ctaHref: "https://apps.shopify.com",
+    ctaHref: "https://apps.shopify.com/image-colour-remake",
   },
 ];
 

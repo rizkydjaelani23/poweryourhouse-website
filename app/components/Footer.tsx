@@ -36,7 +36,7 @@ export default function Footer() {
               Products
             </div>
             <div style={{ display: "flex", flexDirection: "column", gap: "10px" }}>
-              <a href="https://apps.shopify.com" target="_blank" rel="noopener noreferrer" style={{ fontSize: "14px", color: "#94a3b8" }}>
+              <a href="https://apps.shopify.com/image-colour-remake" target="_blank" rel="noopener noreferrer" style={{ fontSize: "14px", color: "#94a3b8" }}>
                 Image Colour Remake
               </a>
               <span style={{ fontSize: "14px", color: "#475569" }}>Marketing Tracker <span style={{ fontSize: "11px", color: "#3b82f6" }}>Soon</span></span>

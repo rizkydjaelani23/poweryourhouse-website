@@ -65,7 +65,7 @@ export default function HomePage() {
 
           <div style={{ display: "flex", gap: "14px", flexWrap: "wrap" }}>
             <a
-              href="https://apps.shopify.com"
+              href="https://apps.shopify.com/image-colour-remake"
               target="_blank"
               rel="noopener noreferrer"
               className="btn-primary"
@@ -170,7 +170,7 @@ export default function HomePage() {
 
           <div style={{ textAlign: "center", marginTop: "40px" }}>
             <a
-              href="https://apps.shopify.com"
+              href="https://apps.shopify.com/image-colour-remake"
               target="_blank"
               rel="noopener noreferrer"
               className="btn-primary"
@@ -270,7 +270,7 @@ export default function HomePage() {
             Start with Image Colour Remake today — free to install on Shopify.
           </p>
           <div style={{ display: "flex", gap: "14px", justifyContent: "center", flexWrap: "wrap" }}>
-            <a href="https://apps.shopify.com" target="_blank" rel="noopener noreferrer" className="btn-primary">
+            <a href="https://apps.shopify.com/image-colour-remake" target="_blank" rel="noopener noreferrer" className="btn-primary">
               Get Started Free →
             </a>
             <Link href="/contact" className="btn-ghost">Talk to Us</Link>

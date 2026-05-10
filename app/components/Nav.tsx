@@ -56,7 +56,7 @@ export default function Nav() {
             </Link>
           ))}
           <a
-            href="https://apps.shopify.com"
+            href="https://apps.shopify.com/image-colour-remake"
             target="_blank"
             rel="noopener noreferrer"
             style={{
@@ -112,7 +112,7 @@ export default function Nav() {
             </Link>
           ))}
           <a
-            href="https://apps.shopify.com"
+            href="https://apps.shopify.com/image-colour-remake"
             target="_blank"
             rel="noopener noreferrer"
             style={{
