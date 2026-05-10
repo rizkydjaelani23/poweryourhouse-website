@@ -45,12 +45,12 @@ const timeline = [
     desc: "Built a rough tool to swap fabric colours using AI image masking. Rough but it worked. Merchants saw it and asked when they could use it.",
   },
   {
-    year: "2025",
+    year: "2026",
     title: "Image Colour Remake launches",
     desc: "Launched as a proper Shopify app. The storefront gallery, approval workflow, and swatch library make it a complete colour visualisation system.",
   },
   {
-    year: "2025",
+    year: "2026",
     title: "Power Your House is born",
     desc: "Realised the pattern: one focused tool becomes many. Registered the studio. More tools are coming — built with the same philosophy.",
   },

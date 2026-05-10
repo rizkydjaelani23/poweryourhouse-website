@@ -622,7 +622,7 @@ export default function HomePage() {
                     fontSize: "11px",
                     fontWeight: 700,
                   }}>
-                    Coming 2025
+                    Coming 2026
                   </div>
 
                   <div style={{
