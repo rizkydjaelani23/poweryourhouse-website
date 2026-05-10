@@ -270,11 +270,11 @@ export default function HomePage() {
             Ready to power your store?
           </h2>
           <p style={{ fontSize: "18px", color: "#94a3b8", marginBottom: "36px" }}>
-            Start with Image Colour Remake today — free to install on Shopify.
+            Start with Image Colour Remake today — $29.99/month, free trial included.
           </p>
           <div style={{ display: "flex", gap: "14px", justifyContent: "center", flexWrap: "wrap" }}>
             <a href="https://apps.shopify.com/image-colour-remake" target="_blank" rel="noopener noreferrer" className="btn-primary">
-              Get Started Free →
+              Install on Shopify →
             </a>
             <Link href="/contact" className="btn-ghost">Talk to Us</Link>
           </div>

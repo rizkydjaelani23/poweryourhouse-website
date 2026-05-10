@@ -3,100 +3,44 @@ import Link from "next/link";
 
 export const metadata: Metadata = {
   title: "Pricing – Power Your House",
-  description: "Simple, transparent pricing for Image Colour Remake. Start free, upgrade when you need more.",
+  description: "One simple plan. Everything you need to show fabric colour previews on your Shopify store.",
 };
 
-const plans = [
-  {
-    name: "Free",
-    price: "0",
-    period: "forever",
-    desc: "Try the core features at no cost. No credit card needed.",
-    color: "#64748b",
-    highlight: false,
-    features: [
-      "5 product previews",
-      "Basic swatch library",
-      "Storefront gallery embed",
-      "Email support",
-    ],
-    cta: "Get Started Free",
-    ctaHref: "https://apps.shopify.com/image-colour-remake",
-  },
-  {
-    name: "Starter",
-    price: "14",
-    period: "per month",
-    desc: "Perfect for small stores launching their colour range.",
-    color: "#3b82f6",
-    highlight: false,
-    features: [
-      "50 product previews / month",
-      "Unlimited swatch families",
-      "Storefront gallery embed",
-      "Approval workflow",
-      "Priority email support",
-    ],
-    cta: "Start Starter",
-    ctaHref: "https://apps.shopify.com/image-colour-remake",
-  },
-  {
-    name: "Growth",
-    price: "39",
-    period: "per month",
-    desc: "For stores scaling up with a large catalogue.",
-    color: "#4f46e5",
-    highlight: true,
-    features: [
-      "250 product previews / month",
-      "Unlimited swatch families",
-      "Bulk generation",
-      "Custom display name per colour",
-      "Approval workflow",
-      "Priority support (< 24h)",
-    ],
-    cta: "Start Growth",
-    ctaHref: "https://apps.shopify.com/image-colour-remake",
-  },
-  {
-    name: "Pro",
-    price: "89",
-    period: "per month",
-    desc: "High-volume stores that need maximum capacity.",
-    color: "#06b6d4",
-    highlight: false,
-    features: [
-      "Unlimited product previews",
-      "Everything in Growth",
-      "White-glove onboarding",
-      "Dedicated support channel",
-      "Early access to new features",
-    ],
-    cta: "Start Pro",
-    ctaHref: "https://apps.shopify.com/image-colour-remake",
-  },
+const features = [
+  "Unlimited colour preview generation",
+  "All fabric families (Plush, Velvet, Suede, Venice & more)",
+  "Bulk generation — upload multiple swatches at once",
+  "Storefront gallery embed (works with any Shopify 2.0 theme)",
+  "Approval workflow — control what customers see",
+  "Preview manager with search & filters",
+  "Recent swatch library",
+  "Email support",
 ];
 
 const faqs = [
   {
-    q: "Is there really a free plan?",
-    a: "Yes. You can install the app and generate up to 5 product previews with no credit card required. Upgrade when you're ready.",
+    q: "Is there a free trial?",
+    a: "Yes — Shopify gives you a free trial period when you install any paid app. You can test everything before you're charged.",
   },
   {
-    q: "What counts as a preview?",
-    a: "A preview is one generated colour image for one product. Approving or rejecting a preview doesn't count against your limit.",
+    q: "What counts as a colour preview?",
+    a: "A preview is one generated colour image for one product. Approving, hiding or deleting a preview doesn't affect your count.",
   },
   {
-    q: "Can I change plans at any time?",
-    a: "Absolutely. Upgrade or downgrade at any point. Billing is handled through Shopify's standard billing — no surprises.",
+    q: "Can I cancel at any time?",
+    a: "Yes. Cancel directly from your Shopify admin at any time. Billing is handled through Shopify — no hidden fees.",
   },
   {
     q: "Do you offer refunds?",
-    a: "If you're unhappy within the first 7 days of a paid plan, contact us at hello@poweryourhouse.io and we'll sort it out.",
+    a: "If you're unhappy within the first 7 days, contact us at hello@poweryourhouse.io and we'll sort it out.",
   },
   {
     q: "What themes does the gallery work with?",
-    a: "The storefront gallery embed is theme-agnostic and works with any Shopify 2.0 theme. We test against the most popular themes.",
+    a: "The storefront colour gallery works with any Shopify 2.0 theme. No coding required — add it directly from the theme editor.",
+  },
+  {
+    q: "Can I use this for any furniture product?",
+    a: "Yes. It works with beds, sofas, armchairs, ottomans, and any upholstered product. Just upload a fabric swatch and the app generates the preview.",
   },
 ];
 
@@ -113,107 +57,100 @@ export default function PricingPage() {
         <div className="container">
           <div className="badge section-eyebrow">💳 Pricing</div>
           <h1 className="section-title" style={{ margin: "14px auto 0", maxWidth: "520px" }}>
-            Simple, honest pricing
+            One plan. Everything included.
           </h1>
           <p className="section-sub" style={{ margin: "14px auto 0" }}>
-            Start free, scale when you're ready. All plans include the full feature set — you just get more capacity as you grow.
+            No tiers, no feature limits, no surprises. Just one simple price for everything the app offers.
           </p>
         </div>
       </section>
 
-      {/* Plans */}
+      {/* Single plan card */}
       <section className="section">
-        <div className="container">
+        <div className="container" style={{ display: "flex", justifyContent: "center" }}>
           <div style={{
-            display: "grid",
-            gridTemplateColumns: "repeat(auto-fit, minmax(240px, 1fr))",
-            gap: "20px",
-            alignItems: "start",
+            background: "linear-gradient(160deg, #1a2440, #111827)",
+            border: "2px solid #4f46e5",
+            borderRadius: "28px",
+            padding: "48px 44px",
+            maxWidth: "480px",
+            width: "100%",
+            position: "relative",
+            boxShadow: "0 0 60px rgba(79,70,229,0.15)",
           }}>
-            {plans.map((plan) => (
-              <div key={plan.name} style={{
-                background: plan.highlight ? "linear-gradient(160deg, #1a2440, #111827)" : "#111827",
-                border: plan.highlight ? `2px solid ${plan.color}` : "1px solid rgba(255,255,255,0.07)",
-                borderRadius: "22px",
-                padding: "32px 28px",
-                position: "relative",
-                boxShadow: plan.highlight ? `0 0 40px ${plan.color}22` : "none",
-              }}>
-                {plan.highlight && (
-                  <div style={{
-                    position: "absolute", top: "-14px", left: "50%", transform: "translateX(-50%)",
-                    background: `linear-gradient(135deg, ${plan.color}, #3b82f6)`,
-                    color: "#fff", padding: "5px 16px", borderRadius: "999px",
-                    fontSize: "12px", fontWeight: 800, whiteSpace: "nowrap",
-                  }}>
-                    Most Popular
-                  </div>
-                )}
+            {/* badge */}
+            <div style={{
+              position: "absolute", top: "-16px", left: "50%", transform: "translateX(-50%)",
+              background: "linear-gradient(135deg, #4f46e5, #3b82f6)",
+              color: "#fff", padding: "6px 20px", borderRadius: "999px",
+              fontSize: "12px", fontWeight: 800, whiteSpace: "nowrap",
+            }}>
+              Shopify App
+            </div>
 
-                <div style={{
-                  display: "inline-block",
-                  background: `${plan.color}18`,
-                  border: `1px solid ${plan.color}44`,
-                  color: plan.color,
-                  padding: "4px 12px",
-                  borderRadius: "999px",
-                  fontSize: "13px",
-                  fontWeight: 700,
-                  marginBottom: "18px",
-                }}>
-                  {plan.name}
+            {/* plan name */}
+            <div style={{
+              display: "inline-block",
+              background: "rgba(79,70,229,0.15)",
+              border: "1px solid rgba(79,70,229,0.4)",
+              color: "#818cf8",
+              padding: "4px 14px",
+              borderRadius: "999px",
+              fontSize: "13px",
+              fontWeight: 700,
+              marginBottom: "24px",
+            }}>
+              Standard
+            </div>
+
+            {/* price */}
+            <div style={{ marginBottom: "8px" }}>
+              <span style={{ fontSize: "64px", fontWeight: 900, color: "#fff", lineHeight: 1 }}>
+                $29
+              </span>
+              <span style={{ fontSize: "28px", fontWeight: 900, color: "#fff" }}>.99</span>
+              <span style={{ fontSize: "15px", color: "#64748b", marginLeft: "8px" }}>/ month</span>
+            </div>
+
+            <p style={{ fontSize: "14px", color: "#94a3b8", marginBottom: "32px", lineHeight: 1.6 }}>
+              Everything you need to show fabric colour previews on your Shopify store. Billed monthly through Shopify.
+            </p>
+
+            {/* features */}
+            <div style={{ borderTop: "1px solid rgba(255,255,255,0.06)", paddingTop: "24px", marginBottom: "32px" }}>
+              {features.map((f) => (
+                <div key={f} style={{ display: "flex", alignItems: "flex-start", gap: "12px", marginBottom: "12px" }}>
+                  <span style={{ color: "#818cf8", fontSize: "15px", marginTop: "1px", flexShrink: 0 }}>✓</span>
+                  <span style={{ fontSize: "14px", color: "#cbd5e1", lineHeight: 1.5 }}>{f}</span>
                 </div>
+              ))}
+            </div>
 
-                <div style={{ marginBottom: "6px" }}>
-                  <span style={{ fontSize: "42px", fontWeight: 900, color: "#fff" }}>
-                    ${plan.price}
-                  </span>
-                  <span style={{ fontSize: "14px", color: "#64748b", marginLeft: "4px" }}>
-                    / {plan.period}
-                  </span>
-                </div>
+            {/* CTA */}
+            <a
+              href="https://apps.shopify.com/image-colour-remake"
+              target="_blank"
+              rel="noopener noreferrer"
+              style={{
+                display: "block",
+                padding: "16px",
+                borderRadius: "14px",
+                background: "linear-gradient(135deg, #4f46e5, #3b82f6)",
+                color: "#fff",
+                textAlign: "center",
+                fontSize: "15px",
+                fontWeight: 700,
+                boxShadow: "0 4px 20px rgba(79,70,229,0.4)",
+                textDecoration: "none",
+              }}
+            >
+              Install on Shopify →
+            </a>
 
-                <p style={{ fontSize: "13px", color: "#94a3b8", marginBottom: "24px", lineHeight: 1.6 }}>
-                  {plan.desc}
-                </p>
-
-                <div style={{ borderTop: "1px solid rgba(255,255,255,0.06)", paddingTop: "20px", marginBottom: "24px" }}>
-                  {plan.features.map((f) => (
-                    <div key={f} style={{ display: "flex", alignItems: "flex-start", gap: "10px", marginBottom: "10px" }}>
-                      <span style={{ color: plan.color, fontSize: "14px", marginTop: "1px", flexShrink: 0 }}>✓</span>
-                      <span style={{ fontSize: "14px", color: "#94a3b8", lineHeight: 1.5 }}>{f}</span>
-                    </div>
-                  ))}
-                </div>
-
-                <a
-                  href={plan.ctaHref}
-                  target="_blank"
-                  rel="noopener noreferrer"
-                  style={{
-                    display: "block",
-                    padding: "13px",
-                    borderRadius: "12px",
-                    background: plan.highlight
-                      ? `linear-gradient(135deg, ${plan.color}, #3b82f6)`
-                      : "rgba(255,255,255,0.05)",
-                    border: plan.highlight ? "none" : "1px solid rgba(255,255,255,0.1)",
-                    color: "#fff",
-                    textAlign: "center",
-                    fontSize: "14px",
-                    fontWeight: 700,
-                    boxShadow: plan.highlight ? `0 4px 16px ${plan.color}44` : "none",
-                  }}
-                >
-                  {plan.cta} →
-                </a>
-              </div>
-            ))}
+            <p style={{ textAlign: "center", fontSize: "12px", color: "#475569", marginTop: "14px" }}>
+              Free trial included · Cancel anytime
+            </p>
           </div>
-
-          <p style={{ textAlign: "center", marginTop: "32px", fontSize: "13px", color: "#64748b" }}>
-            All plans billed through Shopify. Cancel anytime.
-          </p>
         </div>
       </section>
 
@@ -225,7 +162,7 @@ export default function PricingPage() {
             <h2 className="section-title" style={{ marginTop: "14px" }}>Common questions</h2>
           </div>
 
-          <div style={{ display: "flex", flexDirection: "column", gap: "0" }}>
+          <div style={{ display: "flex", flexDirection: "column" }}>
             {faqs.map((faq, i) => (
               <div key={i} style={{
                 borderTop: i === 0 ? "1px solid rgba(255,255,255,0.08)" : "none",
