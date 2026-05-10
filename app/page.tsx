@@ -1,5 +1,5 @@
 import Link from "next/link";
-import DemoSection from "./components/DemoSection";
+// import DemoSection from "./components/DemoSection"; // temporarily hidden
 
 export default function HomePage() {
   return (
@@ -99,7 +99,7 @@ export default function HomePage() {
         </div>
       </section>
 
-      <DemoSection />
+      {/* <DemoSection /> */}
 
       {/* ── Featured App ── */}
       <section className="section" style={{ background: "#0d1424" }}>
