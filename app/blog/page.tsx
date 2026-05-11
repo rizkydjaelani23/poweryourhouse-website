@@ -44,6 +44,19 @@ export default function BlogPage() {
       </section>
 
       {/* Posts */}
+      <style>{`
+        .blog-card {
+          background: #111827;
+          border: 1px solid rgba(255,255,255,0.06);
+          border-radius: 18px;
+          padding: 28px 32px;
+          transition: border-color 0.2s, transform 0.2s;
+        }
+        .blog-card:hover {
+          border-color: rgba(59,130,246,0.3);
+          transform: translateY(-2px);
+        }
+      `}</style>
       <section className="section">
         <div className="container" style={{ maxWidth: "720px" }}>
           {posts.length === 0 ? (
@@ -58,22 +71,7 @@ export default function BlogPage() {
                     href={`/blog/${post.slug}`}
                     style={{ textDecoration: "none" }}
                   >
-                    <article style={{
-                      background: "#111827",
-                      border: "1px solid rgba(255,255,255,0.06)",
-                      borderRadius: "18px",
-                      padding: "28px 32px",
-                      transition: "border-color 0.2s, transform 0.2s",
-                    }}
-                      onMouseEnter={(e) => {
-                        (e.currentTarget as HTMLElement).style.borderColor = "rgba(59,130,246,0.3)";
-                        (e.currentTarget as HTMLElement).style.transform = "translateY(-2px)";
-                      }}
-                      onMouseLeave={(e) => {
-                        (e.currentTarget as HTMLElement).style.borderColor = "rgba(255,255,255,0.06)";
-                        (e.currentTarget as HTMLElement).style.transform = "translateY(0)";
-                      }}
-                    >
+                    <article className="blog-card">
                       <div style={{ display: "flex", gap: "10px", alignItems: "center", marginBottom: "12px" }}>
                         <span style={{
                           fontSize: "11px", fontWeight: 700, padding: "2px 10px",
