@@ -1,7 +1,9 @@
 import type { MetadataRoute } from "next";
+import { getAllPosts } from "./blog/posts";
 
 export default function sitemap(): MetadataRoute.Sitemap {
   const base = "https://poweryourhouse.io";
+  const posts = getAllPosts();
 
   return [
     {
@@ -34,5 +36,17 @@ export default function sitemap(): MetadataRoute.Sitemap {
       changeFrequency: "monthly",
       priority: 0.95,
     },
+    {
+      url: `${base}/blog`,
+      lastModified: new Date(),
+      changeFrequency: "daily",
+      priority: 0.85,
+    },
+    ...posts.map((post) => ({
+      url: `${base}/blog/${post.slug}`,
+      lastModified: new Date(post.date),
+      changeFrequency: "monthly" as const,
+      priority: 0.75,
+    })),
   ];
 }
