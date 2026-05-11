@@ -6,19 +6,36 @@ import Footer from "./components/Footer";
 
 export const metadata: Metadata = {
   title: {
-    default: "Power Your House – Smart Software for Shopify Merchants",
+    default: "Power Your House – Shopify Apps for Furniture & Home Goods Stores",
     template: "%s | Power Your House",
   },
   description:
-    "Power Your House builds powerful Shopify apps for furniture and home goods merchants. Visualise product fabric colours with AI, track marketing ROI, and serve customers better.",
+    "Shopify apps built for furniture, bedding and upholstery stores worldwide. Show customers every fabric colour option with AI — no photoshoots needed. Trusted by furniture merchants across Australia, UK, USA and beyond.",
   metadataBase: new URL("https://poweryourhouse.io"),
+  keywords: [
+    "shopify app furniture store",
+    "fabric colour visualiser shopify",
+    "furniture colour preview app",
+    "bed colour options shopify",
+    "sofa fabric visualiser",
+    "upholstery colour shopify",
+    "shopify furniture ecommerce app",
+    "AI fabric colour changer",
+    "product colour visualisation shopify",
+    "furniture shopify store tools",
+    "bed frame colour preview",
+    "fabric swatch visualiser",
+    "shopify app for bed stores",
+    "home goods shopify app",
+    "shopify colour remake app",
+  ],
   alternates: {
-    canonical: "/",
+    canonical: "https://poweryourhouse.io",
   },
   openGraph: {
-    title: "Power Your House – Smart Software for Shopify Merchants",
+    title: "Power Your House – Shopify Apps for Furniture & Home Goods Stores",
     description:
-      "AI-powered Shopify apps for furniture and home goods merchants. Show customers every fabric colour option without expensive photoshoots.",
+      "AI colour visualisation for Shopify furniture stores. Show beds, sofas and upholstered products in every fabric colour — no photoshoots needed. Used by merchants worldwide.",
     url: "https://poweryourhouse.io",
     siteName: "Power Your House",
     type: "website",
@@ -28,15 +45,15 @@ export const metadata: Metadata = {
         url: "/general__coniston-grey.jpg",
         width: 1200,
         height: 630,
-        alt: "Power Your House – Shopify colour visualisation",
+        alt: "Power Your House – AI fabric colour visualisation for Shopify furniture stores",
       },
     ],
   },
   twitter: {
     card: "summary_large_image",
-    title: "Power Your House – Smart Software for Shopify Merchants",
+    title: "Power Your House – Shopify Apps for Furniture Stores",
     description:
-      "AI-powered colour visualisation and marketing tools for Shopify furniture merchants.",
+      "Show beds, sofas and upholstered products in every fabric colour on your Shopify store — no expensive photoshoots needed.",
     images: ["/general__coniston-grey.jpg"],
   },
   robots: {
@@ -58,13 +75,22 @@ const jsonLd = {
   url: "https://poweryourhouse.io",
   logo: "https://poweryourhouse.io/general__coniston-grey.jpg",
   description:
-    "Australian software studio building focused Shopify apps for furniture and home goods merchants.",
+    "Software studio building focused Shopify apps for furniture, bedding and upholstery merchants worldwide. Specialising in AI-powered fabric colour visualisation.",
   foundingDate: "2024",
-  areaServed: "Worldwide",
+  areaServed: ["Australia", "United Kingdom", "United States", "Canada", "New Zealand", "Europe"],
+  knowsAbout: [
+    "Shopify apps",
+    "furniture ecommerce",
+    "fabric colour visualisation",
+    "AI image generation",
+    "upholstery product photography",
+    "bed and sofa online retail",
+  ],
   contactPoint: {
     "@type": "ContactPoint",
     contactType: "customer support",
     url: "https://poweryourhouse.io/contact",
+    availableLanguage: "English",
   },
   sameAs: [],
 };

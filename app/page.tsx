@@ -5,14 +5,24 @@ import ScrollReveal from "./components/ScrollReveal";
 import HeroProductCard from "./components/HeroProductCard";
 
 export const metadata: Metadata = {
-  title: "Power Your House – AI Colour Visualisation for Shopify",
+  title: "Power Your House – AI Fabric Colour Visualiser for Shopify Furniture Stores",
   description:
-    "Show customers every fabric colour option on your Shopify store — no photoshoots needed. Power Your House builds focused AI tools for furniture and home goods merchants.",
+    "Show beds, sofas, armchairs and upholstered furniture in every fabric colour on your Shopify store — no expensive photoshoots needed. AI-powered colour previews for furniture merchants worldwide.",
   alternates: { canonical: "https://poweryourhouse.io" },
+  keywords: [
+    "shopify furniture app",
+    "fabric colour visualiser",
+    "bed colour preview shopify",
+    "sofa colour options online",
+    "furniture ecommerce tool",
+    "AI fabric colour changer",
+    "upholstery colour shopify app",
+    "furniture store shopify",
+  ],
   openGraph: {
-    title: "Power Your House – AI Colour Visualisation for Shopify",
+    title: "AI Fabric Colour Visualiser for Shopify Furniture Stores",
     description:
-      "Show customers every fabric colour option on your Shopify store — no photoshoots needed.",
+      "Show beds, sofas and upholstered products in every fabric colour — no photoshoots needed. Built for furniture merchants worldwide.",
     url: "https://poweryourhouse.io",
     type: "website",
   },
@@ -23,10 +33,20 @@ const jsonLd = {
   "@type": "SoftwareApplication",
   name: "Image Colour Remake",
   applicationCategory: "BusinessApplication",
+  applicationSubCategory: "Furniture & Home Goods eCommerce",
   operatingSystem: "Shopify",
   url: "https://poweryourhouse.io",
   description:
-    "AI-powered colour visualisation Shopify app. Replace product fabric colours automatically — show customers every option without expensive photoshoots.",
+    "AI-powered fabric colour visualisation Shopify app for furniture, bedding and upholstery stores. Show beds, sofas, armchairs and upholstered products in every fabric colour — no photoshoots needed. Works with any Shopify 2.0 theme.",
+  featureList: [
+    "AI fabric colour replacement",
+    "Unlimited colour preview generation",
+    "Storefront colour gallery widget",
+    "Works with beds, sofas, armchairs, ottomans",
+    "All fabric types: plush, velvet, suede, wool",
+    "Approval workflow",
+    "Shopify 2.0 compatible",
+  ],
   offers: {
     "@type": "Offer",
     price: "29.99",
