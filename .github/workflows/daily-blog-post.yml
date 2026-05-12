@@ -1,4 +1,4 @@
-name: Daily Blog Post
+name: Daily Blog Rebuild
 
 on:
   schedule:
@@ -7,7 +7,7 @@ on:
   workflow_dispatch: # allow manual trigger from GitHub Actions tab
 
 jobs:
-  write-post:
+  rebuild:
     runs-on: ubuntu-latest
     permissions:
       contents: write
@@ -16,24 +16,9 @@ jobs:
       - name: Checkout repo
         uses: actions/checkout@v4
 
-      - name: Set up Node.js
-        uses: actions/setup-node@v4
-        with:
-          node-version: "20"
-
-      - name: Install Anthropic SDK
-        run: npm install @anthropic-ai/sdk
-
-      - name: Generate blog post
-        env:
-          ANTHROPIC_API_KEY: ${{ secrets.ANTHROPIC_API_KEY }}
-        run: node scripts/generate-blog-post.mjs
-
-      - name: Commit and push
+      - name: Trigger daily rebuild
         run: |
           git config user.name "Blog Bot"
           git config user.email "bot@poweryourhouse.io"
-          git add app/blog/posts.ts
-          git diff --cached --quiet && echo "No changes to commit" && exit 0
-          git commit -m "Add daily blog post [$(date +%Y-%m-%d)]"
+          git commit --allow-empty -m "Daily rebuild [$(date +%Y-%m-%d)]"
           git push
