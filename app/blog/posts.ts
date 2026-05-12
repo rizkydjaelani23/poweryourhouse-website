@@ -643,7 +643,7 @@ export const posts: BlogPost[] = [
     slug: "handling-furniture-shipping-delivery",
     title: "How to Handle Shipping and Delivery for Large Furniture Online",
     description: "Furniture delivery is one of the biggest friction points in furniture ecommerce. Here's how to manage it in a way that builds trust and reduces returns.",
-    date: "2026-05-13",
+    date: "2026-05-12",
     category: "Shopify Tips",
     readTime: 5,
     content: `
