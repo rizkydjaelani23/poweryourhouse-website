@@ -2,6 +2,10 @@ import type { Metadata } from "next";
 import Link from "next/link";
 import { getAllPosts } from "./posts";
 
+// Force server-rendering on every request so the date filter in getAllPosts()
+// always uses today's real date — not the date the site was last deployed.
+export const dynamic = "force-dynamic";
+
 export const metadata: Metadata = {
   title: "Blog – Shopify Tips for Furniture & Home Goods Merchants",
   description: "Practical guides, tips and strategies for furniture and home goods merchants selling on Shopify. Colour visualisation, ecommerce growth, reducing returns and more.",

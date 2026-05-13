@@ -1,10 +1,13 @@
 import type { Metadata } from "next";
 import Link from "next/link";
 import { notFound } from "next/navigation";
-import { getPostBySlug, getAllPosts } from "../posts";
+import { getPostBySlug, getAllPosts, posts } from "../posts";
 
+// Pre-build routes for ALL posts regardless of date so slugs are always valid.
+// dynamicParams = true (default) means any slug not in the list is rendered
+// on-demand at request time — so future posts just work when their date arrives.
 export async function generateStaticParams() {
-  return getAllPosts().map((p) => ({ slug: p.slug }));
+  return posts.map((p) => ({ slug: p.slug }));
 }
 
 export async function generateMetadata(

@@ -611,6 +611,56 @@ export const posts: BlogPost[] = [
     `,
   },
   {
+    slug: "shopify-product-page-furniture-conversion",
+    title: "How to Build a Furniture Product Page That Actually Converts",
+    description: "Most furniture product pages lose customers to uncertainty. Here's the exact structure that removes doubt, builds confidence, and turns browsers into buyers.",
+    date: "2026-05-13",
+    category: "Shopify Tips",
+    readTime: 6,
+    content: `
+      <p>A furniture product page has one job: take a customer from "I'm interested" to "I'm confident enough to buy." Most fall short because they answer some questions and leave others hanging. The customer hits an unanswered question, loses confidence, and leaves — usually to a competitor who answers it.</p>
+
+      <h2>The anatomy of a converting furniture product page</h2>
+      <p>Think of your product page as a conversation between a customer and a knowledgeable salesperson. What would that salesperson cover? In order:</p>
+      <ol>
+        <li>Show the product compellingly</li>
+        <li>Confirm the right size and fit</li>
+        <li>Prove the colour options</li>
+        <li>Explain the materials and quality</li>
+        <li>Clarify delivery and the return safety net</li>
+        <li>Show that others have bought and loved it</li>
+      </ol>
+      <p>Every element of your page should serve one of these six objectives. If it doesn't, it's diluting focus.</p>
+
+      <h2>Images come first — always</h2>
+      <p>Customers form their initial impression from images before reading a single word of copy. You need at minimum: a hero shot in a styled room, a straight-on product shot showing true proportions, a close-up of fabric texture, and at least one lifestyle shot. If you have multiple colour options — show them. Customers who can see the exact colour they want are dramatically more likely to convert.</p>
+      <p>Images should load fast. Compress everything to under 200KB. Slow product images are a direct conversion killer, particularly on mobile.</p>
+
+      <h2>Put dimensions where customers can't miss them</h2>
+      <p>The single most common reason furniture customers abandon product pages — ahead of price — is uncertainty about size. Will it fit through the door? Will it overwhelm the room? Is the headboard going to hit the ceiling?</p>
+      <p>Don't bury dimensions in a collapsible tab. Put them directly under the product title, in a simple table: width, depth, height, headboard height, leg height. For sofas, add seat depth and seat height. For beds, note the mattress depth the frame suits.</p>
+      <p>A customer who knows it fits will buy. A customer who has to guess won't.</p>
+
+      <h2>Make colour selection visual, not textual</h2>
+      <p>A dropdown list of colour names is not a colour picker — it's a guessing game. Every colour option should be represented by a visual swatch that accurately reflects the fabric. When a customer clicks a swatch, the main product image should update to show that colour.</p>
+      <p>If you have more colours than you can photograph, AI colour visualisation tools can generate realistic fabric previews from a single base image. The investment pays off immediately in reduced abandonment among customers who wanted a specific colour but couldn't see it.</p>
+
+      <h2>The trust block below the fold</h2>
+      <p>Below your main product information, add a structured trust block covering three things in this order:</p>
+      <ol>
+        <li><strong>Delivery:</strong> Specific lead time, delivery method (room of choice, kerbside), and what happens on the day</li>
+        <li><strong>Returns:</strong> Your returns policy in plain English. Customers are reassured by "30-day returns accepted" — even if they never intend to use it</li>
+        <li><strong>Contact:</strong> A phone number or live chat prompt. For high-ticket purchases, some customers just need to ask one question before buying. Make it easy.</li>
+      </ol>
+
+      <h2>Reviews at the right position</h2>
+      <p>Reviews should appear below the trust block, not hidden in a separate tab. Display the aggregate star rating next to the product title (above the fold), and the full review list below. Customer photos from real homes belong at the top of the review list — they're the most persuasive content on your entire page.</p>
+
+      <h2>The test that matters</h2>
+      <p>Load your product page on your phone and ask: can a customer who's never seen this product before know its size, see it in the colour they want, understand delivery timing, and feel confident enough to buy — without scrolling excessively or clicking into sub-tabs? If the answer is no, you know what to fix.</p>
+    `,
+  },
+  {
     slug: "pricing-upholstered-furniture-online",
     title: "Pricing Upholstered Furniture Online: What Actually Works",
     description: "Pricing furniture online is harder than it looks. Set it too high and you lose to competitors. Too low and you erode the perception of quality. Here's how to get it right.",
