@@ -1,9 +1,14 @@
 import type { MetadataRoute } from "next";
-import { getAllPosts } from "./blog/posts";
+import { posts } from "./blog/posts";
+
+// Force server-render on every request so new posts always appear in the sitemap
+// the moment their publish date arrives — never stale from build time.
+export const dynamic = "force-dynamic";
 
 export default function sitemap(): MetadataRoute.Sitemap {
   const base = "https://poweryourhouse.io";
-  const posts = getAllPosts();
+  const today = new Date();
+  const publishedPosts = posts.filter((p) => new Date(p.date + "T00:00:00") <= today);
 
   return [
     {
@@ -42,9 +47,9 @@ export default function sitemap(): MetadataRoute.Sitemap {
       changeFrequency: "daily",
       priority: 0.85,
     },
-    ...posts.map((post) => ({
+    ...publishedPosts.map((post) => ({
       url: `${base}/blog/${post.slug}`,
-      lastModified: new Date(post.date),
+      lastModified: new Date(post.date + "T00:00:00"),
       changeFrequency: "monthly" as const,
       priority: 0.75,
     })),
