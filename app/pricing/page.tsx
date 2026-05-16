@@ -395,10 +395,10 @@ export default function PricingPage() {
                   🔍 GENERATED META TITLE
                 </div>
                 <div style={{ fontSize: "14px", color: "#8ab4f8", fontWeight: 600, marginBottom: "4px" }}>
-                  Grey Velvet Bed Frame | 14 Colours | Free Delivery
+                  Mustard Velvet Armchair | 12 Fabric Colours | Free Delivery
                 </div>
                 <div style={{ fontSize: "12px", color: "#bdc1c6", lineHeight: 1.5 }}>
-                  Shop Grey Velvet Bed Frames available in 14 premium fabric colours. AI colour previews for every option. Plush, suede & linen variants...
+                  Shop our Mustard Velvet Armchair available in 12 premium fabric colours. AI colour previews for every option. Plush, bouclé & chenille variants...
                 </div>
               </div>
 
@@ -410,7 +410,7 @@ export default function PricingPage() {
                 <div style={{ fontSize: "10px", color: "#6b7280", fontWeight: 600, marginBottom: "10px", letterSpacing: "0.05em" }}>
                   🖼️ AUTO ALT TEXT
                 </div>
-                {["Velvet Bed Frame in Slate Grey – plush upholstery, queen size", "Cloud Linen Bed in Ivory White – linen fabric, king size"].map((alt, i) => (
+                {["Mustard Velvet Armchair – bouclé fabric, solid oak legs", "Sage Green Corner Sofa – chenille upholstery, 4-seater L-shape"].map((alt, i) => (
                   <div key={i} style={{
                     display: "flex", gap: "8px",
                     padding: "6px 0",

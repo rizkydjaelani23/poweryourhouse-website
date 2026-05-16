@@ -558,12 +558,12 @@ export default function HomePage() {
                   <div style={{ fontSize: "11px", color: "#6b7280", fontWeight: 600, marginBottom: "12px", letterSpacing: "0.05em" }}>
                     🔍 GOOGLE SEARCH PREVIEW
                   </div>
-                  <div style={{ fontSize: "12px", color: "#5f9541", marginBottom: "2px" }}>yourstore.com › products › velvet-bed-grey</div>
+                  <div style={{ fontSize: "12px", color: "#5f9541", marginBottom: "2px" }}>yourstore.com › products › teal-velvet-sofa</div>
                   <div style={{ fontSize: "15px", color: "#8ab4f8", fontWeight: 600, marginBottom: "4px", lineHeight: 1.3 }}>
-                    Grey Velvet Bed Frame | 14 Fabric Colours | Free Shipping
+                    Teal Velvet Corner Sofa | 18 Fabric Colours | Free Delivery
                   </div>
                   <div style={{ fontSize: "13px", color: "#bdc1c6", lineHeight: 1.5 }}>
-                    Shop our Grey Velvet Bed Frame — now available in 14 premium fabric colours including plush, suede and linen. AI colour previews for every option...
+                    Shop our Teal Velvet Corner Sofa — available in 18 premium fabric colours including plush, bouclé and chenille. AI colour previews for every option...
                   </div>
                 </div>
 
@@ -576,9 +576,9 @@ export default function HomePage() {
                     🖼️ IMAGE ALT TEXT — AUTO-GENERATED
                   </div>
                   {[
-                    "Velvet Bed Frame in Slate Grey – plush upholstery, queen size",
-                    "Cloud Linen Bed Frame in Ivory White – linen fabric, king size",
-                    "Suede Ottoman Bed in Midnight Navy – deep button tufting",
+                    "Velvet Corner Sofa in Teal – plush upholstery, 3-seater",
+                    "Boucle Armchair in Cream – textured bouclé fabric, oak legs",
+                    "Dining Chair in Forest Green – suede finish, set of 4",
                   ].map((alt, i) => (
                     <div key={i} style={{
                       display: "flex", gap: "10px", alignItems: "flex-start",
@@ -599,7 +599,7 @@ export default function HomePage() {
                     🏷️ COLOUR KEYWORDS INJECTED
                   </div>
                   <div style={{ display: "flex", flexWrap: "wrap", gap: "8px" }}>
-                    {["velvet bed grey", "grey bed frame uk", "fabric bed grey", "upholstered bed grey", "plush bed frame", "grey bedroom furniture"].map((kw) => (
+                    {["teal velvet sofa", "corner sofa fabric colours", "bouclé armchair cream", "velvet dining chair uk", "fabric sofa colour options", "upholstered armchair green"].map((kw) => (
                       <span key={kw} style={{
                         background: "rgba(16,185,129,0.1)", border: "1px solid rgba(16,185,129,0.25)",
                         color: "#6ee7b7", padding: "4px 10px", borderRadius: "999px", fontSize: "11px", fontWeight: 600,
