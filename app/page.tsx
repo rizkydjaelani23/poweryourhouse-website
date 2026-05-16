@@ -436,6 +436,187 @@ export default function HomePage() {
       </section>
 
       {/* ══════════════════════════════════════════
+          SECTION 4.5: SEO Engine Add-on
+      ══════════════════════════════════════════ */}
+      <section className="section" style={{
+        background: "linear-gradient(160deg, #071a12 0%, #080e1c 60%, #071a12 100%)",
+        borderTop: "1px solid rgba(16,185,129,0.12)",
+        borderBottom: "1px solid rgba(16,185,129,0.12)",
+        position: "relative",
+        overflow: "hidden",
+      }}>
+        {/* Background orb */}
+        <div style={{
+          position: "absolute", top: "0", right: "-10%",
+          width: "600px", height: "600px", borderRadius: "50%",
+          background: "radial-gradient(circle, rgba(16,185,129,0.08) 0%, transparent 70%)",
+          pointerEvents: "none",
+        }} />
+        <div className="container" style={{ position: "relative", zIndex: 1 }}>
+          {/* Header */}
+          <div style={{ textAlign: "center", marginBottom: "56px" }}>
+            <ScrollReveal>
+              <div style={{
+                display: "inline-flex", alignItems: "center", gap: "8px",
+                background: "rgba(16,185,129,0.12)", border: "1px solid rgba(16,185,129,0.35)",
+                color: "#10b981", padding: "6px 16px", borderRadius: "999px",
+                fontSize: "12px", fontWeight: 800, marginBottom: "16px", letterSpacing: "0.05em",
+              }}>
+                ✨ NEW ADD-ON
+              </div>
+            </ScrollReveal>
+            <ScrollReveal delay={1}>
+              <h2 className="section-title" style={{ margin: "0 auto 16px", maxWidth: "600px" }}>
+                Fabric SEO Engine
+              </h2>
+            </ScrollReveal>
+            <ScrollReveal delay={2}>
+              <p className="section-sub" style={{ margin: "0 auto", maxWidth: "520px" }}>
+                Auto-generate SEO-optimised meta titles, descriptions, alt text and schema markup for every product — using your actual fabric and colour data.
+              </p>
+            </ScrollReveal>
+          </div>
+
+          {/* Split layout */}
+          <div style={{
+            display: "grid",
+            gridTemplateColumns: "1fr 1fr",
+            gap: "48px",
+            alignItems: "center",
+          }}
+          className="seo-split-grid">
+            {/* Left: feature list + pricing */}
+            <ScrollReveal delay={1}>
+              <div>
+                <div style={{ display: "flex", flexDirection: "column", gap: "18px", marginBottom: "36px" }}>
+                  {[
+                    { icon: "🔍", title: "Meta titles & descriptions", desc: "Generated automatically from your product name, fabric type and colour options." },
+                    { icon: "🖼️", title: "Image alt text", desc: "Every approved colour preview gets a precise, keyword-rich alt attribute." },
+                    { icon: "🏷️", title: "Structured data (Schema)", desc: "Product schema injected automatically — helps Google display rich results." },
+                    { icon: "📈", title: "Fabric & colour keywords", desc: "Colour-specific long-tail keywords built in — terms real shoppers search for." },
+                  ].map((item) => (
+                    <div key={item.title} style={{ display: "flex", gap: "16px", alignItems: "flex-start" }}>
+                      <div style={{
+                        width: "42px", height: "42px", borderRadius: "12px", flexShrink: 0,
+                        background: "rgba(16,185,129,0.12)", border: "1px solid rgba(16,185,129,0.3)",
+                        display: "flex", alignItems: "center", justifyContent: "center", fontSize: "18px",
+                      }}>
+                        {item.icon}
+                      </div>
+                      <div>
+                        <div style={{ fontSize: "15px", fontWeight: 700, color: "#fff", marginBottom: "4px" }}>{item.title}</div>
+                        <div style={{ fontSize: "13px", color: "#94a3b8", lineHeight: 1.6 }}>{item.desc}</div>
+                      </div>
+                    </div>
+                  ))}
+                </div>
+
+                {/* Pricing pills */}
+                <div style={{
+                  background: "rgba(16,185,129,0.07)", border: "1px solid rgba(16,185,129,0.2)",
+                  borderRadius: "16px", padding: "20px 24px",
+                }}>
+                  <div style={{ fontSize: "12px", color: "#6b7280", fontWeight: 600, marginBottom: "12px", letterSpacing: "0.05em" }}>
+                    AVAILABLE AS
+                  </div>
+                  <div style={{ display: "flex", gap: "12px", flexWrap: "wrap" }}>
+                    <div style={{
+                      background: "rgba(16,185,129,0.12)", border: "1px solid rgba(16,185,129,0.35)",
+                      borderRadius: "12px", padding: "10px 16px",
+                    }}>
+                      <div style={{ fontSize: "13px", color: "#10b981", fontWeight: 700 }}>SEO Engine only</div>
+                      <div style={{ fontSize: "20px", fontWeight: 900, color: "#fff", lineHeight: 1.2 }}>$14.99<span style={{ fontSize: "12px", color: "#6b7280", fontWeight: 500 }}>/mo</span></div>
+                      <div style={{ fontSize: "11px", color: "#6b7280", marginTop: "2px" }}>Add to any plan</div>
+                    </div>
+                    <div style={{
+                      background: "linear-gradient(135deg, rgba(16,185,129,0.18), rgba(79,70,229,0.18))",
+                      border: "1px solid rgba(16,185,129,0.5)", borderRadius: "12px", padding: "10px 16px",
+                    }}>
+                      <div style={{ fontSize: "13px", color: "#10b981", fontWeight: 700 }}>★ Pro + SEO Engine</div>
+                      <div style={{ fontSize: "20px", fontWeight: 900, color: "#fff", lineHeight: 1.2 }}>$44.99<span style={{ fontSize: "12px", color: "#6b7280", fontWeight: 500 }}>/mo</span></div>
+                      <div style={{ fontSize: "11px", color: "#6b7280", marginTop: "2px" }}>Best value · Save $0.98</div>
+                    </div>
+                  </div>
+                  <Link href="/pricing" style={{
+                    display: "inline-flex", alignItems: "center", gap: "6px", marginTop: "16px",
+                    fontSize: "13px", color: "#10b981", fontWeight: 700, textDecoration: "none",
+                  }}>
+                    See all plans →
+                  </Link>
+                </div>
+              </div>
+            </ScrollReveal>
+
+            {/* Right: Visual mock of SEO output */}
+            <ScrollReveal delay={2}>
+              <div style={{ display: "flex", flexDirection: "column", gap: "14px" }}>
+                {/* Google result mock */}
+                <div style={{
+                  background: "rgba(255,255,255,0.03)", border: "1px solid rgba(255,255,255,0.08)",
+                  borderRadius: "16px", padding: "20px 22px",
+                }}>
+                  <div style={{ fontSize: "11px", color: "#6b7280", fontWeight: 600, marginBottom: "12px", letterSpacing: "0.05em" }}>
+                    🔍 GOOGLE SEARCH PREVIEW
+                  </div>
+                  <div style={{ fontSize: "12px", color: "#5f9541", marginBottom: "2px" }}>yourstore.com › products › velvet-bed-grey</div>
+                  <div style={{ fontSize: "15px", color: "#8ab4f8", fontWeight: 600, marginBottom: "4px", lineHeight: 1.3 }}>
+                    Grey Velvet Bed Frame | 14 Fabric Colours | Free Shipping
+                  </div>
+                  <div style={{ fontSize: "13px", color: "#bdc1c6", lineHeight: 1.5 }}>
+                    Shop our Grey Velvet Bed Frame — now available in 14 premium fabric colours including plush, suede and linen. AI colour previews for every option...
+                  </div>
+                </div>
+
+                {/* Alt text mock */}
+                <div style={{
+                  background: "rgba(255,255,255,0.03)", border: "1px solid rgba(255,255,255,0.08)",
+                  borderRadius: "16px", padding: "20px 22px",
+                }}>
+                  <div style={{ fontSize: "11px", color: "#6b7280", fontWeight: 600, marginBottom: "12px", letterSpacing: "0.05em" }}>
+                    🖼️ IMAGE ALT TEXT — AUTO-GENERATED
+                  </div>
+                  {[
+                    "Velvet Bed Frame in Slate Grey – plush upholstery, queen size",
+                    "Cloud Linen Bed Frame in Ivory White – linen fabric, king size",
+                    "Suede Ottoman Bed in Midnight Navy – deep button tufting",
+                  ].map((alt, i) => (
+                    <div key={i} style={{
+                      display: "flex", gap: "10px", alignItems: "flex-start",
+                      padding: "8px 0", borderBottom: i < 2 ? "1px solid rgba(255,255,255,0.05)" : "none",
+                    }}>
+                      <span style={{ color: "#10b981", fontWeight: 700, fontSize: "13px", flexShrink: 0, marginTop: "1px" }}>✓</span>
+                      <span style={{ fontSize: "12px", color: "#94a3b8", lineHeight: 1.5 }}>{alt}</span>
+                    </div>
+                  ))}
+                </div>
+
+                {/* Keywords mock */}
+                <div style={{
+                  background: "rgba(255,255,255,0.03)", border: "1px solid rgba(255,255,255,0.08)",
+                  borderRadius: "16px", padding: "20px 22px",
+                }}>
+                  <div style={{ fontSize: "11px", color: "#6b7280", fontWeight: 600, marginBottom: "12px", letterSpacing: "0.05em" }}>
+                    🏷️ COLOUR KEYWORDS INJECTED
+                  </div>
+                  <div style={{ display: "flex", flexWrap: "wrap", gap: "8px" }}>
+                    {["velvet bed grey", "grey bed frame uk", "fabric bed grey", "upholstered bed grey", "plush bed frame", "grey bedroom furniture"].map((kw) => (
+                      <span key={kw} style={{
+                        background: "rgba(16,185,129,0.1)", border: "1px solid rgba(16,185,129,0.25)",
+                        color: "#6ee7b7", padding: "4px 10px", borderRadius: "999px", fontSize: "11px", fontWeight: 600,
+                      }}>{kw}</span>
+                    ))}
+                  </div>
+                </div>
+              </div>
+            </ScrollReveal>
+          </div>
+        </div>
+        <style>{`
+          @media (max-width: 900px) { .seo-split-grid { grid-template-columns: 1fr !important; } }
+        `}</style>
+      </section>
+
+      {/* ══════════════════════════════════════════
           SECTION 5: Stats Bar
       ══════════════════════════════════════════ */}
       <section className="section" style={{
@@ -598,7 +779,7 @@ export default function HomePage() {
               color: "#94a3b8",
               marginBottom: "40px",
             }}>
-              $29.99/month · Free trial included · Cancel anytime
+              Free plan available · Pro from $29.99/month · SEO Engine add-on from $14.99/month
             </p>
             <div style={{ display: "flex", gap: "14px", justifyContent: "center", flexWrap: "wrap" }}>
               <a
