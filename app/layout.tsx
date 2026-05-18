@@ -12,26 +12,6 @@ export const metadata: Metadata = {
   description:
     "Shopify apps built for furniture, bedding and upholstery stores worldwide. Show customers every fabric colour option with AI — no photoshoots needed. Trusted by furniture merchants across Australia, UK, USA and beyond.",
   metadataBase: new URL("https://poweryourhouse.io"),
-  keywords: [
-    "shopify app furniture store",
-    "fabric colour visualiser shopify",
-    "furniture colour preview app",
-    "bed colour options shopify",
-    "sofa fabric visualiser",
-    "upholstery colour shopify",
-    "shopify furniture ecommerce app",
-    "AI fabric colour changer",
-    "product colour visualisation shopify",
-    "furniture shopify store tools",
-    "bed frame colour preview",
-    "fabric swatch visualiser",
-    "shopify app for bed stores",
-    "home goods shopify app",
-    "shopify colour remake app",
-  ],
-  alternates: {
-    canonical: "https://poweryourhouse.io",
-  },
   openGraph: {
     title: "Power Your House – Shopify Apps for Furniture & Home Goods Stores",
     description:
