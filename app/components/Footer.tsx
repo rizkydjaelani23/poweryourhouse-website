@@ -84,8 +84,23 @@ export default function Footer() {
           <p style={{ fontSize: "13px", color: "#475569" }}>
             © {new Date().getFullYear()} Power Your House. All rights reserved.
           </p>
-          <div style={{ display: "flex", gap: "20px" }}>
+          <div style={{ display: "flex", alignItems: "center", gap: "20px", flexWrap: "wrap" }}>
             <span style={{ fontSize: "13px", color: "#475569" }}>Built with ⚡ in Australia</span>
+            <a
+              href="https://www.producthunt.com/products/poweryourhouse?embed=true&utm_source=badge-featured&utm_medium=badge&utm_campaign=badge-poweryourhouse"
+              target="_blank"
+              rel="noopener noreferrer"
+              style={{ display: "inline-flex", alignItems: "center" }}
+            >
+              {/* eslint-disable-next-line @next/next/no-img-element */}
+              <img
+                alt="PowerYourHouse on Product Hunt"
+                src="https://api.producthunt.com/widgets/embed-image/v1/featured.svg?post_id=1149922&theme=dark&t=1779113381616"
+                width={160}
+                height={35}
+                style={{ display: "block" }}
+              />
+            </a>
           </div>
         </div>
       </div>
