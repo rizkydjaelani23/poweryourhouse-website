@@ -1,6 +1,7 @@
 "use client";
-import { useState, useRef, useCallback, useEffect } from "react";
+import { useState, useRef, useCallback } from "react";
 import Link from "next/link";
+import SelectionEditor, { SelectionEditorHandle } from "../components/SelectionEditor";
 
 type GenType = "STANDARD" | "HD";
 
@@ -18,23 +19,19 @@ export default function GeneratePage() {
   const [result,        setResult]        = useState<string | null>(null);
   const [error,         setError]         = useState<string | null>(null);
   const [insufficientCredits, setInsufficientCredits] = useState(false);
-
-  // Canvas / outline tool
-  const [maskMode,      setMaskMode]      = useState(false);
-  const [brushSize,     setBrushSize]     = useState(24);
   const [hasMask,       setHasMask]       = useState(false);
-  const canvasRef   = useRef<HTMLCanvasElement>(null);
-  const imgRef      = useRef<HTMLImageElement>(null);
-  const paintingRef = useRef(false);
-  const dropRef     = useRef<HTMLLabelElement>(null);
 
-  // ── image upload ──────────────────────────────────────────────
+  // SelectionEditor handle
+  const selectionRef = useRef<SelectionEditorHandle | null>(null);
+
+  const dropRef = useRef<HTMLDivElement>(null);
+
+  // ── image upload ──────────────────────────────────────────────────────────
   function handleImageFile(file: File) {
     setImageFile(file);
     setResult(null);
     setError(null);
     setHasMask(false);
-    setMaskMode(false);
     const reader = new FileReader();
     reader.onload = (e) => setImagePreview(e.target?.result as string);
     reader.readAsDataURL(file);
@@ -53,72 +50,7 @@ export default function GeneratePage() {
     if (file && file.type.startsWith("image/")) handleImageFile(file);
   }, []);
 
-  // ── canvas mask ───────────────────────────────────────────────
-  useEffect(() => {
-    if (!maskMode || !imagePreview || !canvasRef.current || !imgRef.current) return;
-    const canvas = canvasRef.current;
-    const img    = imgRef.current;
-    canvas.width  = img.naturalWidth  || img.clientWidth;
-    canvas.height = img.naturalHeight || img.clientHeight;
-    const ctx = canvas.getContext("2d")!;
-    ctx.clearRect(0, 0, canvas.width, canvas.height);
-    setHasMask(false);
-  }, [maskMode, imagePreview]);
-
-  function getPos(e: React.MouseEvent<HTMLCanvasElement> | React.TouchEvent<HTMLCanvasElement>) {
-    const canvas = canvasRef.current!;
-    const rect   = canvas.getBoundingClientRect();
-    const scaleX = canvas.width  / rect.width;
-    const scaleY = canvas.height / rect.height;
-    const clientX = "touches" in e ? e.touches[0].clientX : e.clientX;
-    const clientY = "touches" in e ? e.touches[0].clientY : e.clientY;
-    return { x: (clientX - rect.left) * scaleX, y: (clientY - rect.top) * scaleY };
-  }
-
-  function paint(e: React.MouseEvent<HTMLCanvasElement> | React.TouchEvent<HTMLCanvasElement>) {
-    if (!paintingRef.current) return;
-    const canvas = canvasRef.current!;
-    const ctx    = canvas.getContext("2d")!;
-    const { x, y } = getPos(e);
-    ctx.beginPath();
-    ctx.arc(x, y, brushSize, 0, Math.PI * 2);
-    ctx.fillStyle = "rgba(139,92,246,0.55)";
-    ctx.fill();
-    setHasMask(true);
-  }
-
-  function clearMask() {
-    const canvas = canvasRef.current;
-    if (!canvas) return;
-    const ctx = canvas.getContext("2d")!;
-    ctx.clearRect(0, 0, canvas.width, canvas.height);
-    setHasMask(false);
-  }
-
-  function getMaskBlob(): Promise<Blob | null> {
-    const canvas = canvasRef.current;
-    if (!canvas || !hasMask) return Promise.resolve(null);
-    // Convert painted overlay to a B&W mask
-    const offscreen = document.createElement("canvas");
-    offscreen.width  = canvas.width;
-    offscreen.height = canvas.height;
-    const ctx = offscreen.getContext("2d")!;
-    ctx.fillStyle = "#000";
-    ctx.fillRect(0, 0, offscreen.width, offscreen.height);
-    // Draw painted areas as white
-    const data = canvas.getContext("2d")!.getImageData(0, 0, canvas.width, canvas.height);
-    for (let i = 3; i < data.data.length; i += 4) {
-      if (data.data[i] > 0) {
-        const x = Math.floor((i / 4) % canvas.width);
-        const y = Math.floor((i / 4) / canvas.width);
-        ctx.fillStyle = "#fff";
-        ctx.fillRect(x, y, 1, 1);
-      }
-    }
-    return new Promise((res) => offscreen.toBlob((b) => res(b), "image/png"));
-  }
-
-  // ── generate ──────────────────────────────────────────────────
+  // ── generate ──────────────────────────────────────────────────────────────
   async function generate() {
     if (!imageFile) { setError("Upload an image first."); return; }
     setLoading(true);
@@ -134,8 +66,8 @@ export default function GeneratePage() {
     if (colourMode === "swatch" && swatchFile) form.append("swatchFile", swatchFile);
     if (genType === "HD" && prompt) form.append("prompt", prompt);
 
-    // Attach mask if painted
-    const maskBlob = await getMaskBlob();
+    // Attach mask from SelectionEditor if any
+    const maskBlob = selectionRef.current ? await selectionRef.current.getMask() : null;
     if (maskBlob) form.append("maskFile", maskBlob, "mask.png");
 
     try {
@@ -173,106 +105,80 @@ export default function GeneratePage() {
           {/* ── Left panel ── */}
           <div style={{ display: "flex", flexDirection: "column", gap: "16px" }}>
 
-            {/* Image upload */}
+            {/* 1. Upload */}
             <Card title="1. Upload your image">
-              <label
-                ref={dropRef}
-                onDrop={onDrop}
-                onDragOver={(e) => e.preventDefault()}
-                style={{
-                  display: "flex", flexDirection: "column", alignItems: "center", justifyContent: "center",
-                  border: imageFile ? "2px solid #8b5cf6" : "2px dashed #1e293b",
-                  borderRadius: "12px", padding: "24px", cursor: "pointer",
-                  background: imageFile ? "rgba(139,92,246,0.05)" : "#0d1424",
-                  minHeight: "140px", textAlign: "center", transition: "all 0.15s",
-                  position: "relative",
-                }}
-              >
-                {imagePreview ? (
-                  <>
-                    {/* The actual image (used for canvas sizing) */}
-                    {/* eslint-disable-next-line @next/next/no-img-element */}
-                    <img
-                      ref={imgRef}
-                      src={imagePreview}
-                      alt="preview"
-                      style={{ maxHeight: "220px", borderRadius: "8px", objectFit: "contain", display: "block", width: "100%" }}
-                    />
-                    {/* Canvas overlay for mask painting */}
-                    {maskMode && (
-                      <canvas
-                        ref={canvasRef}
-                        style={{
-                          position: "absolute", inset: 0, width: "100%", height: "100%",
-                          borderRadius: "12px", cursor: "crosshair", touchAction: "none",
-                        }}
-                        onMouseDown={(e) => { paintingRef.current = true; paint(e); }}
-                        onMouseMove={paint}
-                        onMouseUp={() => { paintingRef.current = false; }}
-                        onMouseLeave={() => { paintingRef.current = false; }}
-                        onTouchStart={(e) => { e.preventDefault(); paintingRef.current = true; paint(e); }}
-                        onTouchMove={(e) => { e.preventDefault(); paint(e); }}
-                        onTouchEnd={() => { paintingRef.current = false; }}
-                      />
-                    )}
-                  </>
-                ) : (
-                  <>
-                    <div style={{ fontSize: "32px", marginBottom: "8px" }}>🖼️</div>
-                    <div style={{ color: "#64748b", fontSize: "14px" }}>Drop image here or click to browse</div>
-                    <div style={{ color: "#334155", fontSize: "12px", marginTop: "4px" }}>JPG, PNG, WebP — max 10 MB</div>
-                  </>
-                )}
-                <input type="file" accept="image/*" style={{ display: "none" }}
-                  onChange={(e) => { const f = e.target.files?.[0]; if (f) handleImageFile(f); }} />
-              </label>
-
-              {/* Outline / mask tools */}
-              {imagePreview && (
-                <div style={{ marginTop: "10px", display: "flex", gap: "8px", flexWrap: "wrap", alignItems: "center" }}>
-                  <button
-                    onClick={() => setMaskMode((v) => !v)}
-                    style={{
-                      padding: "7px 14px", borderRadius: "8px", fontSize: "12px", fontWeight: 700,
-                      border: maskMode ? "1px solid #8b5cf6" : "1px solid #1e293b",
-                      background: maskMode ? "rgba(139,92,246,0.15)" : "#111827",
-                      color: maskMode ? "#a78bfa" : "#64748b", cursor: "pointer",
-                    }}
-                  >
-                    🖌️ {maskMode ? "Painting selection ON" : "Paint selection area"}
-                  </button>
-                  {maskMode && (
-                    <>
-                      <div style={{ display: "flex", alignItems: "center", gap: "6px" }}>
-                        <span style={{ fontSize: "11px", color: "#475569" }}>Brush:</span>
-                        <input
-                          type="range" min={6} max={60} value={brushSize}
-                          onChange={(e) => setBrushSize(Number(e.target.value))}
-                          style={{ width: "70px" }}
-                        />
-                        <span style={{ fontSize: "11px", color: "#475569" }}>{brushSize}px</span>
-                      </div>
-                      {hasMask && (
-                        <button onClick={clearMask} style={{ padding: "7px 12px", borderRadius: "8px", fontSize: "12px", fontWeight: 700, border: "1px solid #1e293b", background: "#111827", color: "#ef4444", cursor: "pointer" }}>
-                          ✕ Clear
-                        </button>
-                      )}
-                    </>
-                  )}
-                  {hasMask && !maskMode && (
-                    <span style={{ fontSize: "12px", color: "#a78bfa", fontWeight: 600 }}>✓ Selection active</span>
-                  )}
+              {imagePreview ? (
+                /* Compact uploaded state */
+                <div style={{ display: "flex", alignItems: "center", gap: "12px", padding: "12px", borderRadius: "10px", background: "#060c19", border: "1px solid rgba(139,92,246,0.2)" }}>
+                  {/* eslint-disable-next-line @next/next/no-img-element */}
+                  <img
+                    src={imagePreview}
+                    alt="preview"
+                    style={{ width: "64px", height: "64px", objectFit: "cover", borderRadius: "8px", flexShrink: 0 }}
+                  />
+                  <div style={{ flex: 1, minWidth: 0 }}>
+                    <div style={{ color: "#a78bfa", fontSize: "13px", fontWeight: 700, marginBottom: "2px" }}>✓ Image loaded</div>
+                    <div style={{ color: "#475569", fontSize: "12px", overflow: "hidden", textOverflow: "ellipsis", whiteSpace: "nowrap" }}>
+                      {imageFile?.name}
+                    </div>
+                  </div>
+                  <label style={{ flexShrink: 0, padding: "7px 13px", borderRadius: "8px", fontSize: "12px", fontWeight: 700, border: "1px solid #1e293b", background: "#111827", color: "#64748b", cursor: "pointer" }}>
+                    Change
+                    <input type="file" accept="image/*" style={{ display: "none" }}
+                      onChange={(e) => { const f = e.target.files?.[0]; if (f) handleImageFile(f); }} />
+                  </label>
                 </div>
-              )}
-              {maskMode && (
-                <p style={{ fontSize: "11px", color: "#475569", marginTop: "6px" }}>
-                  Paint over the area you want recoloured. Leave blank to recolour the whole image.
-                </p>
+              ) : (
+                /* Drop zone */
+                <label
+                  ref={dropRef as React.Ref<HTMLLabelElement>}
+                  onDrop={onDrop}
+                  onDragOver={(e) => e.preventDefault()}
+                  style={{
+                    display: "flex", flexDirection: "column", alignItems: "center", justifyContent: "center",
+                    border: "2px dashed #1e293b",
+                    borderRadius: "12px", padding: "32px 24px", cursor: "pointer",
+                    background: "#0d1424", minHeight: "140px", textAlign: "center", transition: "all 0.15s",
+                  }}
+                >
+                  <div style={{ fontSize: "36px", marginBottom: "10px" }}>🖼️</div>
+                  <div style={{ color: "#64748b", fontSize: "14px", fontWeight: 600 }}>Drop image here or click to browse</div>
+                  <div style={{ color: "#334155", fontSize: "12px", marginTop: "4px" }}>JPG, PNG, WebP — max 10 MB</div>
+                  <input type="file" accept="image/*" style={{ display: "none" }}
+                    onChange={(e) => { const f = e.target.files?.[0]; if (f) handleImageFile(f); }} />
+                </label>
               )}
             </Card>
 
-            {/* Colour selection */}
-            <Card title="2. Choose target colour">
+            {/* 2. Select area — shown only when image is loaded */}
+            {imagePreview && (
+              <Card title="2. Select area to recolour (optional)">
+                <SelectionEditor
+                  imageSrc={imagePreview}
+                  handleRef={selectionRef}
+                  onMaskChange={setHasMask}
+                />
+                {hasMask && (
+                  <div style={{ marginTop: "8px", display: "flex", alignItems: "center", gap: "8px" }}>
+                    <span style={{ fontSize: "12px", color: "#a78bfa", fontWeight: 700 }}>✓ Selection active</span>
+                    <button
+                      onClick={() => selectionRef.current?.clear()}
+                      style={{ padding: "4px 10px", borderRadius: "6px", fontSize: "11px", fontWeight: 700, border: "1px solid rgba(239,68,68,0.3)", background: "rgba(239,68,68,0.08)", color: "#ef4444", cursor: "pointer" }}
+                    >
+                      Clear
+                    </button>
+                  </div>
+                )}
+                {!hasMask && (
+                  <p style={{ fontSize: "11px", color: "#334155", marginTop: "6px" }}>
+                    Leave blank to recolour the whole image. Use Outline for precise shapes, Brush to paint freehand.
+                  </p>
+                )}
+              </Card>
+            )}
+
+            {/* 3. Colour selection */}
+            <Card title={`${imagePreview ? "3" : "2"}. Choose target colour`}>
               <div style={{ display: "flex", gap: "8px", marginBottom: "14px" }}>
                 {(["picker", "swatch"] as const).map((mode) => (
                   <button key={mode} onClick={() => setColourMode(mode)} style={{
@@ -301,6 +207,7 @@ export default function GeneratePage() {
               ) : (
                 <label style={{ display: "flex", gap: "12px", alignItems: "center", cursor: "pointer", padding: "14px", borderRadius: "10px", border: "1px dashed #1e293b", background: "#0d1424" }}>
                   {swatchPreview
+                    // eslint-disable-next-line @next/next/no-img-element
                     ? <img src={swatchPreview} alt="swatch" style={{ width: "60px", height: "60px", borderRadius: "8px", objectFit: "cover" }} />
                     : <div style={{ width: "60px", height: "60px", borderRadius: "8px", background: "#111827", display: "flex", alignItems: "center", justifyContent: "center", fontSize: "24px", flexShrink: 0 }}>🧵</div>}
                   <div>
@@ -315,8 +222,8 @@ export default function GeneratePage() {
               )}
             </Card>
 
-            {/* Quality */}
-            <Card title="3. Quality">
+            {/* 4. Quality */}
+            <Card title={`${imagePreview ? "4" : "3"}. Quality`}>
               <div style={{ display: "grid", gridTemplateColumns: "1fr 1fr", gap: "10px" }}>
                 {([
                   { type: "STANDARD" as GenType, icon: "⚡", label: "Standard", desc: "Fast colour shift · 1 credit", colour: "#3b82f6" },
@@ -335,9 +242,9 @@ export default function GeneratePage() {
               </div>
             </Card>
 
-            {/* Prompt — HD only */}
+            {/* 5. Prompt — HD only */}
             {genType === "HD" && (
-              <Card title="4. Describe the result (optional)">
+              <Card title={`${imagePreview ? "5" : "4"}. Describe the result (optional)`}>
                 <textarea
                   value={prompt}
                   onChange={(e) => setPrompt(e.target.value)}
@@ -430,7 +337,9 @@ export default function GeneratePage() {
             <div style={{ marginTop: "14px", padding: "14px 16px", borderRadius: "12px", background: "#0d1424", border: "1px solid rgba(255,255,255,0.05)" }}>
               <p style={{ fontSize: "12px", fontWeight: 700, color: "#475569", marginBottom: "8px" }}>💡 Tips</p>
               <ul style={{ margin: 0, padding: "0 0 0 16px", fontSize: "12px", color: "#334155", lineHeight: 1.8 }}>
-                <li>Use <strong style={{ color: "#64748b" }}>Paint selection</strong> to recolour only part of the image</li>
+                <li>Use <strong style={{ color: "#64748b" }}>Outline</strong> to trace a precise shape, or <strong style={{ color: "#64748b" }}>Brush</strong> to paint freehand</li>
+                <li>Leave selection blank to recolour the entire image</li>
+                <li>Scroll to zoom · Alt+drag to pan the editor</li>
                 <li>HD mode works best with a descriptive prompt</li>
                 <li>Upload a fabric swatch for exact colour matching</li>
               </ul>
