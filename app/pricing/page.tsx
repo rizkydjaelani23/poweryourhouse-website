@@ -16,7 +16,7 @@ export const metadata: Metadata = {
 };
 
 const freePlanFeatures = [
-  "Up to 25 colour previews (lifetime)",
+  "Up to 50 colour previews (lifetime)",
   "3 products",
   "Storefront gallery widget",
   "Approval workflow",
@@ -54,7 +54,7 @@ const proSeoFeatures = [
 const faqs = [
   {
     q: "Is there a free plan?",
-    a: "Yes — the Free plan lets you generate up to 25 colour previews across 3 products and includes the full storefront gallery widget. No credit card required.",
+    a: "Yes — the Free plan lets you generate up to 50 colour previews across 3 products and includes the full storefront gallery widget. No credit card required.",
   },
   {
     q: "Is there a free trial on paid plans?",
@@ -183,7 +183,7 @@ export default function PricingPage() {
                 <span style={{ fontSize: "14px", color: "#64748b", marginLeft: "8px" }}>/ month</span>
               </div>
               <p style={{ fontSize: "13px", color: "#64748b", marginBottom: "28px", lineHeight: 1.6 }}>
-                Try the app with 25 colour previews and 3 products. No credit card required.
+                Try the app with 50 colour previews and 3 products. No credit card required.
               </p>
 
               <div style={{ borderTop: "1px solid rgba(255,255,255,0.06)", paddingTop: "20px", marginBottom: "28px" }}>
@@ -477,7 +477,7 @@ export default function PricingPage() {
             </div>
 
             {[
-              { feature: "Colour previews", free: "25 total", pro: "Unlimited", proseo: "Unlimited" },
+              { feature: "Colour previews", free: "50 total", pro: "Unlimited", proseo: "Unlimited" },
               { feature: "Products", free: "3", pro: "Unlimited", proseo: "Unlimited" },
               { feature: "Storefront gallery", free: "✓", pro: "✓", proseo: "✓" },
               { feature: "Approval workflow", free: "✓", pro: "✓", proseo: "✓" },

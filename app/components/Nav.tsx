@@ -7,6 +7,7 @@ const links = [
   { href: "/", label: "Home" },
   { href: "/shopify-app-furniture-stores", label: "Furniture Stores" },
   { href: "/pricing", label: "Pricing" },
+  { href: "/faq", label: "FAQ" },
   { href: "/blog", label: "Blog" },
   { href: "/about", label: "About" },
   { href: "/contact", label: "Contact" },
