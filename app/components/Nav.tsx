@@ -154,16 +154,32 @@ export default function Nav() {
                     display: "flex", alignItems: "center", gap: "8px",
                     padding: "6px 12px", borderRadius: "8px",
                     background: "rgba(255,255,255,0.04)",
-                    border: "1px solid rgba(255,255,255,0.08)",
+                    border: credits.standard === 0
+                      ? "1px solid rgba(239,68,68,0.25)"
+                      : "1px solid rgba(255,255,255,0.08)",
                     textDecoration: "none",
                   }}>
+                    {/* Standard credits */}
                     <span style={{ fontSize: "12px", color: "#64748b" }}>
-                      ⚡ <span style={{ color: "#60a5fa", fontWeight: 700 }}>{credits.standard}</span>
+                      ⚡{" "}
+                      <span style={{
+                        fontWeight: 700,
+                        color: credits.standard === 0 ? "#ef4444" : "#60a5fa",
+                      }}>
+                        {credits.standard === 0 ? "0 — top up" : credits.standard}
+                      </span>
                     </span>
                     <span style={{ fontSize: "10px", color: "#1e293b" }}>·</span>
-                    <span style={{ fontSize: "12px", color: "#64748b" }}>
-                      ✨ <span style={{ color: "#a78bfa", fontWeight: 700 }}>{credits.hd}</span>
-                    </span>
+                    {/* HD credits — show "Get HD" when zero (never purchased) */}
+                    {credits.hd > 0 ? (
+                      <span style={{ fontSize: "12px", color: "#64748b" }}>
+                        ✨ <span style={{ color: "#a78bfa", fontWeight: 700 }}>{credits.hd} HD</span>
+                      </span>
+                    ) : (
+                      <span style={{ fontSize: "12px", color: "#475569", fontWeight: 600 }}>
+                        ✨ Get HD
+                      </span>
+                    )}
                   </Link>
                 )}
 

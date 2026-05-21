@@ -21,6 +21,7 @@ export default function GeneratePage() {
   const [insufficientCredits, setInsufficientCredits] = useState(false);
   const [hasMask,       setHasMask]       = useState(false);
   const [credits,       setCredits]       = useState<{ standard: number; hd: number } | null>(null);
+  const [lastCreditUsed, setLastCreditUsed] = useState(false);
 
   const selectionRef = useRef<SelectionEditorHandle | null>(null);
   const resultRef    = useRef<HTMLDivElement>(null);
@@ -63,6 +64,12 @@ export default function GeneratePage() {
     setResult(null);
     setError(null);
     setInsufficientCredits(false);
+    setLastCreditUsed(false);
+
+    // Detect if this will be the last credit (so we can show a friendly nudge after)
+    const isLastCredit =
+      (genType === "STANDARD" && (credits?.standard ?? 2) === 1) ||
+      (genType === "HD"       && (credits?.hd       ?? 2) === 1);
 
     const form = new FormData();
     form.append("imageFile",  imageFile);
@@ -84,6 +91,7 @@ export default function GeneratePage() {
         return;
       }
       setResult(data.outputUrl);
+      if (isLastCredit) setLastCreditUsed(true);
       fetchCredits(); // refresh credits after spend
       // Scroll to result
       setTimeout(() => resultRef.current?.scrollIntoView({ behavior: "smooth", block: "start" }), 100);
@@ -121,16 +129,31 @@ export default function GeneratePage() {
                 display: "flex", alignItems: "center", gap: "10px",
                 padding: "8px 14px", borderRadius: "10px",
                 background: "rgba(255,255,255,0.04)",
-                border: "1px solid rgba(255,255,255,0.08)",
+                border: credits.standard === 0
+                  ? "1px solid rgba(239,68,68,0.2)"
+                  : "1px solid rgba(255,255,255,0.08)",
               }}>
                 <div style={{ textAlign: "center" }}>
-                  <div style={{ fontSize: "16px", fontWeight: 800, color: "#60a5fa", lineHeight: 1 }}>{credits.standard}</div>
+                  <div style={{ fontSize: "16px", fontWeight: 800, lineHeight: 1,
+                    color: credits.standard === 0 ? "#ef4444" : "#60a5fa",
+                  }}>
+                    {credits.standard}
+                  </div>
                   <div style={{ fontSize: "10px", color: "#475569", marginTop: "2px" }}>⚡ Standard</div>
                 </div>
                 <div style={{ width: "1px", height: "28px", background: "#1e293b" }} />
                 <div style={{ textAlign: "center" }}>
-                  <div style={{ fontSize: "16px", fontWeight: 800, color: "#a78bfa", lineHeight: 1 }}>{credits.hd}</div>
-                  <div style={{ fontSize: "10px", color: "#475569", marginTop: "2px" }}>✨ HD</div>
+                  {credits.hd > 0 ? (
+                    <>
+                      <div style={{ fontSize: "16px", fontWeight: 800, color: "#a78bfa", lineHeight: 1 }}>{credits.hd}</div>
+                      <div style={{ fontSize: "10px", color: "#475569", marginTop: "2px" }}>✨ HD</div>
+                    </>
+                  ) : (
+                    <>
+                      <div style={{ fontSize: "11px", fontWeight: 700, color: "#475569", lineHeight: 1 }}>✨ HD</div>
+                      <div style={{ fontSize: "10px", color: "#334155", marginTop: "3px" }}>not purchased</div>
+                    </>
+                  )}
                 </div>
               </div>
               {creditsLow && (
@@ -295,6 +318,39 @@ export default function GeneratePage() {
             </Card>
           )}
 
+          {/* ── Zero-credits warning (shown before the button) ── */}
+          {credits !== null && !loading && (() => {
+            const outOfStandard = genType === "STANDARD" && credits.standard === 0;
+            const outOfHd      = genType === "HD"       && credits.hd === 0;
+            if (!outOfStandard && !outOfHd) return null;
+            return (
+              <div style={{
+                padding: "14px 16px", borderRadius: "12px",
+                background: "rgba(245,158,11,0.07)",
+                border: "1px solid rgba(245,158,11,0.2)",
+                display: "flex", alignItems: "center", justifyContent: "space-between", gap: "12px",
+              }}>
+                <div>
+                  <div style={{ color: "#fbbf24", fontWeight: 700, fontSize: "14px", marginBottom: "2px" }}>
+                    {outOfHd ? "No HD credits" : "No standard credits left"}
+                  </div>
+                  <div style={{ color: "#78716c", fontSize: "12px" }}>
+                    {outOfHd
+                      ? "HD credits are purchased separately — standard credits won't be used for HD."
+                      : "Top up to keep generating. Your work is still here when you come back."}
+                  </div>
+                </div>
+                <Link href="/pricing" style={{
+                  flexShrink: 0, padding: "9px 16px", borderRadius: "9px", fontSize: "13px",
+                  fontWeight: 700, background: "linear-gradient(135deg, #f59e0b, #d97706)",
+                  color: "#fff", whiteSpace: "nowrap",
+                }}>
+                  Top up →
+                </Link>
+              </div>
+            );
+          })()}
+
           {/* ── Generate button ── */}
           <button
             onClick={generate}
@@ -318,14 +374,9 @@ export default function GeneratePage() {
           </button>
 
           {/* ── Error ── */}
-          {error && (
+          {error && !insufficientCredits && (
             <div style={{ padding: "14px 16px", borderRadius: "10px", background: "rgba(239,68,68,0.08)", border: "1px solid rgba(239,68,68,0.2)", color: "#f87171", fontSize: "14px" }}>
               {error}
-              {insufficientCredits && (
-                <div style={{ marginTop: "8px" }}>
-                  <Link href="/pricing" style={{ color: "#60a5fa", fontWeight: 700 }}>→ Top up credits</Link>
-                </div>
-              )}
             </div>
           )}
 
@@ -357,12 +408,37 @@ export default function GeneratePage() {
                     ⬇ Download image
                   </a>
                   <button
-                    onClick={() => { setResult(null); setError(null); }}
+                    onClick={() => { setResult(null); setError(null); setLastCreditUsed(false); }}
                     style={{ padding: "13px 20px", borderRadius: "10px", background: "transparent", border: "1px solid #1e293b", color: "#64748b", fontSize: "13px", fontWeight: 600, cursor: "pointer" }}
                   >
                     Generate another
                   </button>
                 </div>
+
+                {/* Friendly nudge when last credit was just used */}
+                {lastCreditUsed && (
+                  <div style={{
+                    marginTop: "12px", padding: "14px 16px", borderRadius: "10px",
+                    background: "rgba(245,158,11,0.07)", border: "1px solid rgba(245,158,11,0.18)",
+                    display: "flex", alignItems: "center", justifyContent: "space-between", gap: "12px",
+                  }}>
+                    <div>
+                      <div style={{ color: "#fbbf24", fontWeight: 700, fontSize: "13px", marginBottom: "2px" }}>
+                        That was your last credit 🎉
+                      </div>
+                      <div style={{ color: "#78716c", fontSize: "12px" }}>
+                        Top up to keep going — your image is safe to download above.
+                      </div>
+                    </div>
+                    <Link href="/pricing" style={{
+                      flexShrink: 0, padding: "8px 14px", borderRadius: "8px", fontSize: "12px",
+                      fontWeight: 700, background: "rgba(245,158,11,0.15)",
+                      border: "1px solid rgba(245,158,11,0.3)", color: "#fbbf24",
+                    }}>
+                      Get more →
+                    </Link>
+                  </div>
+                )}
               </Card>
             )}
           </div>

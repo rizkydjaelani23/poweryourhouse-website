@@ -146,8 +146,9 @@ export async function POST(request: Request) {
     // Check + deduct credit
     const balance = await getBalance(user.id, type);
     if (balance < 1) {
+      const label = type === "HD" ? "HD" : "standard";
       return NextResponse.json(
-        { error: `No ${type} credits remaining. Top up to continue.`, insufficientCredits: true },
+        { error: `You've run out of ${label} credits. Top up to keep generating.`, insufficientCredits: true },
         { status: 402 }
       );
     }
