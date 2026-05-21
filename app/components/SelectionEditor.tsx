@@ -4,6 +4,13 @@ import { useRef, useEffect, useState, useCallback, MutableRefObject } from "reac
 type Tool = "outline" | "brush";
 interface Pt { x: number; y: number }
 
+interface Snap {
+  maskData: ImageData | null;
+  pts:      Pt[];
+  closed:   boolean;
+  hasMask:  boolean;
+}
+
 export interface SelectionEditorHandle {
   getMask(): Promise<Blob | null>;
   hasMask(): boolean;
@@ -16,18 +23,22 @@ interface Props {
   onMaskChange: (has: boolean) => void;
 }
 
+const CANVAS_W = 860;
+const CANVAS_H = 520;
+const MAX_HISTORY = 30;
+
 export default function SelectionEditor({ imageSrc, handleRef, onMaskChange }: Props) {
   const displayRef = useRef<HTMLCanvasElement>(null);
-  const maskRef    = useRef<HTMLCanvasElement>(null); // hidden, full image resolution
+  const maskRef    = useRef<HTMLCanvasElement>(null);
   const imgRef     = useRef<HTMLImageElement | null>(null);
 
   // View transform: canvas_xy = image_xy * scale + (tx, ty)
   const vt = useRef({ scale: 1, tx: 0, ty: 0 });
 
-  // Outline state in refs so render() never sees stale values
-  const pointsRef = useRef<Pt[]>([]);
-  const cursorRef = useRef<Pt | null>(null);
-  const closedRef = useRef(false);
+  // Outline state in refs — no stale closures in event handlers
+  const pointsRef  = useRef<Pt[]>([]);
+  const cursorRef  = useRef<Pt | null>(null);
+  const closedRef  = useRef(false);
   const hasMaskRef = useRef(false);
 
   // Interaction flags
@@ -36,7 +47,10 @@ export default function SelectionEditor({ imageSrc, handleRef, onMaskChange }: P
   const lastMouse  = useRef<Pt>({ x: 0, y: 0 });
   const rafId      = useRef(0);
 
-  // React state — only for UI labels
+  // History for undo
+  const historyRef = useRef<Snap[]>([]);
+
+  // React state — only for UI labels / button enables
   const [tool,       setTool]       = useState<Tool>("outline");
   const toolRef                     = useRef<Tool>("outline");
   const [brushSz,    setBrushSz]    = useState(24);
@@ -45,8 +59,8 @@ export default function SelectionEditor({ imageSrc, handleRef, onMaskChange }: P
   const [ptCount,    setPtCount]    = useState(0);
   const [_closed,    _setClosed]    = useState(false);
   const [_hasMask,   _setHasMask]   = useState(false);
+  const [historyLen, setHistoryLen] = useState(0);
 
-  // keep refs in sync with state setters
   function changeTool(t: Tool) { toolRef.current = t; setTool(t); }
   function changeBrush(n: number) { brushSzRef.current = n; setBrushSz(n); }
 
@@ -131,6 +145,70 @@ export default function SelectionEditor({ imageSrc, handleRef, onMaskChange }: P
     });
   }, []);
 
+  // ── history helpers ───────────────────────────────────────────────────────
+  function saveSnap() {
+    const mask = maskRef.current;
+    let maskData: ImageData | null = null;
+    if (mask && mask.width > 0 && mask.height > 0 && hasMaskRef.current) {
+      maskData = mask.getContext("2d")!.getImageData(0, 0, mask.width, mask.height);
+    }
+    const snap: Snap = {
+      maskData,
+      pts:     [...pointsRef.current],
+      closed:  closedRef.current,
+      hasMask: hasMaskRef.current,
+    };
+    const next = [...historyRef.current.slice(-(MAX_HISTORY - 1)), snap];
+    historyRef.current = next;
+    setHistoryLen(next.length);
+  }
+
+  function undo() {
+    if (historyRef.current.length === 0) return;
+    const prev = historyRef.current[historyRef.current.length - 1];
+    const next = historyRef.current.slice(0, -1);
+    historyRef.current = next;
+    setHistoryLen(next.length);
+
+    // Restore mask canvas
+    const mask = maskRef.current;
+    if (mask && mask.width > 0) {
+      const ctx = mask.getContext("2d")!;
+      ctx.clearRect(0, 0, mask.width, mask.height);
+      if (prev.maskData) ctx.putImageData(prev.maskData, 0, 0);
+    }
+
+    // Restore outline state
+    pointsRef.current = prev.pts;
+    closedRef.current = prev.closed;
+    cursorRef.current = null;
+
+    // Sync reactive state
+    hasMaskRef.current = prev.hasMask;
+    _setHasMask(prev.hasMask);
+    onMaskChange(prev.hasMask);
+    setPtCount(prev.pts.length);
+    _setClosed(prev.closed);
+
+    render();
+  }
+
+  // Stable ref so the keydown effect never goes stale
+  const undoRef = useRef(undo);
+  useEffect(() => { undoRef.current = undo; });
+
+  // Ctrl/Cmd + Z global shortcut
+  useEffect(() => {
+    const handler = (e: KeyboardEvent) => {
+      if ((e.ctrlKey || e.metaKey) && e.key === "z") {
+        e.preventDefault();
+        undoRef.current();
+      }
+    };
+    window.addEventListener("keydown", handler);
+    return () => window.removeEventListener("keydown", handler);
+  }, []);
+
   // ── load image ────────────────────────────────────────────────────────────
   useEffect(() => {
     const img = new window.Image();
@@ -140,14 +218,16 @@ export default function SelectionEditor({ imageSrc, handleRef, onMaskChange }: P
       mask.width  = img.naturalWidth;
       mask.height = img.naturalHeight;
       mask.getContext("2d")!.clearRect(0, 0, mask.width, mask.height);
-      const s = fitTransform();
+      fitTransform();
       setZoomPct(100);
-      // reset selection
-      pointsRef.current = [];
-      cursorRef.current = null;
-      closedRef.current = false;
+      // Reset all state
+      pointsRef.current  = [];
+      cursorRef.current  = null;
+      closedRef.current  = false;
       hasMaskRef.current = false;
+      historyRef.current = [];
       setPtCount(0); _setClosed(false); _setHasMask(false);
+      setHistoryLen(0);
       onMaskChange(false);
       render();
     };
@@ -162,11 +242,11 @@ export default function SelectionEditor({ imageSrc, handleRef, onMaskChange }: P
       e.preventDefault();
       const img = imgRef.current;
       if (!img) return;
-      const rect    = canvas.getBoundingClientRect();
+      const rect   = canvas.getBoundingClientRect();
       const cx = (e.clientX - rect.left) * (canvas.width  / rect.width);
       const cy = (e.clientY - rect.top)  * (canvas.height / rect.height);
-      const factor  = e.deltaY < 0 ? 1.14 : 1 / 1.14;
-      const fitS    = Math.min(canvas.width / img.naturalWidth, canvas.height / img.naturalHeight);
+      const factor   = e.deltaY < 0 ? 1.14 : 1 / 1.14;
+      const fitS     = Math.min(canvas.width / img.naturalWidth, canvas.height / img.naturalHeight);
       const newScale = Math.max(fitS * 0.95, Math.min(fitS * 12, vt.current.scale * factor));
       const ix = (cx - vt.current.tx) / vt.current.scale;
       const iy = (cy - vt.current.ty) / vt.current.scale;
@@ -196,9 +276,8 @@ export default function SelectionEditor({ imageSrc, handleRef, onMaskChange }: P
   function resetZoom() {
     const img = imgRef.current;
     if (!img) return;
-    const s = fitTransform();
-    const canvas = displayRef.current!;
-    const fitS = Math.min(canvas.width / img.naturalWidth, canvas.height / img.naturalHeight);
+    const s    = fitTransform();
+    const fitS = Math.min(displayRef.current!.width / img.naturalWidth, displayRef.current!.height / img.naturalHeight);
     setZoomPct(Math.round(s / fitS * 100));
     render();
   }
@@ -237,6 +316,7 @@ export default function SelectionEditor({ imageSrc, handleRef, onMaskChange }: P
     const pts  = pointsRef.current;
     const mask = maskRef.current;
     if (pts.length < 3 || !mask) return;
+    saveSnap(); // save state before filling
     const ctx = mask.getContext("2d")!;
     ctx.beginPath();
     ctx.moveTo(pts[0].x, pts[0].y);
@@ -244,12 +324,12 @@ export default function SelectionEditor({ imageSrc, handleRef, onMaskChange }: P
     ctx.closePath();
     ctx.fillStyle = "#fff";
     ctx.fill();
-    closedRef.current = true;
+    closedRef.current  = true;
     _setClosed(true);
     hasMaskRef.current = true;
     _setHasMask(true);
     onMaskChange(true);
-    cursorRef.current = null;
+    cursorRef.current  = null;
     render();
   }
 
@@ -261,7 +341,9 @@ export default function SelectionEditor({ imageSrc, handleRef, onMaskChange }: P
     cursorRef.current  = null;
     closedRef.current  = false;
     hasMaskRef.current = false;
+    historyRef.current = [];
     setPtCount(0); _setClosed(false); _setHasMask(false);
+    setHistoryLen(0);
     onMaskChange(false);
     render();
   }
@@ -275,20 +357,27 @@ export default function SelectionEditor({ imageSrc, handleRef, onMaskChange }: P
     if (e.altKey || e.button === 1) { isPanning.current = true; return; }
 
     if (toolRef.current === "brush") {
+      saveSnap(); // one undo step per stroke
       isPainting.current = true;
       paintBrush(cp);
-    } else {
-      if (closedRef.current) return;
-      const ip = c2i(cp.x, cp.y);
-      // Close if clicking near first point
-      if (pointsRef.current.length >= 3) {
-        const fp = i2c(pointsRef.current[0].x, pointsRef.current[0].y);
-        if (Math.hypot(cp.x - fp.x, cp.y - fp.y) < 16) { closeOutline(); return; }
-      }
-      pointsRef.current = [...pointsRef.current, ip];
-      setPtCount(pointsRef.current.length);
-      render();
+      return;
     }
+
+    // Outline tool
+    if (closedRef.current) return;
+    const ip = c2i(cp.x, cp.y);
+    // Click near first point → close
+    if (pointsRef.current.length >= 3) {
+      const fp = i2c(pointsRef.current[0].x, pointsRef.current[0].y);
+      if (Math.hypot(cp.x - fp.x, cp.y - fp.y) < 16) {
+        closeOutline();
+        return;
+      }
+    }
+    saveSnap(); // one undo step per point added
+    pointsRef.current = [...pointsRef.current, ip];
+    setPtCount(pointsRef.current.length);
+    render();
   }
 
   function onMouseMove(e: React.MouseEvent) {
@@ -311,7 +400,7 @@ export default function SelectionEditor({ imageSrc, handleRef, onMaskChange }: P
   function onMouseUp()    { isPainting.current = false; isPanning.current = false; }
   function onMouseLeave() { isPainting.current = false; isPanning.current = false; }
 
-  function onDoubleClick(e: React.MouseEvent) {
+  function onDoubleClick() {
     if (toolRef.current === "outline" && pointsRef.current.length >= 3 && !closedRef.current) {
       closeOutline();
     }
@@ -330,16 +419,12 @@ export default function SelectionEditor({ imageSrc, handleRef, onMaskChange }: P
     };
   });
 
-  // ── cursor style ──────────────────────────────────────────────────────────
-  const cursorCSS = isPanning.current ? "grabbing" : "crosshair";
-
-  const SNAP_ZONE = 16; // px
-
   return (
     <div>
       {/* ── Toolbar ── */}
-      <div style={{ display: "flex", gap: "8px", marginBottom: "10px", alignItems: "center", flexWrap: "wrap" }}>
-        {/* Tool buttons */}
+      <div style={{ display: "flex", gap: "6px", marginBottom: "10px", alignItems: "center", flexWrap: "wrap" }}>
+
+        {/* Tool tabs */}
         {(["outline", "brush"] as Tool[]).map((t) => (
           <button key={t} onClick={() => changeTool(t)} style={{
             padding: "6px 14px", borderRadius: "8px", fontSize: "12px", fontWeight: 700,
@@ -362,43 +447,63 @@ export default function SelectionEditor({ imageSrc, handleRef, onMaskChange }: P
           </div>
         )}
 
-        {/* Outline hint */}
+        {/* Outline status hint */}
         {tool === "outline" && !_closed && (
           <span style={{ fontSize: "11px", color: "#64748b" }}>
             {ptCount === 0 && "Click to start outline"}
-            {ptCount === 1 && "Click to add points"}
+            {ptCount === 1 && "Click to add more points"}
             {ptCount === 2 && "Keep adding points…"}
-            {ptCount >= 3  && "Click first point ● or double-click to close"}
+            {ptCount >= 3  && "Click ● first point or double-click to close"}
           </span>
         )}
         {tool === "outline" && _closed && (
-          <span style={{ fontSize: "11px", color: "#a78bfa", fontWeight: 700 }}>
-            ✓ Outline closed
-          </span>
+          <span style={{ fontSize: "11px", color: "#a78bfa", fontWeight: 700 }}>✓ Outline closed</span>
         )}
 
-        {/* Zoom controls */}
+        {/* Zoom + Undo on the right */}
         <div style={{ marginLeft: "auto", display: "flex", gap: "4px", alignItems: "center" }}>
-          <button onClick={() => applyZoom(1.25)} style={zBtn}>＋</button>
+          {/* Undo */}
+          <button
+            onClick={undo}
+            disabled={historyLen === 0}
+            title="Undo (Ctrl+Z)"
+            style={{
+              ...zBtn,
+              fontSize: "13px",
+              opacity: historyLen === 0 ? 0.3 : 1,
+              cursor: historyLen === 0 ? "not-allowed" : "pointer",
+              padding: "0 8px", width: "auto",
+            }}
+          >
+            ↩ Undo
+          </button>
+
+          <div style={{ width: "1px", height: "18px", background: "#1e293b", margin: "0 2px" }} />
+
+          {/* Zoom controls */}
+          <button onClick={() => applyZoom(1.25)} style={zBtn} title="Zoom in">＋</button>
           <span style={{ fontSize: "11px", color: "#475569", minWidth: "38px", textAlign: "center" }}>
             {zoomPct}%
           </span>
-          <button onClick={() => applyZoom(1 / 1.25)} style={zBtn}>－</button>
+          <button onClick={() => applyZoom(1 / 1.25)} style={zBtn} title="Zoom out">－</button>
           {zoomPct !== 100 && (
-            <button onClick={resetZoom} style={{ ...zBtn, padding: "3px 8px", fontSize: "10px" }}>Fit</button>
+            <button onClick={resetZoom} style={{ ...zBtn, padding: "3px 8px", fontSize: "10px", width: "auto" }}>Fit</button>
+          )}
+
+          {/* Clear */}
+          {_hasMask && (
+            <>
+              <div style={{ width: "1px", height: "18px", background: "#1e293b", margin: "0 2px" }} />
+              <button onClick={clearAll} style={{
+                padding: "4px 10px", borderRadius: "8px", fontSize: "12px", fontWeight: 700,
+                border: "1px solid rgba(239,68,68,0.3)", background: "rgba(239,68,68,0.08)",
+                color: "#ef4444", cursor: "pointer", height: "26px",
+              }}>
+                ✕ Clear
+              </button>
+            </>
           )}
         </div>
-
-        {/* Clear */}
-        {_hasMask && (
-          <button onClick={clearAll} style={{
-            padding: "5px 12px", borderRadius: "8px", fontSize: "12px", fontWeight: 700,
-            border: "1px solid rgba(239,68,68,0.3)", background: "rgba(239,68,68,0.08)",
-            color: "#ef4444", cursor: "pointer",
-          }}>
-            ✕ Clear
-          </button>
-        )}
       </div>
 
       {/* ── Canvas ── */}
@@ -408,24 +513,23 @@ export default function SelectionEditor({ imageSrc, handleRef, onMaskChange }: P
       }}>
         <canvas
           ref={displayRef}
-          width={640}
-          height={430}
-          style={{ display: "block", width: "100%", cursor: cursorCSS, userSelect: "none", touchAction: "none" }}
+          width={CANVAS_W}
+          height={CANVAS_H}
+          style={{ display: "block", width: "100%", cursor: isPanning.current ? "grabbing" : "crosshair", userSelect: "none", touchAction: "none" }}
           onMouseDown={onMouseDown}
           onMouseMove={onMouseMove}
           onMouseUp={onMouseUp}
           onMouseLeave={onMouseLeave}
           onDoubleClick={onDoubleClick}
         />
-        {/* Hidden full-res mask canvas */}
         <canvas ref={maskRef} style={{ display: "none" }} />
       </div>
 
       <p style={{ fontSize: "11px", color: "#334155", marginTop: "6px", lineHeight: 1.6 }}>
         {tool === "outline"
-          ? "⬡ Click to place outline points · click first point ● or double-click to close the selection"
-          : "🖌️ Click & drag to paint the area you want recoloured"}
-        {" "}&middot; Scroll to zoom &middot; Alt+drag to pan
+          ? "⬡ Click to place points · click ● first point or double-click to close"
+          : "🖌️ Click & drag to paint the area"}
+        {" "}&middot; Scroll to zoom &middot; Alt+drag to pan &middot; Ctrl+Z to undo
       </p>
     </div>
   );

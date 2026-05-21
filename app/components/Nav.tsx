@@ -5,6 +5,8 @@ import { usePathname, useRouter } from "next/navigation";
 import { createClient } from "../utils/supabase/client";
 import type { User } from "@supabase/supabase-js";
 
+interface Credits { standard: number; hd: number }
+
 const mainLinks = [
   { href: "/", label: "Home" },
   { href: "/pricing", label: "Pricing" },
@@ -21,6 +23,7 @@ export default function Nav() {
   const [scrolled, setScrolled] = useState(false);
   const [user,    setUser]    = useState<User | null>(null);
   const [loadingUser, setLoadingUser] = useState(true);
+  const [credits, setCredits] = useState<Credits | null>(null);
 
   // Scroll shadow
   useEffect(() => {
@@ -38,9 +41,19 @@ export default function Nav() {
     });
     const { data: { subscription } } = supabase.auth.onAuthStateChange((_, session) => {
       setUser(session?.user ?? null);
+      if (!session?.user) setCredits(null);
     });
     return () => subscription.unsubscribe();
   }, []);
+
+  // Fetch credits whenever user is set
+  useEffect(() => {
+    if (!user) return;
+    fetch("/api/credits")
+      .then((r) => r.ok ? r.json() : null)
+      .then((d) => { if (d?.standard !== undefined) setCredits(d); })
+      .catch(() => {});
+  }, [user]);
 
   async function handleSignOut() {
     const supabase = createClient();
@@ -134,6 +147,26 @@ export default function Nav() {
                 }}>
                   Dashboard
                 </Link>
+
+                {/* Credits badge */}
+                {credits !== null && (
+                  <Link href="/pricing" style={{
+                    display: "flex", alignItems: "center", gap: "8px",
+                    padding: "6px 12px", borderRadius: "8px",
+                    background: "rgba(255,255,255,0.04)",
+                    border: "1px solid rgba(255,255,255,0.08)",
+                    textDecoration: "none",
+                  }}>
+                    <span style={{ fontSize: "12px", color: "#64748b" }}>
+                      ⚡ <span style={{ color: "#60a5fa", fontWeight: 700 }}>{credits.standard}</span>
+                    </span>
+                    <span style={{ fontSize: "10px", color: "#1e293b" }}>·</span>
+                    <span style={{ fontSize: "12px", color: "#64748b" }}>
+                      ✨ <span style={{ color: "#a78bfa", fontWeight: 700 }}>{credits.hd}</span>
+                    </span>
+                  </Link>
+                )}
+
                 <button onClick={handleSignOut} style={{
                   marginLeft: "4px",
                   padding: "8px 14px", borderRadius: "8px",
