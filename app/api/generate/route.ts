@@ -40,14 +40,35 @@ async function extractHexFromSwatch(swatchBuffer: Buffer): Promise<string> {
   return `#${toHex(r)}${toHex(g)}${toHex(b)}`;
 }
 
-/** Standard recolour: tint preserving luminance via sharp's built-in tint() */
-async function standardRecolour(inputBuffer: Buffer, hex: string): Promise<Buffer> {
+/** Standard recolour: tint preserving luminance via sharp's built-in tint()
+ *  If a mask (B&W PNG) is provided, only the white areas are tinted.
+ */
+async function standardRecolour(inputBuffer: Buffer, hex: string, maskBuffer?: Buffer): Promise<Buffer> {
   const { r, g, b } = hexToRgb(hex);
 
-  // sharp.tint() maps the image to greyscale then tints toward the target colour,
-  // preserving texture and luminance — exactly what we want for a colour remake.
+  if (!maskBuffer) {
+    // No mask — tint the whole image
+    return sharp(inputBuffer).tint({ r, g, b }).jpeg({ quality: 92 }).toBuffer();
+  }
+
+  // Tint a full copy of the image
+  const tinted = await sharp(inputBuffer).tint({ r, g, b }).png().toBuffer();
+
+  // Resize mask to match input
+  const meta = await sharp(inputBuffer).metadata();
+  const w = meta.width  || 800;
+  const h = meta.height || 600;
+  const mask = await sharp(maskBuffer).resize(w, h, { fit: "fill" }).greyscale().png().toBuffer();
+
+  // Apply mask as alpha to the tinted layer, then composite over original
+  const tintedMasked = await sharp(tinted)
+    .ensureAlpha()
+    .composite([{ input: mask, blend: "dest-in" }])
+    .png()
+    .toBuffer();
+
   const result = await sharp(inputBuffer)
-    .tint({ r, g, b })
+    .composite([{ input: tintedMasked, blend: "over" }])
     .jpeg({ quality: 92 })
     .toBuffer();
 
@@ -55,7 +76,7 @@ async function standardRecolour(inputBuffer: Buffer, hex: string): Promise<Buffe
 }
 
 /** HD recolour: FLUX.1 Kontext via fal.ai */
-async function hdRecolour(inputBuffer: Buffer, hex: string, colourName: string): Promise<Buffer> {
+async function hdRecolour(inputBuffer: Buffer, hex: string, colourName: string, userPrompt?: string): Promise<Buffer> {
   const { fal } = await import("@fal-ai/client");
   fal.config({ credentials: process.env.FAL_KEY! });
 
@@ -64,10 +85,14 @@ async function hdRecolour(inputBuffer: Buffer, hex: string, colourName: string):
     new File([new Uint8Array(inputBuffer)], "input.jpg", { type: "image/jpeg" })
   );
 
-  const prompt =
+  const baseInstruction =
     `Change the colour to ${colourName || hex} (${hex}). ` +
     `Keep the shape, structure, background, lighting and shadows completely identical. ` +
     `Only the surface colour and texture changes. Photorealistic product photography.`;
+
+  const prompt = userPrompt
+    ? `${baseInstruction} Additional detail: ${userPrompt}`
+    : baseInstruction;
 
   // eslint-disable-next-line @typescript-eslint/no-explicit-any
   const result = await (fal as any).subscribe("fal-ai/flux-pro/kontext", {
@@ -101,12 +126,14 @@ export async function POST(request: Request) {
     if (!user) return NextResponse.json({ error: "Unauthorised" }, { status: 401 });
 
     // Parse multipart form
-    const form      = await request.formData();
-    const imageFile = form.get("imageFile") as File | null;
+    const form       = await request.formData();
+    const imageFile  = form.get("imageFile")  as File | null;
     const swatchFile = form.get("swatchFile") as File | null;
-    const type      = (form.get("type") as string | null)?.toUpperCase() === "HD" ? "HD" : "STANDARD";
-    let   colourHex = (form.get("colourHex") as string | null) || "#808080";
+    const maskFile   = form.get("maskFile")   as File | null;
+    const type       = (form.get("type") as string | null)?.toUpperCase() === "HD" ? "HD" : "STANDARD";
+    let   colourHex  = (form.get("colourHex")  as string | null) || "#808080";
     const colourName = (form.get("colourName") as string | null) || "";
+    const userPrompt = (form.get("prompt")     as string | null) || "";
 
     if (!imageFile) return NextResponse.json({ error: "imageFile is required" }, { status: 400 });
 
@@ -116,7 +143,7 @@ export async function POST(request: Request) {
       colourHex = await extractHexFromSwatch(swatchBuf);
     }
 
-    // Check + deduct credit (atomic-ish via ledger)
+    // Check + deduct credit
     const balance = await getBalance(user.id, type);
     if (balance < 1) {
       return NextResponse.json(
@@ -129,10 +156,11 @@ export async function POST(request: Request) {
     const admin = await createAdminClient();
     const genId = uuid();
     const inputBuffer = Buffer.from(await imageFile.arrayBuffer());
+    const maskBuffer  = maskFile ? Buffer.from(await maskFile.arrayBuffer()) : null;
 
     // Upload input image
     const { publicUrl: inputUrl } = await uploadToR2({
-      path:        `${user.id}/inputs/${genId}.jpg`,
+      path:        `saas/${user.id}/inputs/${genId}.jpg`,
       buffer:      inputBuffer,
       contentType: "image/jpeg",
     });
@@ -152,14 +180,14 @@ export async function POST(request: Request) {
     // Generate output
     let outputBuffer: Buffer;
     if (type === "HD") {
-      outputBuffer = await hdRecolour(inputBuffer, colourHex, colourName);
+      outputBuffer = await hdRecolour(inputBuffer, colourHex, colourName, userPrompt || undefined);
     } else {
-      outputBuffer = await standardRecolour(inputBuffer, colourHex);
+      outputBuffer = await standardRecolour(inputBuffer, colourHex, maskBuffer || undefined);
     }
 
     // Upload output
     const { publicUrl: outputUrl } = await uploadToR2({
-      path:        `${user.id}/outputs/${genId}.jpg`,
+      path:        `saas/${user.id}/outputs/${genId}.jpg`,
       buffer:      outputBuffer,
       contentType: "image/jpeg",
     });

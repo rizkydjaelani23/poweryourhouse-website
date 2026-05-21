@@ -7,9 +7,8 @@ import type { User } from "@supabase/supabase-js";
 
 const mainLinks = [
   { href: "/", label: "Home" },
-  { href: "/shopify-app-furniture-stores", label: "Furniture Stores" },
   { href: "/pricing", label: "Pricing" },
-  { href: "/faq", label: "FAQ" },
+  { href: "/shopify", label: "Shopify App" },
   { href: "/blog", label: "Blog" },
   { href: "/about", label: "About" },
   { href: "/contact", label: "Contact" },
