@@ -58,6 +58,18 @@ export default function Footer() {
             </div>
           </div>
 
+          {/* Legal */}
+          <div>
+            <div style={{ fontSize: "12px", fontWeight: 700, color: "#64748b", textTransform: "uppercase", letterSpacing: "0.08em", marginBottom: "14px" }}>
+              Legal
+            </div>
+            <div style={{ display: "flex", flexDirection: "column", gap: "10px" }}>
+              <Link href="/terms" style={{ fontSize: "14px", color: "#94a3b8" }}>Terms of Service</Link>
+              <Link href="/privacy" style={{ fontSize: "14px", color: "#94a3b8" }}>Privacy Policy</Link>
+              <Link href="/refund" style={{ fontSize: "14px", color: "#94a3b8" }}>Refund Policy</Link>
+            </div>
+          </div>
+
           {/* Contact */}
           <div>
             <div style={{ fontSize: "12px", fontWeight: 700, color: "#64748b", textTransform: "uppercase", letterSpacing: "0.08em", marginBottom: "14px" }}>
