@@ -40,7 +40,8 @@ export async function middleware(request: NextRequest) {
 }
 
 export const config = {
-  matcher: [
-    "/((?!_next/static|_next/image|favicon.ico|.*\\.(?:svg|png|jpg|jpeg|gif|webp)$).*)",
-  ],
+  // Only run middleware on the routes that actually need auth-gating.
+  // Public pages (/, /pricing, /terms, /privacy, /refund, /blog, etc.)
+  // run WITHOUT middleware — they are never behind any auth wall.
+  matcher: ["/generate/:path*", "/dashboard/:path*"],
 };
