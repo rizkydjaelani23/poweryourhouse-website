@@ -1,15 +1,16 @@
 import type { Metadata } from "next";
 import Link from "next/link";
+import SaaSPricingSection from "../components/SaaSPricingSection";
 
 export const metadata: Metadata = {
   title: "Pricing – Power Your House",
   description:
-    "Free plan available. Pro at $29.99/month. SEO Engine add-on from $14.99/month. Show fabric colour previews and rank higher on Google — all through Shopify.",
+    "AI Colour Remaker from $9/month. Shopify app free plan available. Pro at $29.99/month. Recolour any product or room photo instantly.",
   alternates: { canonical: "https://poweryourhouse.io/pricing" },
   openGraph: {
     title: "Pricing – Power Your House",
     description:
-      "Free plan available. Pro at $29.99/month. Add the SEO Engine for $14.99/month or get Pro + SEO bundled at $44.99/month.",
+      "AI Colour Remaker from $9/month. Shopify app free plan available. Pro at $29.99/month. Add SEO Engine for $14.99/month.",
     url: "https://poweryourhouse.io/pricing",
     type: "website",
   },
@@ -136,23 +137,34 @@ export default function PricingPage() {
         }
       `}</style>
 
-      {/* Header */}
-      <section style={{
-        padding: "72px 0 56px",
-        textAlign: "center",
+      {/* ── AI Colour Remaker pricing (SaaS — Paddle) ── */}
+      <SaaSPricingSection />
+
+      {/* ── Shopify App pricing divider ── */}
+      <div style={{
         background: "linear-gradient(180deg, #0d1424 0%, #080d1a 100%)",
+        borderTop: "1px solid rgba(59,130,246,0.1)",
         borderBottom: "1px solid rgba(59,130,246,0.1)",
+        padding: "56px 0 48px",
+        textAlign: "center",
       }}>
         <div className="container">
-          <div className="badge section-eyebrow">💳 Pricing</div>
-          <h1 className="section-title" style={{ margin: "14px auto 0", maxWidth: "600px" }}>
-            Start free. Scale when you&apos;re ready.
-          </h1>
+          <div style={{
+            display: "inline-flex", alignItems: "center", gap: "8px",
+            background: "rgba(59,130,246,0.1)", border: "1px solid rgba(59,130,246,0.25)",
+            color: "#60a5fa", padding: "5px 14px", borderRadius: "999px",
+            fontSize: "12px", fontWeight: 800, marginBottom: "16px",
+          }}>
+            🛍️ SHOPIFY APP
+          </div>
+          <h2 className="section-title" style={{ margin: "0 auto", maxWidth: "600px" }}>
+            Shopify App — fabric colour previews for your store
+          </h2>
           <p className="section-sub" style={{ margin: "14px auto 0", maxWidth: "520px" }}>
-            Free plan available. Upgrade to Pro for unlimited previews. Add the SEO Engine to rank higher on Google.
+            Free plan available. Upgrade to Pro for unlimited previews and bulk generation.
           </p>
         </div>
-      </section>
+      </div>
 
       {/* Main plan cards */}
       <section className="section">
