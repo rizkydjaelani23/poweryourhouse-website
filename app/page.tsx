@@ -19,14 +19,46 @@ export const metadata: Metadata = {
 };
 
 const industries = [
-  { icon: "🛋️", label: "Sofas & furniture",    example: "Oak, Walnut, White" },
-  { icon: "🪑", label: "Upholstery",            example: "Velvet, Suede, Linen" },
-  { icon: "🧵", label: "Fabric & textiles",     example: "Navy, Sage, Blush" },
-  { icon: "👗", label: "Fashion & apparel",     example: "Black, Ivory, Camel" },
-  { icon: "🛏️", label: "Beds & headboards",    example: "Plush, Boucle, Leather" },
-  { icon: "🏠", label: "Home goods",            example: "Stone, Charcoal, Cream" },
-  { icon: "👜", label: "Bags & accessories",    example: "Tan, Black, Burgundy" },
-  { icon: "🪞", label: "Curtains & blinds",    example: "Grey, White, Terracotta" },
+  {
+    photo: "https://images.unsplash.com/photo-1555041469-a586c61ea9bc?w=480&h=340&fit=crop&q=80",
+    label: "Sofas & furniture",
+    example: "Oak, Walnut, White",
+  },
+  {
+    photo: "https://images.unsplash.com/photo-1586023492125-27b2c045efd7?w=480&h=340&fit=crop&q=80",
+    label: "Upholstery",
+    example: "Velvet, Suede, Linen",
+  },
+  {
+    photo: "https://images.unsplash.com/photo-1558769132-cb1aea458c5e?w=480&h=340&fit=crop&q=80",
+    label: "Fabric & textiles",
+    example: "Navy, Sage, Blush",
+  },
+  {
+    photo: "https://images.unsplash.com/photo-1441984904996-e0b6ba687e04?w=480&h=340&fit=crop&q=80",
+    label: "Fashion & apparel",
+    example: "Black, Ivory, Camel",
+  },
+  {
+    photo: "https://images.unsplash.com/photo-1631049307264-da0ec9d70304?w=480&h=340&fit=crop&q=80",
+    label: "Beds & headboards",
+    example: "Plush, Boucle, Leather",
+  },
+  {
+    photo: "https://images.unsplash.com/photo-1484154218962-a197022b5858?w=480&h=340&fit=crop&q=80",
+    label: "Home goods",
+    example: "Stone, Charcoal, Cream",
+  },
+  {
+    photo: "https://images.unsplash.com/photo-1548036328-c9fa89d128fa?w=480&h=340&fit=crop&q=80",
+    label: "Bags & accessories",
+    example: "Tan, Black, Burgundy",
+  },
+  {
+    photo: "https://images.unsplash.com/photo-1598300042247-d088f8ab3a91?w=480&h=340&fit=crop&q=80",
+    label: "Curtains & blinds",
+    example: "Grey, White, Terracotta",
+  },
 ];
 
 const steps = [
@@ -66,6 +98,10 @@ export default function HomePage() {
           .ind-grid     { grid-template-columns: repeat(2, 1fr); }
           .compare-grid { grid-template-columns: 1fr; }
         }
+
+        .ind-card:hover .ind-img { transform: scale(1.06); }
+        .ind-card { border: 1px solid rgba(255,255,255,0.08); transition: box-shadow 0.3s ease; }
+        .ind-card:hover { box-shadow: 0 12px 40px rgba(0,0,0,0.5); }
       `}</style>
 
       {/* ── HERO ──────────────────────────────────────────────────────────── */}
@@ -240,14 +276,36 @@ export default function HomePage() {
           <div className="ind-grid">
             {industries.map((ind, i) => (
               <ScrollReveal key={ind.label} delay={(i % 4) + 1}>
-                <div style={{
-                  background: "#0d1424", border: "1px solid rgba(255,255,255,0.07)",
-                  borderRadius: "14px", padding: "20px",
-                  display: "flex", flexDirection: "column", gap: "6px",
+                <div className="ind-card" style={{
+                  position: "relative", borderRadius: "16px", overflow: "hidden",
+                  height: "210px", display: "block",
                 }}>
-                  <div style={{ fontSize: "26px" }}>{ind.icon}</div>
-                  <div style={{ fontSize: "14px", fontWeight: 700, color: "#e2e8f0" }}>{ind.label}</div>
-                  <div style={{ fontSize: "12px", color: "#475569" }}>e.g. {ind.example}</div>
+                  {/* Photo */}
+                  {/* eslint-disable-next-line @next/next/no-img-element */}
+                  <img
+                    src={ind.photo}
+                    alt={ind.label}
+                    loading="lazy"
+                    style={{
+                      width: "100%", height: "100%",
+                      objectFit: "cover", display: "block",
+                      transition: "transform 0.5s ease",
+                    }}
+                    className="ind-img"
+                  />
+                  {/* Gradient overlay */}
+                  <div style={{
+                    position: "absolute", inset: 0,
+                    background: "linear-gradient(to top, rgba(4,8,20,0.92) 0%, rgba(4,8,20,0.45) 55%, rgba(4,8,20,0.08) 100%)",
+                  }} />
+                  {/* Text */}
+                  <div style={{
+                    position: "absolute", bottom: 0, left: 0, right: 0,
+                    padding: "14px 16px",
+                  }}>
+                    <div style={{ fontSize: "14px", fontWeight: 700, color: "#fff", lineHeight: 1.3 }}>{ind.label}</div>
+                    <div style={{ fontSize: "11px", color: "rgba(255,255,255,0.5)", marginTop: "3px" }}>e.g. {ind.example}</div>
+                  </div>
                 </div>
               </ScrollReveal>
             ))}
