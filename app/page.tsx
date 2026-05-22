@@ -55,7 +55,7 @@ const industries = [
     example: "Tan, Black, Burgundy",
   },
   {
-    photo: "https://images.unsplash.com/photo-1616486338812-3dadae4b4ace?w=480&h=340&fit=crop&q=80",
+    photo: "/large-window-draped-curtain.jpeg",
     label: "Curtains & blinds",
     example: "Grey, White, Terracotta",
   },
