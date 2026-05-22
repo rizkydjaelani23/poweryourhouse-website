@@ -62,7 +62,7 @@ export default function Nav() {
     router.refresh();
   }
 
-  const isToolPage = pathname?.startsWith("/generate") || pathname?.startsWith("/dashboard");
+  const isToolPage = pathname?.startsWith("/generate") || pathname?.startsWith("/dashboard") || pathname?.startsWith("/bulk");
 
   return (
     <header style={{
@@ -88,7 +88,7 @@ export default function Nav() {
       <div className="container" style={{ display: "flex", alignItems: "center", justifyContent: "space-between", height: "68px" }}>
 
         {/* Logo */}
-        <Link href="/" style={{ display: "flex", alignItems: "center", gap: "10px" }}>
+        <Link href="/" style={{ display: "flex", alignItems: "center", gap: "10px", flexShrink: 0 }}>
           <div style={{
             width: "36px", height: "36px", borderRadius: "10px",
             background: "linear-gradient(135deg, #3b82f6, #4f46e5)",
@@ -96,7 +96,7 @@ export default function Nav() {
             fontSize: "18px", flexShrink: 0,
             animation: "pulse-glow 3s ease-in-out infinite",
           }}>⚡</div>
-          <span style={{ fontSize: "17px", fontWeight: 800, color: "#fff", letterSpacing: "-0.01em" }}>
+          <span style={{ fontSize: "17px", fontWeight: 800, color: "#fff", letterSpacing: "-0.01em", whiteSpace: "nowrap" }}>
             Power Your House
           </span>
         </Link>
@@ -105,12 +105,14 @@ export default function Nav() {
         <nav style={{ display: "flex", alignItems: "center", gap: "2px", flexWrap: "nowrap", minWidth: 0 }} className="desktop-nav">
           {mainLinks.map((l) => (
             <Link key={l.href} href={l.href} style={{
-              padding: "8px 14px", borderRadius: "8px",
-              fontSize: "14px", fontWeight: 600,
+              padding: "8px 12px", borderRadius: "8px",
+              fontSize: "13px", fontWeight: 600,
               color: pathname === l.href ? "#60a5fa" : "#94a3b8",
               background: pathname === l.href ? "rgba(59,130,246,0.1)" : "transparent",
               transition: "color 0.15s, background 0.15s",
               position: "relative",
+              whiteSpace: "nowrap",
+              flexShrink: 0,
             }}>
               {l.label}
               {pathname === l.href && (
@@ -124,35 +126,48 @@ export default function Nav() {
             </Link>
           ))}
 
-          {/* ── Auth buttons ── */}
+          {/* ── Auth-aware section ── */}
           {!loadingUser && (
             user ? (
+              /* ── Logged-in user ── */
               <>
                 <Link href="/generate" style={{
-                  marginLeft: "6px",
-                  padding: "8px 14px", borderRadius: "8px",
-                  fontSize: "14px", fontWeight: 600,
+                  marginLeft: "4px",
+                  padding: "8px 12px", borderRadius: "8px",
+                  fontSize: "13px", fontWeight: 600,
                   color: pathname === "/generate" ? "#60a5fa" : "#94a3b8",
                   background: pathname === "/generate" ? "rgba(59,130,246,0.1)" : "transparent",
                   transition: "color 0.15s, background 0.15s",
+                  whiteSpace: "nowrap", flexShrink: 0,
                 }}>
                   ✨ Generate
                 </Link>
+
+                {/* Bulk — featured for logged-in users */}
                 <Link href="/bulk" style={{
-                  padding: "8px 14px", borderRadius: "8px",
-                  fontSize: "14px", fontWeight: 600,
-                  color: pathname === "/bulk" ? "#60a5fa" : "#94a3b8",
-                  background: pathname === "/bulk" ? "rgba(59,130,246,0.1)" : "transparent",
-                  transition: "color 0.15s, background 0.15s",
+                  display: "inline-flex", alignItems: "center", gap: "5px",
+                  padding: "7px 12px", borderRadius: "8px",
+                  fontSize: "13px", fontWeight: 700,
+                  background: pathname === "/bulk"
+                    ? "rgba(59,130,246,0.15)"
+                    : "rgba(59,130,246,0.06)",
+                  border: pathname === "/bulk"
+                    ? "1px solid rgba(59,130,246,0.4)"
+                    : "1px solid rgba(59,130,246,0.18)",
+                  color: pathname === "/bulk" ? "#60a5fa" : "#7dd3fc",
+                  transition: "all 0.15s",
+                  whiteSpace: "nowrap", flexShrink: 0,
                 }}>
                   ⚡ Bulk
                 </Link>
+
                 <Link href="/dashboard" style={{
-                  padding: "8px 14px", borderRadius: "8px",
-                  fontSize: "14px", fontWeight: 600,
+                  padding: "8px 12px", borderRadius: "8px",
+                  fontSize: "13px", fontWeight: 600,
                   color: pathname === "/dashboard" ? "#60a5fa" : "#94a3b8",
                   background: pathname === "/dashboard" ? "rgba(59,130,246,0.1)" : "transparent",
                   transition: "color 0.15s, background 0.15s",
+                  whiteSpace: "nowrap", flexShrink: 0,
                 }}>
                   Dashboard
                 </Link>
@@ -170,19 +185,15 @@ export default function Nav() {
                     whiteSpace: "nowrap",
                     flexShrink: 0,
                   }}>
-                    {/* Standard credits */}
                     <span style={{
-                      fontSize: "12px",
-                      fontWeight: 700,
+                      fontSize: "12px", fontWeight: 700,
                       color: credits.standard === 0 ? "#ef4444" : "#60a5fa",
                     }}>
                       ⚡ {credits.standard}
                     </span>
                     <span style={{ color: "rgba(255,255,255,0.15)", fontSize: "10px", lineHeight: 1 }}>|</span>
-                    {/* HD credits */}
                     <span style={{
-                      fontSize: "12px",
-                      fontWeight: 700,
+                      fontSize: "12px", fontWeight: 700,
                       color: credits.hd > 0 ? "#a78bfa" : "#475569",
                     }}>
                       ✨ {credits.hd}
@@ -191,31 +202,50 @@ export default function Nav() {
                 )}
 
                 <button onClick={handleSignOut} style={{
-                  marginLeft: "4px",
-                  padding: "8px 14px", borderRadius: "8px",
-                  fontSize: "14px", fontWeight: 600, cursor: "pointer",
+                  marginLeft: "2px",
+                  padding: "8px 12px", borderRadius: "8px",
+                  fontSize: "13px", fontWeight: 600, cursor: "pointer",
                   background: "transparent", border: "1px solid rgba(255,255,255,0.1)",
                   color: "#64748b", transition: "color 0.15s, border-color 0.15s",
+                  whiteSpace: "nowrap", flexShrink: 0, lineHeight: 1,
                 }}>
                   Sign out
                 </button>
               </>
             ) : (
+              /* ── Guest / not logged in ── */
               <>
-                <Link href="/login" style={{
+                {/* Bulk teaser — guests see this, clicking redirects to login */}
+                <Link href="/bulk" style={{
+                  display: "inline-flex", alignItems: "center", gap: "5px",
                   marginLeft: "6px",
-                  padding: "8px 14px", borderRadius: "8px",
-                  fontSize: "14px", fontWeight: 600,
+                  padding: "7px 13px", borderRadius: "8px",
+                  fontSize: "13px", fontWeight: 700,
+                  background: "rgba(59,130,246,0.08)",
+                  border: "1px solid rgba(59,130,246,0.22)",
+                  color: "#7dd3fc",
+                  whiteSpace: "nowrap", flexShrink: 0,
+                  transition: "all 0.15s",
+                }}>
+                  ⚡ Try Bulk
+                </Link>
+
+                <Link href="/login" style={{
+                  marginLeft: "4px",
+                  padding: "8px 12px", borderRadius: "8px",
+                  fontSize: "13px", fontWeight: 600,
                   color: "#94a3b8",
+                  whiteSpace: "nowrap", flexShrink: 0,
                   transition: "color 0.15s",
                 }}>
                   Sign in
                 </Link>
                 <Link href="/signup" style={{
-                  padding: "9px 18px", borderRadius: "10px",
+                  padding: "9px 16px", borderRadius: "10px",
                   background: "linear-gradient(135deg, #3b82f6, #4f46e5)",
-                  color: "#fff", fontSize: "14px", fontWeight: 700,
+                  color: "#fff", fontSize: "13px", fontWeight: 700,
                   boxShadow: "0 2px 12px rgba(59,130,246,0.35)",
+                  whiteSpace: "nowrap", flexShrink: 0,
                 }}>
                   Try free →
                 </Link>
@@ -230,12 +260,13 @@ export default function Nav() {
               target="_blank"
               rel="noopener noreferrer"
               style={{
-                marginLeft: user ? "4px" : "10px",
-                padding: "9px 18px", borderRadius: "10px",
+                marginLeft: user ? "4px" : "8px",
+                padding: "8px 14px", borderRadius: "10px",
                 background: "rgba(255,255,255,0.06)",
                 border: "1px solid rgba(255,255,255,0.12)",
                 color: "#cbd5e1", fontSize: "13px", fontWeight: 700,
                 transition: "background 0.15s",
+                whiteSpace: "nowrap", flexShrink: 0,
               }}
             >
               Shopify App
@@ -252,6 +283,7 @@ export default function Nav() {
             border: "1px solid rgba(255,255,255,0.12)",
             borderRadius: "8px", padding: "8px",
             color: "#94a3b8", fontSize: "18px", display: "none",
+            flexShrink: 0,
           }}
         >
           {open ? "✕" : "☰"}
@@ -266,23 +298,46 @@ export default function Nav() {
               display: "block", padding: "12px 0", fontSize: "16px", fontWeight: 600,
               color: pathname === l.href ? "#60a5fa" : "#94a3b8",
               borderBottom: "1px solid rgba(255,255,255,0.05)",
+              whiteSpace: "nowrap",
             }}>
               {l.label}
             </Link>
           ))}
+
+          {/* Bulk — always shown in mobile menu */}
+          <Link href="/bulk" onClick={() => setOpen(false)} style={{
+            display: "flex", alignItems: "center", gap: "8px",
+            padding: "12px 0", fontSize: "16px", fontWeight: 700,
+            color: "#7dd3fc", borderBottom: "1px solid rgba(255,255,255,0.05)",
+          }}>
+            ⚡ Bulk Generation
+            {!user && (
+              <span style={{
+                fontSize: "10px", fontWeight: 800, padding: "2px 8px",
+                borderRadius: "999px", background: "rgba(59,130,246,0.18)",
+                border: "1px solid rgba(59,130,246,0.3)", color: "#60a5fa",
+                letterSpacing: "0.05em",
+              }}>
+                TRY FREE
+              </span>
+            )}
+          </Link>
 
           {!loadingUser && user && (
             <>
               <Link href="/generate" onClick={() => setOpen(false)} style={{ display: "block", padding: "12px 0", fontSize: "16px", fontWeight: 600, color: "#60a5fa", borderBottom: "1px solid rgba(255,255,255,0.05)" }}>
                 ✨ Generate
               </Link>
-              <Link href="/bulk" onClick={() => setOpen(false)} style={{ display: "block", padding: "12px 0", fontSize: "16px", fontWeight: 600, color: "#60a5fa", borderBottom: "1px solid rgba(255,255,255,0.05)" }}>
-                ⚡ Bulk
-              </Link>
               <Link href="/dashboard" onClick={() => setOpen(false)} style={{ display: "block", padding: "12px 0", fontSize: "16px", fontWeight: 600, color: "#94a3b8", borderBottom: "1px solid rgba(255,255,255,0.05)" }}>
                 Dashboard
               </Link>
-              <button onClick={() => { setOpen(false); handleSignOut(); }} style={{ display: "block", width: "100%", padding: "12px 0", textAlign: "left", fontSize: "16px", fontWeight: 600, color: "#64748b", background: "transparent", border: "none", borderBottom: "1px solid rgba(255,255,255,0.05)", cursor: "pointer" }}>
+              <button onClick={() => { setOpen(false); handleSignOut(); }} style={{
+                display: "block", width: "100%", padding: "12px 0",
+                textAlign: "left", fontSize: "16px", fontWeight: 600,
+                color: "#64748b", background: "transparent", border: "none",
+                borderBottom: "1px solid rgba(255,255,255,0.05)", cursor: "pointer",
+                lineHeight: 1.5,
+              }}>
                 Sign out
               </button>
             </>
@@ -324,7 +379,7 @@ export default function Nav() {
       )}
 
       <style>{`
-        @media (max-width: 900px) {
+        @media (max-width: 1080px) {
           .desktop-nav { display: none !important; }
           .mobile-menu-btn { display: flex !important; }
         }

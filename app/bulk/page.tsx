@@ -17,6 +17,13 @@ interface Result {
 
 const MAX_IMAGES = 5;
 
+const BULK_FEATURES = [
+  { icon: "⚡", title: "5 images at once", desc: "Upload up to 5 photos and recolour them all in one click — no waiting between each." },
+  { icon: "🎨", title: "One colour, all images", desc: "Set a single target colour and apply it consistently across your entire batch." },
+  { icon: "📦", title: "Download as ZIP", desc: "All recoloured images packaged into a single ZIP file — ready to upload." },
+  { icon: "🕐", title: "Saves hours", desc: "What takes 30 minutes manually takes 60 seconds with Bulk. Do more, spend less." },
+];
+
 export default function BulkPage() {
   const [slots,      setSlots]      = useState<ImageSlot[]>([]);
   const [colourHex,  setColourHex]  = useState("#5b3a8b");
@@ -71,7 +78,6 @@ export default function BulkPage() {
     if (slots.length === 0 || generating) return;
     setGenerating(true);
 
-    // Initialise result slots
     const init: Result[] = slots.map(() => ({ url: null, status: "queued", error: null }));
     setResults(init);
 
@@ -98,7 +104,6 @@ export default function BulkPage() {
               idx === i ? { url: null, status: "error", error: data.error || "Failed" } : r
             )
           );
-          // Out of credits — mark remaining as error and stop
           if (data.insufficientCredits) {
             setResults((prev) =>
               prev.map((r, idx) =>
@@ -163,39 +168,105 @@ export default function BulkPage() {
     <div style={{ minHeight: "100vh", background: "#080d1a", padding: "40px 0 80px" }}>
       <div className="container" style={{ maxWidth: "920px" }}>
 
-        {/* ── Header ── */}
-        <div style={{ display: "flex", alignItems: "flex-start", justifyContent: "space-between", marginBottom: "28px", gap: "16px", flexWrap: "wrap" }}>
-          <div>
-            <h1 style={{ fontSize: "clamp(22px,4vw,32px)", fontWeight: 800, color: "#fff", margin: "0 0 4px" }}>
-              ⚡ Bulk Colour Remaker
-            </h1>
-            <p style={{ color: "#64748b", fontSize: "14px", margin: 0 }}>
-              Upload up to {MAX_IMAGES} images, pick a colour, and generate all at once.
-            </p>
-          </div>
+        {/* ── Hero header ── */}
+        <div style={{
+          marginBottom: "28px",
+          padding: "28px 32px",
+          borderRadius: "20px",
+          background: "linear-gradient(135deg, rgba(59,130,246,0.08) 0%, rgba(79,70,229,0.06) 100%)",
+          border: "1px solid rgba(59,130,246,0.18)",
+          position: "relative",
+          overflow: "hidden",
+        }}>
+          {/* Background orb */}
+          <div style={{
+            position: "absolute", top: "-40px", right: "-40px",
+            width: "200px", height: "200px", borderRadius: "50%",
+            background: "radial-gradient(circle, rgba(59,130,246,0.15) 0%, transparent 70%)",
+            pointerEvents: "none",
+          }} />
 
-          {credits !== null && (
-            <div style={{ display: "flex", alignItems: "center", gap: "10px", padding: "8px 14px", borderRadius: "10px", background: "rgba(255,255,255,0.04)", border: credits.standard === 0 ? "1px solid rgba(239,68,68,0.2)" : "1px solid rgba(255,255,255,0.08)" }}>
-              <div style={{ textAlign: "center" }}>
-                <div style={{ fontSize: "16px", fontWeight: 800, color: credits.standard === 0 ? "#ef4444" : "#60a5fa", lineHeight: 1 }}>{credits.standard}</div>
-                <div style={{ fontSize: "10px", color: "#475569", marginTop: "2px" }}>⚡ Standard</div>
+          <div style={{ display: "flex", alignItems: "flex-start", justifyContent: "space-between", gap: "20px", flexWrap: "wrap", position: "relative" }}>
+            <div>
+              {/* Badge */}
+              <div style={{
+                display: "inline-flex", alignItems: "center", gap: "6px",
+                marginBottom: "12px",
+                padding: "4px 12px", borderRadius: "999px",
+                background: "rgba(59,130,246,0.15)", border: "1px solid rgba(59,130,246,0.3)",
+                fontSize: "11px", fontWeight: 800, color: "#60a5fa", letterSpacing: "0.06em",
+              }}>
+                ⚡ BULK GENERATOR
               </div>
-              <div style={{ width: "1px", height: "28px", background: "#1e293b" }} />
-              <div style={{ textAlign: "center" }}>
-                {credits.hd > 0 ? (
-                  <>
-                    <div style={{ fontSize: "16px", fontWeight: 800, color: "#a78bfa", lineHeight: 1 }}>{credits.hd}</div>
-                    <div style={{ fontSize: "10px", color: "#475569", marginTop: "2px" }}>✨ HD</div>
-                  </>
-                ) : (
-                  <>
-                    <div style={{ fontSize: "11px", fontWeight: 700, color: "#475569", lineHeight: 1 }}>✨ HD</div>
-                    <div style={{ fontSize: "10px", color: "#334155", marginTop: "3px" }}>not purchased</div>
-                  </>
-                )}
+
+              <h1 style={{ fontSize: "clamp(22px,3.5vw,30px)", fontWeight: 900, color: "#fff", margin: "0 0 8px", lineHeight: 1.15 }}>
+                Recolour up to 5 images<br />
+                <span style={{ background: "linear-gradient(135deg, #60a5fa, #818cf8)", WebkitBackgroundClip: "text", WebkitTextFillColor: "transparent" }}>
+                  in one click
+                </span>
+              </h1>
+              <p style={{ color: "#64748b", fontSize: "14px", margin: "0 0 20px", lineHeight: 1.6, maxWidth: "480px" }}>
+                Upload your images, choose a colour, and generate all recolours at once. Each one costs 1 credit. Download everything as a ZIP.
+              </p>
+
+              {/* Feature pills */}
+              <div style={{ display: "flex", flexWrap: "wrap", gap: "8px" }}>
+                {["5 images at once", "ZIP download", "1 credit per image", "Standard & HD"].map((f) => (
+                  <span key={f} style={{
+                    padding: "4px 12px", borderRadius: "999px",
+                    background: "rgba(255,255,255,0.05)", border: "1px solid rgba(255,255,255,0.1)",
+                    fontSize: "12px", color: "#94a3b8", fontWeight: 600,
+                  }}>
+                    ✓ {f}
+                  </span>
+                ))}
               </div>
             </div>
-          )}
+
+            {/* Credits pill */}
+            {credits !== null && (
+              <div style={{
+                display: "flex", alignItems: "center", gap: "10px",
+                padding: "12px 16px", borderRadius: "12px",
+                background: "rgba(255,255,255,0.04)",
+                border: credits.standard === 0 ? "1px solid rgba(239,68,68,0.2)" : "1px solid rgba(255,255,255,0.08)",
+                flexShrink: 0,
+              }}>
+                <div style={{ textAlign: "center" }}>
+                  <div style={{ fontSize: "20px", fontWeight: 800, color: credits.standard === 0 ? "#ef4444" : "#60a5fa", lineHeight: 1 }}>{credits.standard}</div>
+                  <div style={{ fontSize: "10px", color: "#475569", marginTop: "3px" }}>⚡ Standard</div>
+                </div>
+                <div style={{ width: "1px", height: "30px", background: "rgba(255,255,255,0.08)" }} />
+                <div style={{ textAlign: "center" }}>
+                  {credits.hd > 0 ? (
+                    <>
+                      <div style={{ fontSize: "20px", fontWeight: 800, color: "#a78bfa", lineHeight: 1 }}>{credits.hd}</div>
+                      <div style={{ fontSize: "10px", color: "#475569", marginTop: "3px" }}>✨ HD</div>
+                    </>
+                  ) : (
+                    <>
+                      <div style={{ fontSize: "13px", fontWeight: 700, color: "#334155", lineHeight: 1 }}>✨ HD</div>
+                      <Link href="/pricing" style={{ fontSize: "10px", color: "#60a5fa", marginTop: "3px", display: "block", fontWeight: 700 }}>Get HD →</Link>
+                    </>
+                  )}
+                </div>
+              </div>
+            )}
+          </div>
+        </div>
+
+        {/* ── Feature cards ── */}
+        <div style={{ display: "grid", gridTemplateColumns: "repeat(4, 1fr)", gap: "10px", marginBottom: "24px" }} className="feat-grid">
+          {BULK_FEATURES.map((f) => (
+            <div key={f.title} style={{
+              padding: "14px 16px", borderRadius: "12px",
+              background: "#0d1424", border: "1px solid rgba(255,255,255,0.06)",
+            }}>
+              <div style={{ fontSize: "20px", marginBottom: "6px" }}>{f.icon}</div>
+              <div style={{ fontSize: "12px", fontWeight: 700, color: "#e2e8f0", marginBottom: "4px" }}>{f.title}</div>
+              <div style={{ fontSize: "11px", color: "#475569", lineHeight: 1.5 }}>{f.desc}</div>
+            </div>
+          ))}
         </div>
 
         <div style={{ display: "flex", flexDirection: "column", gap: "16px" }}>
@@ -203,18 +274,15 @@ export default function BulkPage() {
           {/* ── Step 1: Upload images ── */}
           <Card title={`1. Upload images — ${slots.length} / ${MAX_IMAGES} selected`}>
 
-            {/* Thumbnail grid */}
             {slots.length > 0 && (
               <div style={{ display: "grid", gridTemplateColumns: "repeat(5, 1fr)", gap: "10px", marginBottom: "12px" }} className="thumb-grid">
                 {slots.map((s, i) => (
                   <div key={i} style={{ position: "relative", borderRadius: "10px", overflow: "hidden", aspectRatio: "1", background: "#060c19" }}>
                     {/* eslint-disable-next-line @next/next/no-img-element */}
                     <img src={s.preview} alt={`Image ${i + 1}`} style={{ width: "100%", height: "100%", objectFit: "cover", display: "block" }} />
-                    {/* Index badge */}
                     <div style={{ position: "absolute", top: "5px", left: "5px", width: "20px", height: "20px", borderRadius: "50%", background: "rgba(59,130,246,0.9)", display: "flex", alignItems: "center", justifyContent: "center", fontSize: "11px", fontWeight: 800, color: "#fff" }}>
                       {i + 1}
                     </div>
-                    {/* Remove button */}
                     {!generating && (
                       <button onClick={() => removeSlot(i)} style={{ position: "absolute", top: "5px", right: "5px", width: "20px", height: "20px", borderRadius: "50%", background: "rgba(0,0,0,0.6)", border: "none", color: "#fff", fontSize: "12px", cursor: "pointer", display: "flex", alignItems: "center", justifyContent: "center", lineHeight: 1 }}>
                         ✕
@@ -223,7 +291,6 @@ export default function BulkPage() {
                   </div>
                 ))}
 
-                {/* Add more slot */}
                 {slots.length < MAX_IMAGES && (
                   <label style={{ aspectRatio: "1", borderRadius: "10px", border: "2px dashed #1e293b", background: "#0d1424", display: "flex", flexDirection: "column", alignItems: "center", justifyContent: "center", cursor: "pointer", fontSize: "22px", color: "#334155", gap: "4px" }}>
                     <span>＋</span>
@@ -235,13 +302,12 @@ export default function BulkPage() {
               </div>
             )}
 
-            {/* Drop zone — shown when no images yet */}
             {slots.length === 0 && (
               <label onDrop={onDrop} onDragOver={(e) => e.preventDefault()}
-                style={{ display: "flex", flexDirection: "column", alignItems: "center", justifyContent: "center", border: "2px dashed #1e293b", borderRadius: "12px", padding: "40px 24px", cursor: "pointer", background: "#0d1424", minHeight: "160px", textAlign: "center" }}>
-                <div style={{ fontSize: "40px", marginBottom: "12px" }}>🖼️</div>
-                <div style={{ color: "#64748b", fontSize: "15px", fontWeight: 600 }}>Drop up to {MAX_IMAGES} images here, or click to browse</div>
-                <div style={{ color: "#334155", fontSize: "12px", marginTop: "6px" }}>JPG, PNG, WebP — max 10 MB each</div>
+                style={{ display: "flex", flexDirection: "column", alignItems: "center", justifyContent: "center", border: "2px dashed #1e293b", borderRadius: "12px", padding: "48px 24px", cursor: "pointer", background: "#0d1424", minHeight: "180px", textAlign: "center" }}>
+                <div style={{ fontSize: "44px", marginBottom: "12px" }}>🖼️</div>
+                <div style={{ color: "#64748b", fontSize: "15px", fontWeight: 700, marginBottom: "4px" }}>Drop up to {MAX_IMAGES} images here</div>
+                <div style={{ color: "#334155", fontSize: "13px" }}>or click to browse — JPG, PNG, WebP, max 10 MB each</div>
                 <input type="file" accept="image/*" multiple style={{ display: "none" }}
                   onChange={(e) => { if (e.target.files) addFiles(e.target.files); }} />
               </label>
@@ -257,7 +323,6 @@ export default function BulkPage() {
           {/* ── Steps 2 & 3: Colour + Quality ── */}
           <div style={{ display: "grid", gridTemplateColumns: "1fr 1fr", gap: "16px" }} className="ctrl-grid">
 
-            {/* Colour */}
             <Card title="2. Target colour — applied to all images">
               <div style={{ display: "flex", gap: "10px", alignItems: "center" }}>
                 <input type="color" value={colourHex} onChange={(e) => setColourHex(e.target.value)}
@@ -272,7 +337,6 @@ export default function BulkPage() {
               </div>
             </Card>
 
-            {/* Quality */}
             <Card title="3. Quality">
               <div style={{ display: "flex", flexDirection: "column", gap: "8px" }}>
                 {([
@@ -305,7 +369,9 @@ export default function BulkPage() {
 
           {/* ── Generate button ── */}
           <button onClick={generate} disabled={generating || slots.length === 0 || creditAvail === 0}
-            style={{ padding: "18px", borderRadius: "12px", fontWeight: 800, fontSize: "17px", border: "none", cursor: (generating || slots.length === 0 || creditAvail === 0) ? "not-allowed" : "pointer",
+            style={{
+              padding: "18px", borderRadius: "12px", fontWeight: 800, fontSize: "17px", border: "none",
+              cursor: (generating || slots.length === 0 || creditAvail === 0) ? "not-allowed" : "pointer",
               background: generating || slots.length === 0 || creditAvail === 0
                 ? "#1e293b"
                 : genType === "HD"
@@ -331,14 +397,11 @@ export default function BulkPage() {
                   {results.map((r, i) => (
                     <div key={i} style={{ display: "grid", gridTemplateColumns: "80px 32px 1fr auto", alignItems: "center", gap: "12px", padding: "12px", borderRadius: "10px", background: "#060c19", border: `1px solid ${r.status === "done" ? "rgba(16,185,129,0.15)" : r.status === "error" ? "rgba(239,68,68,0.12)" : "rgba(255,255,255,0.05)"}` }} className="result-row">
 
-                      {/* Original thumbnail */}
                       {/* eslint-disable-next-line @next/next/no-img-element */}
                       <img src={slots[i]?.preview} alt={`Original ${i + 1}`} style={{ width: "80px", height: "60px", objectFit: "cover", borderRadius: "6px", display: "block" }} />
 
-                      {/* Arrow */}
                       <div style={{ textAlign: "center", color: "#334155", fontSize: "16px" }}>→</div>
 
-                      {/* Result / state */}
                       <div>
                         {r.status === "queued"     && <span style={{ fontSize: "13px", color: "#475569" }}>Queued…</span>}
                         {r.status === "processing" && (
@@ -364,7 +427,6 @@ export default function BulkPage() {
                         )}
                       </div>
 
-                      {/* Individual download */}
                       {r.status === "done" && r.url && (
                         <a href={r.url} download={`recoloured-${i + 1}.jpg`} target="_blank" rel="noopener noreferrer"
                           style={{ flexShrink: 0, padding: "7px 12px", borderRadius: "8px", fontSize: "12px", fontWeight: 700, background: "rgba(16,185,129,0.12)", border: "1px solid rgba(16,185,129,0.25)", color: "#10b981", whiteSpace: "nowrap" }}>
@@ -375,7 +437,6 @@ export default function BulkPage() {
                   ))}
                 </div>
 
-                {/* Download all ZIP */}
                 {anyDone && allSettled && (
                   <div style={{ marginTop: "16px", display: "flex", gap: "10px", flexWrap: "wrap" }}>
                     <button onClick={downloadZip} disabled={zipping}
@@ -392,15 +453,39 @@ export default function BulkPage() {
             </div>
           )}
 
+          {/* ── Low credits CTA ── */}
+          {credits !== null && credits.standard < 3 && results.length === 0 && (
+            <div style={{ padding: "20px 24px", borderRadius: "14px", background: "rgba(59,130,246,0.06)", border: "1px solid rgba(59,130,246,0.18)", display: "flex", alignItems: "center", justifyContent: "space-between", gap: "16px", flexWrap: "wrap" }}>
+              <div>
+                <div style={{ color: "#60a5fa", fontWeight: 700, fontSize: "14px", marginBottom: "3px" }}>
+                  Running low? Get more credits
+                </div>
+                <div style={{ color: "#475569", fontSize: "13px" }}>
+                  Bulk generation uses 1 credit per image. Top up to keep going.
+                </div>
+              </div>
+              <Link href="/pricing" style={{ flexShrink: 0, padding: "10px 20px", borderRadius: "10px", fontSize: "14px", fontWeight: 700, background: "linear-gradient(135deg, #3b82f6, #4f46e5)", color: "#fff", whiteSpace: "nowrap" }}>
+                View plans →
+              </Link>
+            </div>
+          )}
+
         </div>
       </div>
 
       <style>{`
         @keyframes spin { 0% { transform: rotate(0deg); } 100% { transform: rotate(360deg); } }
+        @media (max-width: 860px) {
+          .feat-grid  { grid-template-columns: repeat(2, 1fr) !important; }
+        }
         @media (max-width: 680px) {
+          .feat-grid   { grid-template-columns: 1fr 1fr !important; }
           .ctrl-grid   { grid-template-columns: 1fr !important; }
           .thumb-grid  { grid-template-columns: repeat(3, 1fr) !important; }
           .result-row  { grid-template-columns: 64px 24px 1fr auto !important; }
+        }
+        @media (max-width: 420px) {
+          .feat-grid   { grid-template-columns: 1fr !important; }
         }
       `}</style>
     </div>
