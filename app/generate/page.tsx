@@ -425,7 +425,7 @@ export default function GeneratePage() {
               whiteSpace: "nowrap",
             }}
           >
-            🎨 Bulk colours
+            🎨 Multiple colours
             <span style={{
               fontSize: "10px", fontWeight: 800, letterSpacing: "0.04em",
               padding: "2px 8px", borderRadius: "999px",
@@ -434,7 +434,7 @@ export default function GeneratePage() {
               border: genMode === "multi" ? "1px solid rgba(59,130,246,0.3)" : "1px solid rgba(255,255,255,0.08)",
               flexShrink: 0,
             }}>
-              generate all at once
+              1 image → up to 6 colours
             </span>
           </button>
         </div>
@@ -487,7 +487,7 @@ export default function GeneratePage() {
           <div style={{ display: "grid", gridTemplateColumns: "1fr 1fr", gap: "16px" }} className="ctrl-grid">
 
             {/* ── Colour card ── */}
-            <Card title={`${stepNum(3)}. Target colour${genMode === "multi" ? "s" : ""}`}>
+            <Card title={genMode === "multi" ? `${stepNum(3)}. Pick your colours (up to ${MAX_COLOURS})` : `${stepNum(3)}. Target colour`}>
 
               {genMode === "single" ? (
                 /* ── Single colour picker ── */
@@ -699,10 +699,10 @@ export default function GeneratePage() {
               boxShadow: canGenerateMulti ? "0 4px 24px rgba(59,130,246,0.4)" : "none",
             }}>
               {multiGenerating
-                ? `⏳ Generating ${multiDone.length + 1} of ${multiColours.length} colours…`
+                ? `⏳ Generating colour ${multiDone.length + 1} of ${multiColours.length}…`
                 : !imageFile
-                  ? "Upload an image to start"
-                  : `🎨 Generate all ${multiColours.length} colours at once →`}
+                  ? "Upload your image first"
+                  : `🎨 Generate ${multiColours.length} colour variation${multiColours.length !== 1 ? "s" : ""} of this image →`}
             </button>
           )}
 
@@ -772,7 +772,7 @@ export default function GeneratePage() {
           {/* ── Multi results ── */}
           {genMode === "multi" && multiResults.length > 0 && (
             <div ref={multiResultRef}>
-              <Card title={`Results — ${multiColours.length} colour variation${multiColours.length !== 1 ? "s" : ""}`}>
+              <Card title={`Your image in ${multiColours.length} colour${multiColours.length !== 1 ? "s" : ""}`}>
                 <div style={{ display: "grid", gridTemplateColumns: "repeat(3, 1fr)", gap: "12px" }} className="multi-grid">
                   {multiResults.map((r, i) => (
                     <div key={i} style={{
@@ -860,7 +860,7 @@ export default function GeneratePage() {
               <span>Leave selection blank to recolour the whole image</span>
               <span>Scroll to zoom · Alt+drag to pan · Ctrl+Z to undo</span>
               <span>HD mode works best with a descriptive prompt</span>
-              <span>Bulk colours: add up to 6 shades, generate all at once</span>
+              <span>Multiple colours: 1 image recoloured into up to 6 shades at once</span>
             </div>
           </div>
 
