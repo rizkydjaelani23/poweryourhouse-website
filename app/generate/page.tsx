@@ -538,11 +538,10 @@ export default function GeneratePage() {
                   {/* Colour swatches preview row */}
                   <div style={{ display: "flex", gap: "6px", marginBottom: "6px", flexWrap: "wrap" }}>
                     {multiColours.map((c) => (
-                      <div key={c.id} style={{
+                      <div key={c.id} title={c.name || c.hex} style={{
                         width: "24px", height: "24px", borderRadius: "6px",
                         background: c.hex, border: "1px solid rgba(255,255,255,0.12)",
                         flexShrink: 0,
-                        title: c.name || c.hex,
                       }} />
                     ))}
                     <div style={{ fontSize: "11px", color: "#334155", alignSelf: "center", marginLeft: "4px" }}>
