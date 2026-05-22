@@ -55,7 +55,7 @@ const industries = [
     example: "Tan, Black, Burgundy",
   },
   {
-    photo: "https://images.unsplash.com/photo-1598300042247-d088f8ab3a91?w=480&h=340&fit=crop&q=80",
+    photo: "https://images.unsplash.com/photo-1616486338812-3dadae4b4ace?w=480&h=340&fit=crop&q=80",
     label: "Curtains & blinds",
     example: "Grey, White, Terracotta",
   },
