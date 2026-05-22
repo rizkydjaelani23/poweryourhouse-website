@@ -138,6 +138,15 @@ export default function Nav() {
                 }}>
                   ✨ Generate
                 </Link>
+                <Link href="/bulk" style={{
+                  padding: "8px 14px", borderRadius: "8px",
+                  fontSize: "14px", fontWeight: 600,
+                  color: pathname === "/bulk" ? "#60a5fa" : "#94a3b8",
+                  background: pathname === "/bulk" ? "rgba(59,130,246,0.1)" : "transparent",
+                  transition: "color 0.15s, background 0.15s",
+                }}>
+                  ⚡ Bulk
+                </Link>
                 <Link href="/dashboard" style={{
                   padding: "8px 14px", borderRadius: "8px",
                   fontSize: "14px", fontWeight: 600,
@@ -268,6 +277,9 @@ export default function Nav() {
             <>
               <Link href="/generate" onClick={() => setOpen(false)} style={{ display: "block", padding: "12px 0", fontSize: "16px", fontWeight: 600, color: "#60a5fa", borderBottom: "1px solid rgba(255,255,255,0.05)" }}>
                 ✨ Generate
+              </Link>
+              <Link href="/bulk" onClick={() => setOpen(false)} style={{ display: "block", padding: "12px 0", fontSize: "16px", fontWeight: 600, color: "#60a5fa", borderBottom: "1px solid rgba(255,255,255,0.05)" }}>
+                ⚡ Bulk
               </Link>
               <Link href="/dashboard" onClick={() => setOpen(false)} style={{ display: "block", padding: "12px 0", fontSize: "16px", fontWeight: 600, color: "#94a3b8", borderBottom: "1px solid rgba(255,255,255,0.05)" }}>
                 Dashboard
