@@ -9,6 +9,11 @@
  *
  * Standard: Sharp tint blend (fast, uses 1 STANDARD credit)
  * HD:       FLUX.1 Kontext via fal.ai (photorealistic, uses 1 HD credit)
+ *
+ * Guest path (no auth, x-guest-token header):
+ *   - STANDARD only, max 2 generations per token
+ *   - Tracked in saas_guest_usage table
+ *   - Output stored at guest/{token}/{genId}.jpg in R2
  */
 
 import { NextResponse } from "next/server";
@@ -19,8 +24,10 @@ import { uploadToR2 } from "../../utils/r2";
 import { v4 as uuid } from "uuid";
 import sharp from "sharp";
 
-export const runtime = "nodejs";
+export const runtime    = "nodejs";
 export const maxDuration = 120;
+
+const GUEST_LIMIT = 2;
 
 // ── Helpers ────────────────────────────────────────────────────────────────
 
@@ -47,32 +54,26 @@ async function standardRecolour(inputBuffer: Buffer, hex: string, maskBuffer?: B
   const { r, g, b } = hexToRgb(hex);
 
   if (!maskBuffer) {
-    // No mask — tint the whole image
     return sharp(inputBuffer).tint({ r, g, b }).jpeg({ quality: 92 }).toBuffer();
   }
 
-  // Tint a full copy of the image
   const tinted = await sharp(inputBuffer).tint({ r, g, b }).png().toBuffer();
 
-  // Resize mask to match input
   const meta = await sharp(inputBuffer).metadata();
   const w = meta.width  || 800;
   const h = meta.height || 600;
   const mask = await sharp(maskBuffer).resize(w, h, { fit: "fill" }).greyscale().png().toBuffer();
 
-  // Apply mask as alpha to the tinted layer, then composite over original
   const tintedMasked = await sharp(tinted)
     .ensureAlpha()
     .composite([{ input: mask, blend: "dest-in" }])
     .png()
     .toBuffer();
 
-  const result = await sharp(inputBuffer)
+  return sharp(inputBuffer)
     .composite([{ input: tintedMasked, blend: "over" }])
     .jpeg({ quality: 92 })
     .toBuffer();
-
-  return result;
 }
 
 /** HD recolour: FLUX.1 Kontext via fal.ai */
@@ -80,7 +81,6 @@ async function hdRecolour(inputBuffer: Buffer, hex: string, colourName: string, 
   const { fal } = await import("@fal-ai/client");
   fal.config({ credentials: process.env.FAL_KEY! });
 
-  // Upload input to fal.ai storage
   const uploadedUrl = await fal.storage.upload(
     new File([new Uint8Array(inputBuffer)], "input.jpg", { type: "image/jpeg" })
   );
@@ -120,12 +120,19 @@ async function hdRecolour(inputBuffer: Buffer, hex: string, colourName: string, 
 
 export async function POST(request: Request) {
   try {
-    // Auth
+    // ── Auth check ─────────────────────────────────────────────────────────
     const supabase = await createClient();
     const { data: { user } } = await supabase.auth.getUser();
-    if (!user) return NextResponse.json({ error: "Unauthorised" }, { status: 401 });
 
-    // Parse multipart form
+    // Guest token (provided by client when not logged in)
+    const guestToken = request.headers.get("x-guest-token");
+
+    // Must have either a user session or a guest token
+    if (!user && !guestToken) {
+      return NextResponse.json({ error: "Unauthorised" }, { status: 401 });
+    }
+
+    // ── Parse form ─────────────────────────────────────────────────────────
     const form       = await request.formData();
     const imageFile  = form.get("imageFile")  as File | null;
     const swatchFile = form.get("swatchFile") as File | null;
@@ -143,8 +150,77 @@ export async function POST(request: Request) {
       colourHex = await extractHexFromSwatch(swatchBuf);
     }
 
-    // Check + deduct credit
-    const balance = await getBalance(user.id, type);
+    // Read buffers (needed by both paths)
+    const inputBuffer = Buffer.from(await imageFile.arrayBuffer());
+    const maskBuffer  = maskFile ? Buffer.from(await maskFile.arrayBuffer()) : null;
+
+    // ── GUEST PATH ─────────────────────────────────────────────────────────
+    if (!user && guestToken) {
+      // Guests: STANDARD only
+      if (type === "HD") {
+        return NextResponse.json(
+          {
+            error: "HD generation requires a free account. Sign up — it takes 10 seconds and you get 5 standard + 1 HD free!",
+            guestHdBlocked: true,
+          },
+          { status: 403 }
+        );
+      }
+
+      const admin = await createAdminClient();
+
+      // Check existing usage
+      const { data: existing } = await admin
+        .from("saas_guest_usage")
+        .select("count")
+        .eq("token", guestToken)
+        .maybeSingle();
+
+      const currentCount = (existing?.count as number) ?? 0;
+
+      if (currentCount >= GUEST_LIMIT) {
+        return NextResponse.json(
+          {
+            error: `You've used your ${GUEST_LIMIT} free generations. Sign up free to get 5 more!`,
+            guestLimitReached: true,
+          },
+          { status: 402 }
+        );
+      }
+
+      // Generate (STANDARD only, no record in saas_generations for guests)
+      const genId = uuid();
+      const outputBuffer = await standardRecolour(inputBuffer, colourHex, maskBuffer || undefined);
+
+      const { publicUrl: outputUrl } = await uploadToR2({
+        path:        `guest/${guestToken}/${genId}.jpg`,
+        buffer:      outputBuffer,
+        contentType: "image/jpeg",
+      });
+
+      // Record / increment usage
+      if (existing) {
+        await admin
+          .from("saas_guest_usage")
+          .update({ count: currentCount + 1, last_used: new Date().toISOString() })
+          .eq("token", guestToken);
+      } else {
+        await admin
+          .from("saas_guest_usage")
+          .insert({ token: guestToken, count: 1 });
+      }
+
+      return NextResponse.json({
+        ok:           true,
+        outputUrl,
+        generationId: genId,
+        guestUsed:    currentCount + 1,
+        guestLimit:   GUEST_LIMIT,
+      });
+    }
+
+    // ── AUTHENTICATED PATH ─────────────────────────────────────────────────
+    const balance = await getBalance(user!.id, type);
     if (balance < 1) {
       const label = type === "HD" ? "HD" : "standard";
       return NextResponse.json(
@@ -153,30 +229,27 @@ export async function POST(request: Request) {
       );
     }
 
-    // Create generation record
     const admin = await createAdminClient();
     const genId = uuid();
-    const inputBuffer = Buffer.from(await imageFile.arrayBuffer());
-    const maskBuffer  = maskFile ? Buffer.from(await maskFile.arrayBuffer()) : null;
 
     // Upload input image
     const { publicUrl: inputUrl } = await uploadToR2({
-      path:        `saas/${user.id}/inputs/${genId}.jpg`,
+      path:        `saas/${user!.id}/inputs/${genId}.jpg`,
       buffer:      inputBuffer,
       contentType: "image/jpeg",
     });
 
     await admin.from("saas_generations").insert({
       id:              genId,
-      user_id:         user.id,
+      user_id:         user!.id,
       type,
       input_image_url: inputUrl,
       colour_hex:      colourHex,
       status:          "processing",
     });
 
-    // Deduct credit
-    await deductCredit(user.id, type, genId);
+    // Deduct credit first (prevents double-spend on failure)
+    await deductCredit(user!.id, type, genId);
 
     // Generate output
     let outputBuffer: Buffer;
@@ -188,12 +261,11 @@ export async function POST(request: Request) {
 
     // Upload output
     const { publicUrl: outputUrl } = await uploadToR2({
-      path:        `saas/${user.id}/outputs/${genId}.jpg`,
+      path:        `saas/${user!.id}/outputs/${genId}.jpg`,
       buffer:      outputBuffer,
       contentType: "image/jpeg",
     });
 
-    // Update generation record
     await admin.from("saas_generations").update({
       output_image_url: outputUrl,
       status:           "done",

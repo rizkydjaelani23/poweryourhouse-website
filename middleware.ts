@@ -1,7 +1,9 @@
 import { createServerClient } from "@supabase/ssr";
 import { NextResponse, type NextRequest } from "next/server";
 
-const PROTECTED = ["/generate", "/dashboard", "/bulk"];
+// /generate is intentionally NOT in this list — guests can access it without auth.
+// The generate page and API handle guest vs. auth logic themselves.
+const PROTECTED = ["/dashboard", "/bulk"];
 
 export async function middleware(request: NextRequest) {
   let supabaseResponse = NextResponse.next({ request });
@@ -40,8 +42,8 @@ export async function middleware(request: NextRequest) {
 }
 
 export const config = {
-  // Only run middleware on the routes that actually need auth-gating.
+  // /generate is excluded — guests must be able to reach it freely.
   // Public pages (/, /pricing, /terms, /privacy, /refund, /blog, etc.)
   // run WITHOUT middleware — they are never behind any auth wall.
-  matcher: ["/generate/:path*", "/dashboard/:path*", "/bulk/:path*"],
+  matcher: ["/dashboard/:path*", "/bulk/:path*"],
 };

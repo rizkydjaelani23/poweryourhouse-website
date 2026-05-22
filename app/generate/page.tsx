@@ -5,7 +5,10 @@ import SelectionEditor, { SelectionEditorHandle } from "../components/SelectionE
 
 type GenType = "STANDARD" | "HD";
 
+const GUEST_LIMIT = 2;
+
 export default function GeneratePage() {
+  // ── Image / colour state ──────────────────────────────────────────────────
   const [imageFile,     setImageFile]     = useState<File | null>(null);
   const [imagePreview,  setImagePreview]  = useState<string | null>(null);
   const [swatchFile,    setSwatchFile]    = useState<File | null>(null);
@@ -15,25 +18,61 @@ export default function GeneratePage() {
   const [colourMode,    setColourMode]    = useState<"picker" | "swatch">("picker");
   const [genType,       setGenType]       = useState<GenType>("STANDARD");
   const [prompt,        setPrompt]        = useState("");
-  const [loading,       setLoading]       = useState(false);
-  const [result,        setResult]        = useState<string | null>(null);
-  const [error,         setError]         = useState<string | null>(null);
+
+  // ── Generation state ──────────────────────────────────────────────────────
+  const [loading,             setLoading]             = useState(false);
+  const [result,              setResult]              = useState<string | null>(null);
+  const [error,               setError]               = useState<string | null>(null);
   const [insufficientCredits, setInsufficientCredits] = useState(false);
-  const [hasMask,       setHasMask]       = useState(false);
-  const [credits,       setCredits]       = useState<{ standard: number; hd: number } | null>(null);
+  const [hasMask,             setHasMask]             = useState(false);
+
+  // ── Auth / credits (logged-in users) ─────────────────────────────────────
+  const [credits,        setCredits]        = useState<{ standard: number; hd: number } | null>(null);
   const [lastCreditUsed, setLastCreditUsed] = useState(false);
+
+  // ── Guest state (not logged in) ───────────────────────────────────────────
+  const [isGuest,          setIsGuest]          = useState(false);
+  const [guestToken,       setGuestToken]       = useState<string | null>(null);
+  const [guestUsed,        setGuestUsed]        = useState(0);
+  const [guestLimitReached, setGuestLimitReached] = useState(false);
 
   const selectionRef = useRef<SelectionEditorHandle | null>(null);
   const resultRef    = useRef<HTMLDivElement>(null);
 
-  // ── credits ───────────────────────────────────────────────────────────────
+  // ── On mount: detect auth + init guest if needed ──────────────────────────
+  useEffect(() => {
+    fetch("/api/credits").then(async (res) => {
+      if (res.ok) {
+        const d = await res.json();
+        setCredits(d);
+      } else if (res.status === 401) {
+        // Not logged in — set up guest mode
+        setIsGuest(true);
+        let token = localStorage.getItem("pyh_guest_token");
+        if (!token) {
+          token =
+            typeof crypto !== "undefined" && crypto.randomUUID
+              ? crypto.randomUUID()
+              : `${Date.now()}-${Math.random().toString(36).slice(2)}`;
+          localStorage.setItem("pyh_guest_token", token);
+        }
+        setGuestToken(token);
+        const used = parseInt(localStorage.getItem("pyh_guest_used") ?? "0", 10);
+        setGuestUsed(used);
+        if (used >= GUEST_LIMIT) setGuestLimitReached(true);
+      }
+    }).catch(() => {});
+  }, []);
+
   async function fetchCredits() {
     const res = await fetch("/api/credits");
-    if (res.ok) { const d = await res.json(); setCredits(d); }
+    if (res.ok) {
+      const d = await res.json();
+      setCredits(d);
+    }
   }
-  useEffect(() => { fetchCredits(); }, []);
 
-  // ── image upload ──────────────────────────────────────────────────────────
+  // ── Image upload ──────────────────────────────────────────────────────────
   function handleImageFile(file: File) {
     setImageFile(file);
     setResult(null);
@@ -57,19 +96,26 @@ export default function GeneratePage() {
     if (file && file.type.startsWith("image/")) handleImageFile(file);
   }, []);
 
-  // ── generate ──────────────────────────────────────────────────────────────
+  // ── Generate ──────────────────────────────────────────────────────────────
   async function generate() {
     if (!imageFile) { setError("Upload an image first."); return; }
+    if (isGuest && guestLimitReached) {
+      setError("You've used your 2 free generations. Sign up free to get 5 more!");
+      return;
+    }
+
     setLoading(true);
     setResult(null);
     setError(null);
     setInsufficientCredits(false);
     setLastCreditUsed(false);
 
-    // Detect if this will be the last credit (so we can show a friendly nudge after)
-    const isLastCredit =
-      (genType === "STANDARD" && (credits?.standard ?? 2) === 1) ||
-      (genType === "HD"       && (credits?.hd       ?? 2) === 1);
+    // Detect last-use scenarios before spending
+    const isLastAuthCredit =
+      !isGuest && (
+        (genType === "STANDARD" && (credits?.standard ?? 2) === 1) ||
+        (genType === "HD"       && (credits?.hd       ?? 2) === 1)
+      );
 
     const form = new FormData();
     form.append("imageFile",  imageFile);
@@ -82,18 +128,33 @@ export default function GeneratePage() {
     const maskBlob = selectionRef.current ? await selectionRef.current.getMask() : null;
     if (maskBlob) form.append("maskFile", maskBlob, "mask.png");
 
+    // Add guest token header when not logged in
+    const headers: Record<string, string> = {};
+    if (isGuest && guestToken) headers["x-guest-token"] = guestToken;
+
     try {
-      const res  = await fetch("/api/generate", { method: "POST", body: form });
+      const res  = await fetch("/api/generate", { method: "POST", body: form, headers });
       const data = await res.json();
+
       if (!res.ok) {
         if (data.insufficientCredits) setInsufficientCredits(true);
+        if (data.guestLimitReached)   setGuestLimitReached(true);
         setError(data.error || "Generation failed");
         return;
       }
+
       setResult(data.outputUrl);
-      if (isLastCredit) setLastCreditUsed(true);
-      fetchCredits(); // refresh credits after spend
-      // Scroll to result
+
+      // Update guest counter from server response
+      if (isGuest && data.guestUsed !== undefined) {
+        setGuestUsed(data.guestUsed);
+        localStorage.setItem("pyh_guest_used", String(data.guestUsed));
+        if (data.guestUsed >= GUEST_LIMIT) setGuestLimitReached(true);
+      }
+
+      if (isLastAuthCredit) setLastCreditUsed(true);
+      if (!isGuest) fetchCredits();
+
       setTimeout(() => resultRef.current?.scrollIntoView({ behavior: "smooth", block: "start" }), 100);
     } catch {
       setError("Network error — please try again.");
@@ -102,17 +163,20 @@ export default function GeneratePage() {
     }
   }
 
-  const creditsLow = credits !== null && (
+  const creditsLow = !isGuest && credits !== null && (
     (genType === "STANDARD" && credits.standard <= 2) ||
     (genType === "HD" && credits.hd === 0)
   );
+
+  const canGenerate = !loading && !!imageFile && (!isGuest || !guestLimitReached);
+  const freeLeft    = Math.max(0, GUEST_LIMIT - guestUsed);
 
   return (
     <div style={{ minHeight: "100vh", background: "#080d1a", padding: "40px 0 80px" }}>
       <div className="container" style={{ maxWidth: "920px" }}>
 
         {/* ── Page header ── */}
-        <div style={{ display: "flex", alignItems: "flex-start", justifyContent: "space-between", marginBottom: "28px", gap: "16px", flexWrap: "wrap" }}>
+        <div style={{ display: "flex", alignItems: "flex-start", justifyContent: "space-between", marginBottom: "20px", gap: "16px", flexWrap: "wrap" }}>
           <div>
             <h1 style={{ fontSize: "clamp(22px,4vw,32px)", fontWeight: 800, color: "#fff", margin: "0 0 4px" }}>
               ✨ AI Colour Remaker
@@ -122,8 +186,8 @@ export default function GeneratePage() {
             </p>
           </div>
 
-          {/* Credits pill */}
-          {credits !== null && (
+          {/* Auth user: credits pill */}
+          {!isGuest && credits !== null && (
             <div style={{ display: "flex", alignItems: "center", gap: "6px", flexShrink: 0 }}>
               <div style={{
                 display: "flex", alignItems: "center", gap: "10px",
@@ -134,9 +198,7 @@ export default function GeneratePage() {
                   : "1px solid rgba(255,255,255,0.08)",
               }}>
                 <div style={{ textAlign: "center" }}>
-                  <div style={{ fontSize: "16px", fontWeight: 800, lineHeight: 1,
-                    color: credits.standard === 0 ? "#ef4444" : "#60a5fa",
-                  }}>
+                  <div style={{ fontSize: "16px", fontWeight: 800, lineHeight: 1, color: credits.standard === 0 ? "#ef4444" : "#60a5fa" }}>
                     {credits.standard}
                   </div>
                   <div style={{ fontSize: "10px", color: "#475569", marginTop: "2px" }}>⚡ Standard</div>
@@ -167,7 +229,70 @@ export default function GeneratePage() {
               )}
             </div>
           )}
+
+          {/* Guest: free generation counter */}
+          {isGuest && (
+            <div style={{ display: "flex", alignItems: "center", gap: "8px", flexShrink: 0 }}>
+              <div style={{
+                padding: "8px 14px", borderRadius: "10px",
+                background: "rgba(255,255,255,0.04)",
+                border: guestLimitReached
+                  ? "1px solid rgba(239,68,68,0.25)"
+                  : "1px solid rgba(255,255,255,0.08)",
+              }}>
+                <span style={{ fontSize: "13px", color: "#94a3b8" }}>
+                  ⚡{" "}
+                  <strong style={{ color: guestLimitReached ? "#ef4444" : "#60a5fa" }}>
+                    {freeLeft}
+                  </strong>
+                  {" "}free {freeLeft === 1 ? "generation" : "generations"} left
+                </span>
+              </div>
+              <Link href="/signup" style={{
+                padding: "9px 16px", borderRadius: "10px", fontSize: "13px", fontWeight: 700,
+                background: "linear-gradient(135deg, #3b82f6, #4f46e5)", color: "#fff",
+                whiteSpace: "nowrap",
+              }}>
+                Sign up free →
+              </Link>
+            </div>
+          )}
         </div>
+
+        {/* ── Guest welcome banner ── */}
+        {isGuest && (
+          <div style={{
+            marginBottom: "20px", padding: "16px 20px", borderRadius: "12px",
+            background: "rgba(59,130,246,0.07)", border: "1px solid rgba(59,130,246,0.18)",
+            display: "flex", alignItems: "center", justifyContent: "space-between", gap: "16px", flexWrap: "wrap",
+          }}>
+            <div>
+              <div style={{ color: "#60a5fa", fontWeight: 700, fontSize: "14px", marginBottom: "3px" }}>
+                👋 Try it free — no account needed
+              </div>
+              <div style={{ color: "#475569", fontSize: "13px" }}>
+                You get{" "}
+                <strong style={{ color: "#94a3b8" }}>2 free standard colour changes</strong>.{" "}
+                Sign up free for{" "}
+                <strong style={{ color: "#94a3b8" }}>5 standard + 1 HD</strong> generation.
+              </div>
+            </div>
+            <div style={{ display: "flex", gap: "8px", flexShrink: 0 }}>
+              <Link href="/signup" style={{
+                padding: "9px 18px", borderRadius: "9px", fontSize: "13px", fontWeight: 700,
+                background: "linear-gradient(135deg, #3b82f6, #4f46e5)", color: "#fff",
+              }}>
+                Sign up free
+              </Link>
+              <Link href="/login" style={{
+                padding: "9px 14px", borderRadius: "9px", fontSize: "13px", fontWeight: 600,
+                background: "transparent", border: "1px solid rgba(255,255,255,0.1)", color: "#64748b",
+              }}>
+                Sign in
+              </Link>
+            </div>
+          </div>
+        )}
 
         <div style={{ display: "flex", flexDirection: "column", gap: "16px" }}>
 
@@ -198,7 +323,6 @@ export default function GeneratePage() {
                   display: "flex", flexDirection: "column", alignItems: "center", justifyContent: "center",
                   border: "2px dashed #1e293b", borderRadius: "12px", padding: "40px 24px",
                   cursor: "pointer", background: "#0d1424", minHeight: "160px", textAlign: "center",
-                  transition: "border-color 0.15s",
                 }}
               >
                 <div style={{ fontSize: "40px", marginBottom: "12px" }}>🖼️</div>
@@ -210,7 +334,7 @@ export default function GeneratePage() {
             )}
           </Card>
 
-          {/* ── Step 2: Selection editor (appears after upload) ── */}
+          {/* ── Step 2: Selection editor ── */}
           {imagePreview && (
             <Card title="2. Select the area to recolour (optional — leave blank for whole image)">
               <SelectionEditor
@@ -232,7 +356,7 @@ export default function GeneratePage() {
             </Card>
           )}
 
-          {/* ── Steps 3 & 4: Colour + Quality side-by-side ── */}
+          {/* ── Steps 3 & 4: Colour + Quality ── */}
           <div style={{ display: "grid", gridTemplateColumns: "1fr 1fr", gap: "16px" }} className="ctrl-grid">
 
             {/* Colour */}
@@ -284,26 +408,50 @@ export default function GeneratePage() {
             {/* Quality */}
             <Card title={`${imagePreview ? "4" : "3"}. Quality`}>
               <div style={{ display: "flex", flexDirection: "column", gap: "10px" }}>
-                {([
-                  { type: "STANDARD" as GenType, icon: "⚡", label: "Standard", desc: "Fast colour shift · 1 credit", colour: "#3b82f6" },
-                  { type: "HD" as GenType,       icon: "✨", label: "HD Realistic", desc: "AI photorealistic · 1 HD credit", colour: "#8b5cf6" },
-                ] as const).map(({ type, icon, label, desc, colour }) => (
-                  <button key={type} onClick={() => setGenType(type)} style={{
-                    padding: "14px", borderRadius: "12px", textAlign: "left", cursor: "pointer",
-                    border: genType === type ? `1.5px solid ${colour}` : "1.5px solid #1e293b",
-                    background: genType === type ? `${colour}14` : "#0d1424",
-                  }}>
-                    <div style={{ fontSize: "20px", marginBottom: "2px" }}>{icon}</div>
-                    <div style={{ fontWeight: 700, color: genType === type ? colour : "#94a3b8", fontSize: "14px" }}>{label}</div>
-                    <div style={{ fontSize: "12px", color: "#475569", marginTop: "2px" }}>{desc}</div>
+                {/* Standard — always available */}
+                <button onClick={() => setGenType("STANDARD")} style={{
+                  padding: "14px", borderRadius: "12px", textAlign: "left", cursor: "pointer",
+                  border: genType === "STANDARD" ? "1.5px solid #3b82f6" : "1.5px solid #1e293b",
+                  background: genType === "STANDARD" ? "rgba(59,130,246,0.1)" : "#0d1424",
+                }}>
+                  <div style={{ fontSize: "20px", marginBottom: "2px" }}>⚡</div>
+                  <div style={{ fontWeight: 700, color: genType === "STANDARD" ? "#3b82f6" : "#94a3b8", fontSize: "14px" }}>Standard</div>
+                  <div style={{ fontSize: "12px", color: "#475569", marginTop: "2px" }}>Fast colour shift · 1 credit</div>
+                </button>
+
+                {/* HD — disabled for guests */}
+                <div style={{ position: "relative" }}>
+                  <button
+                    onClick={() => { if (!isGuest) setGenType("HD"); }}
+                    style={{
+                      width: "100%", padding: "14px", borderRadius: "12px", textAlign: "left",
+                      cursor: isGuest ? "default" : "pointer",
+                      border: !isGuest && genType === "HD" ? "1.5px solid #8b5cf6" : "1.5px solid #1e293b",
+                      background: !isGuest && genType === "HD" ? "rgba(139,92,246,0.1)" : "#0d1424",
+                      opacity: isGuest ? 0.5 : 1,
+                    }}
+                  >
+                    <div style={{ fontSize: "20px", marginBottom: "2px" }}>✨</div>
+                    <div style={{ fontWeight: 700, color: !isGuest && genType === "HD" ? "#8b5cf6" : "#94a3b8", fontSize: "14px" }}>HD Realistic</div>
+                    <div style={{ fontSize: "12px", color: "#475569", marginTop: "2px" }}>AI photorealistic · 1 HD credit</div>
                   </button>
-                ))}
+                  {isGuest && (
+                    <Link href="/signup" style={{
+                      position: "absolute", top: "10px", right: "10px",
+                      padding: "3px 10px", borderRadius: "999px",
+                      background: "rgba(139,92,246,0.18)", border: "1px solid rgba(139,92,246,0.35)",
+                      fontSize: "10px", fontWeight: 700, color: "#a78bfa", whiteSpace: "nowrap",
+                    }}>
+                      Sign up free →
+                    </Link>
+                  )}
+                </div>
               </div>
             </Card>
           </div>
 
-          {/* ── Step 5: Prompt (HD only) ── */}
-          {genType === "HD" && (
+          {/* ── Step 5: Prompt (HD only, auth users) ── */}
+          {genType === "HD" && !isGuest && (
             <Card title={`${imagePreview ? "5" : "4"}. Describe the result (optional)`}>
               <textarea
                 value={prompt}
@@ -318,16 +466,15 @@ export default function GeneratePage() {
             </Card>
           )}
 
-          {/* ── Zero-credits warning (shown before the button) ── */}
-          {credits !== null && !loading && (() => {
+          {/* ── Zero-credits warning (auth users out of credits) ── */}
+          {!isGuest && credits !== null && !loading && (() => {
             const outOfStandard = genType === "STANDARD" && credits.standard === 0;
             const outOfHd      = genType === "HD"       && credits.hd === 0;
             if (!outOfStandard && !outOfHd) return null;
             return (
               <div style={{
                 padding: "14px 16px", borderRadius: "12px",
-                background: "rgba(245,158,11,0.07)",
-                border: "1px solid rgba(245,158,11,0.2)",
+                background: "rgba(245,158,11,0.07)", border: "1px solid rgba(245,158,11,0.2)",
                 display: "flex", alignItems: "center", justifyContent: "space-between", gap: "12px",
               }}>
                 <div>
@@ -342,8 +489,7 @@ export default function GeneratePage() {
                 </div>
                 <Link href="/pricing" style={{
                   flexShrink: 0, padding: "9px 16px", borderRadius: "9px", fontSize: "13px",
-                  fontWeight: 700, background: "linear-gradient(135deg, #f59e0b, #d97706)",
-                  color: "#fff", whiteSpace: "nowrap",
+                  fontWeight: 700, background: "linear-gradient(135deg, #f59e0b, #d97706)", color: "#fff", whiteSpace: "nowrap",
                 }}>
                   Top up →
                 </Link>
@@ -351,26 +497,61 @@ export default function GeneratePage() {
             );
           })()}
 
+          {/* ── Guest limit reached banner ── */}
+          {isGuest && guestLimitReached && (
+            <div style={{
+              padding: "20px 22px", borderRadius: "12px",
+              background: "rgba(59,130,246,0.07)", border: "1px solid rgba(59,130,246,0.22)",
+            }}>
+              <div style={{ color: "#60a5fa", fontWeight: 800, fontSize: "16px", marginBottom: "6px" }}>
+                🎉 You&apos;ve used your 2 free generations!
+              </div>
+              <div style={{ color: "#475569", fontSize: "14px", marginBottom: "16px" }}>
+                Create a free account in 10 seconds and get{" "}
+                <strong style={{ color: "#94a3b8" }}>5 standard generations + 1 HD realistic image</strong> — no card required.
+              </div>
+              <div style={{ display: "flex", gap: "10px", flexWrap: "wrap" }}>
+                <Link href="/signup" style={{
+                  padding: "12px 24px", borderRadius: "10px", fontWeight: 700, fontSize: "14px",
+                  background: "linear-gradient(135deg, #3b82f6, #4f46e5)", color: "#fff",
+                  boxShadow: "0 4px 16px rgba(59,130,246,0.35)",
+                }}>
+                  Create free account →
+                </Link>
+                <Link href="/login" style={{
+                  padding: "12px 20px", borderRadius: "10px", fontWeight: 600, fontSize: "14px",
+                  background: "transparent", border: "1px solid rgba(255,255,255,0.1)", color: "#64748b",
+                }}>
+                  Already have an account? Sign in
+                </Link>
+              </div>
+            </div>
+          )}
+
           {/* ── Generate button ── */}
           <button
             onClick={generate}
-            disabled={loading || !imageFile}
+            disabled={!canGenerate}
             style={{
               padding: "18px", borderRadius: "12px", fontWeight: 800, fontSize: "17px",
-              border: "none", cursor: (loading || !imageFile) ? "not-allowed" : "pointer",
-              background: loading || !imageFile
+              border: "none", cursor: !canGenerate ? "not-allowed" : "pointer",
+              background: !canGenerate
                 ? "#1e293b"
                 : genType === "HD"
                   ? "linear-gradient(135deg, #7c3aed, #4f46e5)"
                   : "linear-gradient(135deg, #3b82f6, #0ea5e9)",
-              color: (loading || !imageFile) ? "#475569" : "#fff",
+              color: !canGenerate ? "#475569" : "#fff",
               transition: "all 0.15s",
-              boxShadow: (!loading && imageFile) ? (genType === "HD" ? "0 4px 24px rgba(124,58,237,0.35)" : "0 4px 24px rgba(59,130,246,0.35)") : "none",
+              boxShadow: canGenerate
+                ? (genType === "HD" ? "0 4px 24px rgba(124,58,237,0.35)" : "0 4px 24px rgba(59,130,246,0.35)")
+                : "none",
             }}
           >
             {loading
               ? (genType === "HD" ? "⏳ Generating HD — 30 to 60 seconds…" : "⏳ Applying colour…")
-              : `${genType === "HD" ? "✨ HD Render" : "⚡ Generate"} →`}
+              : isGuest
+                ? `⚡ Try it free (${guestUsed}/${GUEST_LIMIT} used) →`
+                : `${genType === "HD" ? "✨ HD Render" : "⚡ Generate"} →`}
           </button>
 
           {/* ── Error ── */}
@@ -380,7 +561,7 @@ export default function GeneratePage() {
             </div>
           )}
 
-          {/* ── Result (appears below generate) ── */}
+          {/* ── Result ── */}
           <div ref={resultRef}>
             {loading && (
               <Card title="Result">
@@ -407,15 +588,17 @@ export default function GeneratePage() {
                   >
                     ⬇ Download image
                   </a>
-                  <button
-                    onClick={() => { setResult(null); setError(null); setLastCreditUsed(false); }}
-                    style={{ padding: "13px 20px", borderRadius: "10px", background: "transparent", border: "1px solid #1e293b", color: "#64748b", fontSize: "13px", fontWeight: 600, cursor: "pointer" }}
-                  >
-                    Generate another
-                  </button>
+                  {!guestLimitReached && (
+                    <button
+                      onClick={() => { setResult(null); setError(null); setLastCreditUsed(false); }}
+                      style={{ padding: "13px 20px", borderRadius: "10px", background: "transparent", border: "1px solid #1e293b", color: "#64748b", fontSize: "13px", fontWeight: 600, cursor: "pointer" }}
+                    >
+                      Generate another
+                    </button>
+                  )}
                 </div>
 
-                {/* Friendly nudge when last credit was just used */}
+                {/* Auth user: last credit nudge */}
                 {lastCreditUsed && (
                   <div style={{
                     marginTop: "12px", padding: "14px 16px", borderRadius: "10px",
@@ -437,6 +620,36 @@ export default function GeneratePage() {
                     }}>
                       Get more →
                     </Link>
+                  </div>
+                )}
+
+                {/* Guest: sign-up prompt when limit hit */}
+                {isGuest && guestLimitReached && (
+                  <div style={{
+                    marginTop: "12px", padding: "16px 18px", borderRadius: "10px",
+                    background: "rgba(59,130,246,0.07)", border: "1px solid rgba(59,130,246,0.2)",
+                  }}>
+                    <div style={{ color: "#60a5fa", fontWeight: 700, fontSize: "14px", marginBottom: "4px" }}>
+                      🎉 That was your last free generation!
+                    </div>
+                    <div style={{ color: "#475569", fontSize: "13px", marginBottom: "12px" }}>
+                      Sign up free — takes 10 seconds — and unlock{" "}
+                      <strong style={{ color: "#94a3b8" }}>5 standard + 1 HD</strong> generation instantly.
+                    </div>
+                    <div style={{ display: "flex", gap: "8px" }}>
+                      <Link href="/signup" style={{
+                        padding: "10px 20px", borderRadius: "9px", fontWeight: 700, fontSize: "13px",
+                        background: "linear-gradient(135deg, #3b82f6, #4f46e5)", color: "#fff",
+                      }}>
+                        Create free account →
+                      </Link>
+                      <Link href="/login" style={{
+                        padding: "10px 14px", borderRadius: "9px", fontWeight: 600, fontSize: "13px",
+                        background: "transparent", border: "1px solid rgba(255,255,255,0.1)", color: "#64748b",
+                      }}>
+                        Sign in
+                      </Link>
+                    </div>
                   </div>
                 )}
               </Card>
