@@ -11,7 +11,7 @@ function LoginForm() {
   const redirect     = searchParams.get("redirect") || "/generate";
   const authError    = searchParams.get("error");
 
-  const [email,    setEmail]    = useState("");
+  const [email,    setEmail]    = useState(searchParams.get("email") ?? "");
   const [password, setPassword] = useState("");
   const [loading,  setLoading]  = useState(false);
   const [error,    setError]    = useState<string | null>(

@@ -1,15 +1,18 @@
 "use client";
 import { useState } from "react";
 import Link from "next/link";
+import { useRouter } from "next/navigation";
 import { createClient } from "../utils/supabase/client";
 
 export default function SignupPage() {
-  const [email,    setEmail]    = useState("");
-  const [password, setPassword] = useState("");
-  const [consent,  setConsent]  = useState(false);
-  const [loading,  setLoading]  = useState(false);
-  const [done,     setDone]     = useState(false);
-  const [error,    setError]    = useState<string | null>(null);
+  const [email,       setEmail]       = useState("");
+  const [password,    setPassword]    = useState("");
+  const [consent,     setConsent]     = useState(false);
+  const [loading,     setLoading]     = useState(false);
+  const [done,        setDone]        = useState(false);
+  const [error,       setError]       = useState<string | null>(null);
+  const [isDuplicate, setIsDuplicate] = useState(false);
+  const router = useRouter();
 
   async function handleSignup(e: React.FormEvent) {
     e.preventDefault();
@@ -17,7 +20,7 @@ export default function SignupPage() {
     setError(null);
 
     const supabase = createClient();
-    const { error: signUpError } = await supabase.auth.signUp({
+    const { data, error: signUpError } = await supabase.auth.signUp({
       email,
       password,
       options: {
@@ -27,7 +30,21 @@ export default function SignupPage() {
     });
 
     setLoading(false);
-    if (signUpError) { setError(signUpError.message); return; }
+
+    if (signUpError) {
+      // Surface any hard errors (weak password, invalid email, etc.)
+      setError(signUpError.message);
+      return;
+    }
+
+    // Supabase doesn't return an error for duplicate emails when confirmation
+    // is enabled — it silently succeeds but the identities array is empty.
+    if (data.user && (data.user.identities?.length ?? 0) === 0) {
+      setIsDuplicate(true);
+      setError("An account with this email already exists.");
+      return;
+    }
+
     setDone(true);
   }
 
@@ -97,8 +114,24 @@ export default function SignupPage() {
             </div>
 
             {error && (
-              <div style={{ padding: "12px 14px", borderRadius: "10px", background: "rgba(239,68,68,0.08)", border: "1px solid rgba(239,68,68,0.25)", color: "#f87171", fontSize: "14px" }}>
+              <div style={{ padding: "14px 16px", borderRadius: "10px", background: "rgba(239,68,68,0.08)", border: "1px solid rgba(239,68,68,0.25)", color: "#f87171", fontSize: "14px" }}>
                 {error}
+                {isDuplicate && (
+                  <div style={{ marginTop: "10px" }}>
+                    <button
+                      type="button"
+                      onClick={() => router.push(`/login?email=${encodeURIComponent(email)}`)}
+                      style={{
+                        background: "linear-gradient(135deg,#3b82f6,#4f46e5)",
+                        color: "#fff", fontWeight: 700, fontSize: "13px",
+                        padding: "8px 18px", borderRadius: "8px", border: "none",
+                        cursor: "pointer",
+                      }}
+                    >
+                      Sign in instead →
+                    </button>
+                  </div>
+                )}
               </div>
             )}
 
