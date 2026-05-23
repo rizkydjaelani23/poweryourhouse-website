@@ -1,5 +1,6 @@
 "use client";
 import { useState } from "react";
+import { adminAddCredits } from "./actions";
 
 const TD: React.CSSProperties = {
   padding: "11px 14px", fontSize: "13px", color: "#cbd5e1",
@@ -15,54 +16,40 @@ interface Props {
 }
 
 export default function TopUpRow({ userId, email, initStd, initHd, joinDate }: Props) {
-  const [std, setStd]         = useState(initStd);
-  const [hd, setHd]           = useState(initHd);
-  const [adding, setAdding]   = useState<"STANDARD" | "HD" | null>(null);
-  const [amount, setAmount]   = useState(50);
+  const [std, setStd]       = useState(initStd);
+  const [hd, setHd]         = useState(initHd);
+  const [adding, setAdding] = useState<"STANDARD" | "HD" | null>(null);
+  const [amount, setAmount] = useState(50);
   const [loading, setLoading] = useState(false);
-  const [flash, setFlash]     = useState("");
-  const [err, setErr]         = useState("");
+  const [flash, setFlash]   = useState("");
+  const [err, setErr]       = useState("");
 
   async function topUp(type: "STANDARD" | "HD") {
     setLoading(true);
     setErr("");
 
-    try {
-      const res = await fetch("/api/admin-credits", {
-        method: "POST",
-        headers: { "Content-Type": "application/json" },
-        body: JSON.stringify({ userId, type, amount: Number(amount) }),
-      });
+    const result = await adminAddCredits(userId, type, Number(amount));
 
-      const data = await res.json();
-
-      if (!res.ok) {
-        setErr(data.error ?? `Error ${res.status}`);
-        setLoading(false);
-        return; // keep the input open so they can see the error
-      }
-
-      if (type === "STANDARD") setStd(data.balance);
-      else setHd(data.balance);
-
-      setFlash(`+${amount} ${type}`);
-      setTimeout(() => setFlash(""), 3000);
-      setAdding(null);
-      setErr("");
-    } catch (e) {
-      setErr("Network error — try again");
+    if (result.error) {
+      setErr(result.error);
+      setLoading(false);
+      return; // keep input open so they see the error
     }
 
+    if (type === "STANDARD") setStd(result.balance);
+    else setHd(result.balance);
+
+    setFlash(`+${amount} ${type === "STANDARD" ? "standard" : "HD"}`);
+    setTimeout(() => setFlash(""), 3000);
+    setAdding(null);
     setLoading(false);
   }
 
   function CreditCell({ type, value, colour }: { type: "STANDARD" | "HD"; value: number; colour: string }) {
     const isOpen = adding === type;
-    const inputBorder = type === "STANDARD" ? "rgba(59,130,246,0.3)" : "rgba(139,92,246,0.3)";
-    const btnBg = type === "STANDARD" ? "#3b82f6" : "#8b5cf6";
-    const plusBg = type === "STANDARD" ? "rgba(59,130,246,0.1)" : "rgba(139,92,246,0.1)";
-    const plusBorder = type === "STANDARD" ? "rgba(59,130,246,0.2)" : "rgba(139,92,246,0.2)";
-    const plusColour = type === "STANDARD" ? "#60a5fa" : "#a78bfa";
+    const accent = type === "STANDARD" ? "#3b82f6" : "#8b5cf6";
+    const accentMuted = type === "STANDARD" ? "rgba(59,130,246,0.2)" : "rgba(139,92,246,0.2)";
+    const accentText  = type === "STANDARD" ? "#60a5fa" : "#a78bfa";
 
     return (
       <td style={TD}>
@@ -77,38 +64,35 @@ export default function TopUpRow({ userId, email, initStd, initHd, joinDate }: P
                 type="number"
                 value={amount}
                 min={1}
+                autoFocus
                 onChange={e => setAmount(Number(e.target.value))}
                 style={{
-                  width: "56px", background: "#0b1120",
-                  border: `1px solid ${inputBorder}`,
-                  borderRadius: "6px", padding: "3px 6px",
-                  color: "#fff", fontSize: "13px",
+                  width: "60px", background: "#0b1120",
+                  border: `1px solid ${accentMuted}`,
+                  borderRadius: "6px", padding: "3px 8px",
+                  color: "#fff", fontSize: "13px", outline: "none",
                 }}
               />
               <button
                 onClick={() => topUp(type)}
                 disabled={loading}
                 style={{
-                  background: btnBg, border: "none", borderRadius: "5px",
+                  background: accent, border: "none", borderRadius: "6px",
                   color: "#fff", fontSize: "12px", fontWeight: 700,
-                  padding: "4px 10px", cursor: "pointer",
+                  padding: "4px 12px", cursor: loading ? "not-allowed" : "pointer",
                   opacity: loading ? 0.6 : 1,
                 }}
               >
-                {loading ? "…" : "Add"}
+                {loading ? "Adding…" : "Add"}
               </button>
               <button
                 onClick={() => { setAdding(null); setErr(""); }}
-                style={{
-                  background: "transparent", border: "none",
-                  color: "#64748b", fontSize: "15px",
-                  cursor: "pointer", padding: "0 2px", lineHeight: 1,
-                }}
+                style={{ background: "transparent", border: "none", color: "#475569", fontSize: "16px", cursor: "pointer", lineHeight: 1 }}
               >
                 ✕
               </button>
               {err && (
-                <span style={{ fontSize: "11px", color: "#f87171", width: "100%" }}>
+                <span style={{ fontSize: "11px", color: "#f87171", width: "100%", marginTop: "2px" }}>
                   ⚠ {err}
                 </span>
               )}
@@ -117,8 +101,9 @@ export default function TopUpRow({ userId, email, initStd, initHd, joinDate }: P
             <button
               onClick={() => { setAdding(type); setErr(""); }}
               style={{
-                background: plusBg, border: `1px solid ${plusBorder}`,
-                borderRadius: "5px", color: plusColour,
+                background: `rgba(${type === "STANDARD" ? "59,130,246" : "139,92,246"},0.1)`,
+                border: `1px solid ${accentMuted}`,
+                borderRadius: "5px", color: accentText,
                 fontSize: "12px", fontWeight: 700,
                 padding: "2px 8px", cursor: "pointer",
               }}
