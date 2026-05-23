@@ -10,6 +10,7 @@ interface Credits { standard: number; hd: number }
 const mainLinks = [
   { href: "/", label: "Home" },
   { href: "/pricing", label: "Pricing" },
+  { href: "/services", label: "Services" },
   { href: "/shopify", label: "Shopify App" },
   { href: "/blog", label: "Blog" },
   { href: "/about", label: "About" },

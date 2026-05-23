@@ -105,6 +105,7 @@ export default function HomePage() {
 
         .gallery-grid { display: grid; grid-template-columns: repeat(3, 1fr); gap: 10px; }
         @media (max-width: 680px) { .gallery-grid { grid-template-columns: repeat(2, 1fr); } }
+        @media (max-width: 720px) { .service-teaser-grid { grid-template-columns: 1fr !important; } }
       `}</style>
 
       {/* ── HERO ──────────────────────────────────────────────────────────── */}
@@ -498,6 +499,72 @@ export default function HomePage() {
 
       {/* ── PRICING ────────────────────────────────────────────────────────── */}
       <SaaSPricingSection />
+
+      {/* ── SOCIAL MEDIA AUTOMATION SERVICE ────────────────────────────────── */}
+      <section style={{ background: "#060b17", padding: "72px 0", borderTop: "1px solid rgba(255,255,255,0.04)" }}>
+        <div className="container">
+          <div style={{
+            display: "grid", gridTemplateColumns: "1fr 1fr", gap: "48px",
+            alignItems: "center",
+          }} className="service-teaser-grid">
+            <div>
+              <div style={{
+                display: "inline-block",
+                fontSize: "11px", fontWeight: 800, letterSpacing: "0.14em",
+                color: "#60a5fa", textTransform: "uppercase",
+                background: "rgba(59,130,246,0.1)", border: "1px solid rgba(59,130,246,0.25)",
+                borderRadius: "999px", padding: "4px 14px", marginBottom: "18px",
+              }}>
+                Done-For-You Service
+              </div>
+              <h2 style={{
+                fontSize: "clamp(22px, 3.5vw, 34px)", fontWeight: 900, color: "#fff",
+                letterSpacing: "-0.025em", lineHeight: 1.2, margin: "0 0 14px",
+              }}>
+                We automate your social media feed for 30 days
+              </h2>
+              <p style={{ fontSize: "15px", color: "#475569", lineHeight: 1.75, marginBottom: "24px" }}>
+                AI-generated product images, captions, hashtags, and scheduled posting to
+                Facebook and Instagram — fully automated. You don&apos;t touch a thing.
+              </p>
+              <div style={{ display: "flex", gap: "10px", flexWrap: "wrap" }}>
+                <Link href="/services" style={{
+                  padding: "12px 24px", borderRadius: "10px",
+                  background: "linear-gradient(135deg, #3b82f6, #4f46e5)",
+                  color: "#fff", fontWeight: 700, fontSize: "14px",
+                  boxShadow: "0 4px 16px rgba(59,130,246,0.35)",
+                }}>
+                  See packages →
+                </Link>
+                <a href="mailto:hello@poweryourhouse.io?subject=Social Media Automation Enquiry" style={{
+                  padding: "12px 20px", borderRadius: "10px",
+                  border: "1px solid rgba(255,255,255,0.1)",
+                  color: "#94a3b8", fontWeight: 600, fontSize: "14px",
+                }}>
+                  Email us directly
+                </a>
+              </div>
+            </div>
+            <div style={{ display: "grid", gridTemplateColumns: "1fr 1fr", gap: "12px" }}>
+              {([
+                { icon: "🤖", label: "Fully automated", sub: "Posts go live without you" },
+                { icon: "🎨", label: "AI-generated images", sub: "Your products in any colour" },
+                { icon: "📅", label: "30 days of content", sub: "2 posts/day on FB + IG" },
+                { icon: "⚡", label: "From £197", sub: "One-time, no monthly fee" },
+              ] as const).map((t) => (
+                <div key={t.label} style={{
+                  background: "#0d1424", border: "1px solid rgba(255,255,255,0.06)",
+                  borderRadius: "14px", padding: "18px 16px",
+                }}>
+                  <div style={{ fontSize: "24px", marginBottom: "8px" }}>{t.icon}</div>
+                  <div style={{ fontSize: "13px", fontWeight: 700, color: "#e2e8f0", marginBottom: "4px" }}>{t.label}</div>
+                  <div style={{ fontSize: "12px", color: "#475569" }}>{t.sub}</div>
+                </div>
+              ))}
+            </div>
+          </div>
+        </div>
+      </section>
 
       {/* ── FINAL CTA ──────────────────────────────────────────────────────── */}
       <section className="section" style={{ background: "#080e1c", borderTop: "1px solid rgba(255,255,255,0.05)" }}>
