@@ -1,7 +1,7 @@
 "use client";
 import { useRef, useEffect, useState, useCallback, MutableRefObject } from "react";
 
-type Tool = "outline" | "brush";
+type Tool = "outline" | "brush" | "pan";
 interface Pt { x: number; y: number }
 
 interface Snap {
@@ -23,8 +23,8 @@ interface Props {
   onMaskChange: (has: boolean) => void;
 }
 
-const CANVAS_W = 860;
-const CANVAS_H = 520;
+const CANVAS_W   = 860;
+const CANVAS_H   = 520;
 const MAX_HISTORY = 30;
 
 export default function SelectionEditor({ imageSrc, handleRef, onMaskChange }: Props) {
@@ -42,28 +42,39 @@ export default function SelectionEditor({ imageSrc, handleRef, onMaskChange }: P
   const hasMaskRef = useRef(false);
 
   // Interaction flags
-  const isPainting = useRef(false);
-  const isPanning  = useRef(false);
-  const lastMouse  = useRef<Pt>({ x: 0, y: 0 });
-  const rafId      = useRef(0);
+  const isPainting    = useRef(false);
+  const isPanning     = useRef(false);
+  const isSpaceDown   = useRef(false);
+  const lastMouse     = useRef<Pt>({ x: 0, y: 0 });
+  const rafId         = useRef(0);
 
   // History for undo
   const historyRef = useRef<Snap[]>([]);
 
   // React state — only for UI labels / button enables
-  const [tool,        setTool]       = useState<Tool>("outline");
-  const toolRef                      = useRef<Tool>("outline");
-  const [brushSz,     setBrushSz]    = useState(24);
-  const brushSzRef                   = useRef(24);
-  const [zoomPct,     setZoomPct]    = useState(100);
-  const [ptCount,     setPtCount]    = useState(0);
-  const [_closed,     _setClosed]    = useState(false);
-  const [_hasMask,    _setHasMask]   = useState(false);
-  const [historyLen,  setHistoryLen] = useState(0);
-  const [regionCount, setRegionCount] = useState(0); // how many outlines have been committed
+  const [tool,         setTool]        = useState<Tool>("outline");
+  const toolRef                        = useRef<Tool>("outline");
+  const [brushSz,      setBrushSz]     = useState(24);
+  const brushSzRef                     = useRef(24);
+  const [zoomPct,      setZoomPct]     = useState(100);
+  const [ptCount,      setPtCount]     = useState(0);
+  const [_closed,      _setClosed]     = useState(false);
+  const [_hasMask,     _setHasMask]    = useState(false);
+  const [historyLen,   setHistoryLen]  = useState(0);
+  const [regionCount,  setRegionCount] = useState(0);
+  const [expanded,     setExpanded]    = useState(false);
 
-  function changeTool(t: Tool) { toolRef.current = t; setTool(t); }
+  function changeTool(t: Tool) { toolRef.current = t; setTool(t); updateCursor(); }
   function changeBrush(n: number) { brushSzRef.current = n; setBrushSz(n); }
+
+  // ── cursor helper ─────────────────────────────────────────────────────────
+  function updateCursor(panning = false) {
+    const el = displayRef.current;
+    if (!el) return;
+    if (panning || isPanning.current)      { el.style.cursor = "grabbing"; return; }
+    if (isSpaceDown.current || toolRef.current === "pan") { el.style.cursor = "grab"; return; }
+    el.style.cursor = "crosshair";
+  }
 
   // ── transform helpers ─────────────────────────────────────────────────────
   const i2c = (ix: number, iy: number) => ({
@@ -103,17 +114,14 @@ export default function SelectionEditor({ imageSrc, handleRef, onMaskChange }: P
       ctx.save();
       ctx.setTransform(scale, 0, 0, scale, tx, ty);
 
-      // Image
       ctx.drawImage(img, 0, 0, img.naturalWidth, img.naturalHeight);
 
-      // Mask overlay (purple tint)
       if (hasMaskRef.current) {
         ctx.globalAlpha = 0.45;
         ctx.drawImage(mask, 0, 0, img.naturalWidth, img.naturalHeight);
         ctx.globalAlpha = 1;
       }
 
-      // Outline preview
       const pts = pointsRef.current;
       if (pts.length > 0) {
         const lw = 2 / scale;
@@ -130,7 +138,6 @@ export default function SelectionEditor({ imageSrc, handleRef, onMaskChange }: P
         ctx.stroke();
         ctx.setLineDash([]);
 
-        // Control points
         pts.forEach((p, i) => {
           ctx.beginPath();
           ctx.arc(p.x, p.y, (i === 0 ? 7 : 4) / scale, 0, Math.PI * 2);
@@ -171,7 +178,6 @@ export default function SelectionEditor({ imageSrc, handleRef, onMaskChange }: P
     historyRef.current = next;
     setHistoryLen(next.length);
 
-    // Restore mask canvas
     const mask = maskRef.current;
     if (mask && mask.width > 0) {
       const ctx = mask.getContext("2d")!;
@@ -179,12 +185,10 @@ export default function SelectionEditor({ imageSrc, handleRef, onMaskChange }: P
       if (prev.maskData) ctx.putImageData(prev.maskData, 0, 0);
     }
 
-    // Restore outline state
     pointsRef.current = prev.pts;
     closedRef.current = prev.closed;
     cursorRef.current = null;
 
-    // Sync reactive state
     hasMaskRef.current = prev.hasMask;
     _setHasMask(prev.hasMask);
     onMaskChange(prev.hasMask);
@@ -194,21 +198,45 @@ export default function SelectionEditor({ imageSrc, handleRef, onMaskChange }: P
     render();
   }
 
-  // Stable ref so the keydown effect never goes stale
   const undoRef = useRef(undo);
   useEffect(() => { undoRef.current = undo; });
 
-  // Ctrl/Cmd + Z global shortcut
+  // ── keyboard shortcuts ────────────────────────────────────────────────────
   useEffect(() => {
-    const handler = (e: KeyboardEvent) => {
+    const onDown = (e: KeyboardEvent) => {
+      // Ctrl/Cmd+Z → undo
       if ((e.ctrlKey || e.metaKey) && e.key === "z") {
         e.preventDefault();
         undoRef.current();
+        return;
+      }
+      // Escape → collapse expanded
+      if (e.key === "Escape") {
+        setExpanded(false);
+        return;
+      }
+      // Spacebar → temporary pan
+      if (e.code === "Space" && !e.repeat) {
+        e.preventDefault();
+        isSpaceDown.current = true;
+        const el = displayRef.current;
+        if (el && !isPanning.current) el.style.cursor = "grab";
       }
     };
-    window.addEventListener("keydown", handler);
-    return () => window.removeEventListener("keydown", handler);
-  }, []);
+    const onUp = (e: KeyboardEvent) => {
+      if (e.code === "Space") {
+        isSpaceDown.current = false;
+        isPanning.current   = false;
+        updateCursor();
+      }
+    };
+    window.addEventListener("keydown", onDown);
+    window.addEventListener("keyup",   onUp);
+    return () => {
+      window.removeEventListener("keydown", onDown);
+      window.removeEventListener("keyup",   onUp);
+    };
+  }, []); // eslint-disable-line
 
   // ── load image ────────────────────────────────────────────────────────────
   useEffect(() => {
@@ -221,7 +249,6 @@ export default function SelectionEditor({ imageSrc, handleRef, onMaskChange }: P
       mask.getContext("2d")!.clearRect(0, 0, mask.width, mask.height);
       fitTransform();
       setZoomPct(100);
-      // Reset all state
       pointsRef.current  = [];
       cursorRef.current  = null;
       closedRef.current  = false;
@@ -258,6 +285,9 @@ export default function SelectionEditor({ imageSrc, handleRef, onMaskChange }: P
     canvas.addEventListener("wheel", handler, { passive: false });
     return () => canvas.removeEventListener("wheel", handler);
   }, [render]);
+
+  // re-attach wheel listener when expanded changes (new canvas mount)
+  useEffect(() => { /* wheel handler re-runs automatically via the deps above */ }, [expanded]);
 
   // ── zoom buttons ──────────────────────────────────────────────────────────
   function applyZoom(factor: number) {
@@ -317,9 +347,8 @@ export default function SelectionEditor({ imageSrc, handleRef, onMaskChange }: P
     const pts  = pointsRef.current;
     const mask = maskRef.current;
     if (pts.length < 3 || !mask) return;
-    saveSnap(); // save state before filling
+    saveSnap();
 
-    // Fill this polygon into the mask canvas
     const ctx = mask.getContext("2d")!;
     ctx.beginPath();
     ctx.moveTo(pts[0].x, pts[0].y);
@@ -332,15 +361,13 @@ export default function SelectionEditor({ imageSrc, handleRef, onMaskChange }: P
     _setHasMask(true);
     onMaskChange(true);
 
-    // ── KEY CHANGE: reset outline so a new one can be drawn immediately ──
-    // The filled region stays on the mask; we just clear the in-progress points.
+    // Reset so the next outline can start immediately
     pointsRef.current = [];
     cursorRef.current = null;
-    closedRef.current = false;   // allow new outline clicks
+    closedRef.current = false;
     _setClosed(false);
     setPtCount(0);
     setRegionCount(prev => prev + 1);
-
     render();
   }
 
@@ -360,15 +387,25 @@ export default function SelectionEditor({ imageSrc, handleRef, onMaskChange }: P
   }
 
   // ── mouse handlers ────────────────────────────────────────────────────────
+  function startPan(cp: Pt) {
+    isPanning.current  = true;
+    lastMouse.current  = cp;
+    updateCursor(true);
+  }
+
   function onMouseDown(e: React.MouseEvent) {
     e.preventDefault();
     const cp = canvasPos(e);
     lastMouse.current = cp;
 
-    if (e.altKey || e.button === 1) { isPanning.current = true; return; }
+    // Right-click, middle-click, spacebar held, or Pan tool → pan
+    if (e.button === 1 || e.button === 2 || e.altKey || isSpaceDown.current || toolRef.current === "pan") {
+      startPan(cp);
+      return;
+    }
 
     if (toolRef.current === "brush") {
-      saveSnap(); // one undo step per stroke
+      saveSnap();
       isPainting.current = true;
       paintBrush(cp);
       return;
@@ -377,7 +414,6 @@ export default function SelectionEditor({ imageSrc, handleRef, onMaskChange }: P
     // Outline tool
     if (closedRef.current) return;
     const ip = c2i(cp.x, cp.y);
-    // Click near first point → close
     if (pointsRef.current.length >= 3) {
       const fp = i2c(pointsRef.current[0].x, pointsRef.current[0].y);
       if (Math.hypot(cp.x - fp.x, cp.y - fp.y) < 16) {
@@ -385,7 +421,7 @@ export default function SelectionEditor({ imageSrc, handleRef, onMaskChange }: P
         return;
       }
     }
-    saveSnap(); // one undo step per point added
+    saveSnap();
     pointsRef.current = [...pointsRef.current, ip];
     setPtCount(pointsRef.current.length);
     render();
@@ -393,23 +429,36 @@ export default function SelectionEditor({ imageSrc, handleRef, onMaskChange }: P
 
   function onMouseMove(e: React.MouseEvent) {
     const cp = canvasPos(e);
+
     if (isPanning.current) {
       const dx = cp.x - lastMouse.current.x;
       const dy = cp.y - lastMouse.current.y;
       vt.current = { ...vt.current, tx: vt.current.tx + dx, ty: vt.current.ty + dy };
       lastMouse.current = cp;
-      render(); return;
+      render();
+      return;
     }
+
     if (toolRef.current === "brush" && isPainting.current) { paintBrush(cp); }
+
     if (toolRef.current === "outline" && !closedRef.current) {
       cursorRef.current = c2i(cp.x, cp.y);
       render();
     }
+
     lastMouse.current = cp;
   }
 
-  function onMouseUp()    { isPainting.current = false; isPanning.current = false; }
-  function onMouseLeave() { isPainting.current = false; isPanning.current = false; }
+  function onMouseUp() {
+    isPainting.current = false;
+    isPanning.current  = false;
+    updateCursor();
+  }
+  function onMouseLeave() {
+    isPainting.current = false;
+    isPanning.current  = false;
+    updateCursor();
+  }
 
   function onDoubleClick() {
     if (toolRef.current === "outline" && pointsRef.current.length >= 3 && !closedRef.current) {
@@ -430,126 +479,177 @@ export default function SelectionEditor({ imageSrc, handleRef, onMaskChange }: P
     };
   });
 
+  // ── shared toolbar + canvas (used in both normal and expanded view) ────────
+  const toolbar = (
+    <div style={{ display: "flex", gap: "6px", marginBottom: "10px", alignItems: "center", flexWrap: "wrap" }}>
+
+      {/* Tool tabs */}
+      {(["outline", "brush", "pan"] as Tool[]).map((t) => (
+        <button key={t} onClick={() => changeTool(t)} title={t === "pan" ? "Pan / drag canvas (or hold Space)" : undefined} style={{
+          padding: "6px 14px", borderRadius: "8px", fontSize: "12px", fontWeight: 700,
+          border: tool === t ? "1px solid #8b5cf6" : "1px solid #1e293b",
+          background: tool === t ? "rgba(139,92,246,0.15)" : "#111827",
+          color: tool === t ? "#a78bfa" : "#64748b", cursor: "pointer",
+        }}>
+          {t === "outline" ? "Outline" : t === "brush" ? "Brush" : "Pan"}
+        </button>
+      ))}
+
+      {/* Brush size */}
+      {tool === "brush" && (
+        <div style={{ display: "flex", alignItems: "center", gap: "6px" }}>
+          <span style={{ fontSize: "11px", color: "#475569" }}>Size</span>
+          <input type="range" min={4} max={80} value={brushSz}
+            onChange={(e) => changeBrush(Number(e.target.value))}
+            style={{ width: "64px" }} />
+          <span style={{ fontSize: "11px", color: "#475569" }}>{brushSz}px</span>
+        </div>
+      )}
+
+      {/* Outline status hint */}
+      {tool === "outline" && (
+        <span style={{ fontSize: "11px", color: "#64748b" }}>
+          {ptCount === 0 && regionCount === 0 && "Click to start outline"}
+          {ptCount === 0 && regionCount  >  0 && "Region added — draw another outline"}
+          {ptCount === 1 && "Click to add more points"}
+          {ptCount === 2 && "Keep adding points…"}
+          {ptCount >= 3  && "Click ● first point or double-click to close"}
+        </span>
+      )}
+      {tool === "pan" && (
+        <span style={{ fontSize: "11px", color: "#64748b" }}>Click and drag to move around the image</span>
+      )}
+
+      {/* Region counter */}
+      {regionCount > 0 && ptCount === 0 && (
+        <span style={{
+          fontSize: "11px", fontWeight: 700, color: "#22c55e",
+          background: "rgba(34,197,94,0.1)", border: "1px solid rgba(34,197,94,0.25)",
+          borderRadius: "6px", padding: "2px 8px",
+        }}>
+          {regionCount} region{regionCount > 1 ? "s" : ""} selected
+        </span>
+      )}
+
+      {/* Right-side controls */}
+      <div style={{ marginLeft: "auto", display: "flex", gap: "4px", alignItems: "center" }}>
+
+        {/* Undo */}
+        <button onClick={undo} disabled={historyLen === 0} title="Undo (Ctrl+Z)" style={{
+          ...zBtn, fontSize: "13px",
+          opacity: historyLen === 0 ? 0.3 : 1,
+          cursor: historyLen === 0 ? "not-allowed" : "pointer",
+          padding: "0 8px", width: "auto",
+        }}>
+          ↩ Undo
+        </button>
+
+        <div style={{ width: "1px", height: "18px", background: "#1e293b", margin: "0 2px" }} />
+
+        {/* Zoom */}
+        <button onClick={() => applyZoom(1.25)} style={zBtn} title="Zoom in">＋</button>
+        <span style={{ fontSize: "11px", color: "#475569", minWidth: "38px", textAlign: "center" }}>{zoomPct}%</span>
+        <button onClick={() => applyZoom(1 / 1.25)} style={zBtn} title="Zoom out">－</button>
+        {zoomPct !== 100 && (
+          <button onClick={resetZoom} style={{ ...zBtn, padding: "3px 8px", fontSize: "10px", width: "auto" }}>Fit</button>
+        )}
+
+        <div style={{ width: "1px", height: "18px", background: "#1e293b", margin: "0 2px" }} />
+
+        {/* Expand / collapse */}
+        <button
+          onClick={() => setExpanded(v => !v)}
+          title={expanded ? "Collapse (Esc)" : "Expand to full screen"}
+          style={{ ...zBtn, width: "auto", padding: "0 10px", fontSize: "12px", fontWeight: 700 }}
+        >
+          {expanded ? "⤡ Collapse" : "⤢ Expand"}
+        </button>
+
+        {/* Clear */}
+        {_hasMask && (
+          <>
+            <div style={{ width: "1px", height: "18px", background: "#1e293b", margin: "0 2px" }} />
+            <button onClick={clearAll} style={{
+              padding: "4px 10px", borderRadius: "8px", fontSize: "12px", fontWeight: 700,
+              border: "1px solid rgba(239,68,68,0.3)", background: "rgba(239,68,68,0.08)",
+              color: "#ef4444", cursor: "pointer", height: "26px",
+            }}>
+              ✕ Clear
+            </button>
+          </>
+        )}
+      </div>
+    </div>
+  );
+
+  const canvasEl = (
+    <canvas
+      ref={displayRef}
+      width={CANVAS_W}
+      height={CANVAS_H}
+      style={{
+        display: "block",
+        width:   "100%",
+        height:  expanded ? "100%" : undefined,
+        userSelect: "none",
+        touchAction: "none",
+        cursor: "crosshair",
+      }}
+      onMouseDown={onMouseDown}
+      onMouseMove={onMouseMove}
+      onMouseUp={onMouseUp}
+      onMouseLeave={onMouseLeave}
+      onDoubleClick={onDoubleClick}
+      onContextMenu={(e) => e.preventDefault()} // right-click → pan, not menu
+    />
+  );
+
+  const hint = (
+    <p style={{ fontSize: "11px", color: "#334155", marginTop: "6px", lineHeight: 1.6 }}>
+      {tool === "outline"
+        ? "Click to place points · click ● or double-click to close · close to start another outline"
+        : tool === "brush"
+        ? "Click & drag to paint the area"
+        : "Click & drag to move the image"}
+      {" "}· Scroll to zoom · Right-click or Space+drag to pan · Ctrl+Z to undo
+    </p>
+  );
+
+  // ── Expanded (fullscreen overlay) ─────────────────────────────────────────
+  if (expanded) {
+    return (
+      <div style={{
+        position: "fixed", inset: 0, zIndex: 1000,
+        background: "#040912",
+        display: "flex", flexDirection: "column",
+        padding: "16px", gap: "10px",
+      }}>
+        {toolbar}
+        <div style={{
+          flex: 1, borderRadius: "12px", overflow: "hidden",
+          background: "#060c19", border: "1px solid rgba(139,92,246,0.15)",
+          display: "flex", alignItems: "stretch",
+        }}>
+          {canvasEl}
+          <canvas ref={maskRef} style={{ display: "none" }} />
+        </div>
+        {hint}
+      </div>
+    );
+  }
+
+  // ── Normal (inline) ───────────────────────────────────────────────────────
   return (
     <div>
-      {/* ── Toolbar ── */}
-      <div style={{ display: "flex", gap: "6px", marginBottom: "10px", alignItems: "center", flexWrap: "wrap" }}>
-
-        {/* Tool tabs */}
-        {(["outline", "brush"] as Tool[]).map((t) => (
-          <button key={t} onClick={() => changeTool(t)} style={{
-            padding: "6px 14px", borderRadius: "8px", fontSize: "12px", fontWeight: 700,
-            border: tool === t ? "1px solid #8b5cf6" : "1px solid #1e293b",
-            background: tool === t ? "rgba(139,92,246,0.15)" : "#111827",
-            color: tool === t ? "#a78bfa" : "#64748b", cursor: "pointer",
-          }}>
-            {t === "outline" ? "⬡ Outline" : "🖌️ Brush"}
-          </button>
-        ))}
-
-        {/* Brush size */}
-        {tool === "brush" && (
-          <div style={{ display: "flex", alignItems: "center", gap: "6px" }}>
-            <span style={{ fontSize: "11px", color: "#475569" }}>Size</span>
-            <input type="range" min={4} max={80} value={brushSz}
-              onChange={(e) => changeBrush(Number(e.target.value))}
-              style={{ width: "64px" }} />
-            <span style={{ fontSize: "11px", color: "#475569" }}>{brushSz}px</span>
-          </div>
-        )}
-
-        {/* Outline status hint */}
-        {tool === "outline" && (
-          <span style={{ fontSize: "11px", color: "#64748b" }}>
-            {ptCount === 0 && regionCount === 0 && "Click to start outline"}
-            {ptCount === 0 && regionCount  >  0 && "Region added — draw another outline or switch to brush"}
-            {ptCount === 1 && "Click to add more points"}
-            {ptCount === 2 && "Keep adding points…"}
-            {ptCount >= 3  && "Click ● first point or double-click to close"}
-          </span>
-        )}
-        {/* Region counter badge */}
-        {regionCount > 0 && ptCount === 0 && (
-          <span style={{
-            fontSize: "11px", fontWeight: 700, color: "#22c55e",
-            background: "rgba(34,197,94,0.1)", border: "1px solid rgba(34,197,94,0.25)",
-            borderRadius: "6px", padding: "2px 8px",
-          }}>
-            {regionCount} region{regionCount > 1 ? "s" : ""} selected
-          </span>
-        )}
-
-        {/* Zoom + Undo on the right */}
-        <div style={{ marginLeft: "auto", display: "flex", gap: "4px", alignItems: "center" }}>
-          {/* Undo */}
-          <button
-            onClick={undo}
-            disabled={historyLen === 0}
-            title="Undo (Ctrl+Z)"
-            style={{
-              ...zBtn,
-              fontSize: "13px",
-              opacity: historyLen === 0 ? 0.3 : 1,
-              cursor: historyLen === 0 ? "not-allowed" : "pointer",
-              padding: "0 8px", width: "auto",
-            }}
-          >
-            ↩ Undo
-          </button>
-
-          <div style={{ width: "1px", height: "18px", background: "#1e293b", margin: "0 2px" }} />
-
-          {/* Zoom controls */}
-          <button onClick={() => applyZoom(1.25)} style={zBtn} title="Zoom in">＋</button>
-          <span style={{ fontSize: "11px", color: "#475569", minWidth: "38px", textAlign: "center" }}>
-            {zoomPct}%
-          </span>
-          <button onClick={() => applyZoom(1 / 1.25)} style={zBtn} title="Zoom out">－</button>
-          {zoomPct !== 100 && (
-            <button onClick={resetZoom} style={{ ...zBtn, padding: "3px 8px", fontSize: "10px", width: "auto" }}>Fit</button>
-          )}
-
-          {/* Clear */}
-          {_hasMask && (
-            <>
-              <div style={{ width: "1px", height: "18px", background: "#1e293b", margin: "0 2px" }} />
-              <button onClick={clearAll} style={{
-                padding: "4px 10px", borderRadius: "8px", fontSize: "12px", fontWeight: 700,
-                border: "1px solid rgba(239,68,68,0.3)", background: "rgba(239,68,68,0.08)",
-                color: "#ef4444", cursor: "pointer", height: "26px",
-              }}>
-                ✕ Clear
-              </button>
-            </>
-          )}
-        </div>
-      </div>
-
-      {/* ── Canvas ── */}
+      {toolbar}
       <div style={{
         position: "relative", borderRadius: "12px", overflow: "hidden",
         background: "#060c19", border: "1px solid rgba(139,92,246,0.15)",
       }}>
-        <canvas
-          ref={displayRef}
-          width={CANVAS_W}
-          height={CANVAS_H}
-          style={{ display: "block", width: "100%", cursor: isPanning.current ? "grabbing" : "crosshair", userSelect: "none", touchAction: "none" }}
-          onMouseDown={onMouseDown}
-          onMouseMove={onMouseMove}
-          onMouseUp={onMouseUp}
-          onMouseLeave={onMouseLeave}
-          onDoubleClick={onDoubleClick}
-        />
+        {canvasEl}
         <canvas ref={maskRef} style={{ display: "none" }} />
       </div>
-
-      <p style={{ fontSize: "11px", color: "#334155", marginTop: "6px", lineHeight: 1.6 }}>
-        {tool === "outline"
-          ? "Click to place points · click ● first point or double-click to close · close one outline to start another"
-          : "Click & drag to paint the area"}
-        {" "}&middot; Scroll to zoom &middot; Alt+drag to pan &middot; Ctrl+Z to undo
-      </p>
+      {hint}
     </div>
   );
 }
