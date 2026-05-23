@@ -43,7 +43,7 @@ const plans = [
   },
   {
     name: "Growth",
-    price: "$297",
+    price: "$249",
     freq: "one-time",
     tagline: "Double the presence. Twice daily posting keeps your brand front of mind.",
     posts: "60 posts",
@@ -86,7 +86,7 @@ const addons = [
   },
   {
     name: "Content Refresh",
-    price: "$40",
+    price: "$50",
     freq: "one-time",
     desc: "New month, new content. We generate a fresh 30-day batch of AI images and captions for your feed. Keep your audience engaged without lifting a finger.",
     colour: "#10b981",
@@ -136,7 +136,7 @@ const faqs = [
   },
   {
     q: "What happens after 30 days?",
-    a: "The automation stops automatically. You can order a Content Refresh ($40) to queue another 30 days of fresh posts.",
+    a: "The automation stops automatically. You can order a Content Refresh ($50) to queue another 30 days of fresh posts.",
   },
   {
     q: "How long does setup take?",
