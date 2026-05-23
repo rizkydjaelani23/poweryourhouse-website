@@ -78,6 +78,31 @@ export default function Nav() {
         : "1px solid rgba(59, 130, 246, 0.12)",
       transition: "all 0.3s ease",
     }}>
+
+      {/* ── Launch Sale announcement bar ── */}
+      <div style={{
+        background: "linear-gradient(90deg, #dc2626, #ea580c, #dc2626)",
+        backgroundSize: "200% 100%",
+        animation: "salePulse 4s ease infinite",
+        textAlign: "center",
+        padding: "8px 16px",
+        fontSize: "13px",
+        fontWeight: 800,
+        color: "#fff",
+        letterSpacing: "0.02em",
+        lineHeight: 1,
+      }}>
+        <Link href="/pricing" style={{ color: "#fff", textDecoration: "none" }}>
+          🔥 50% LAUNCH SALE — All plans half price. Limited time only. Grab it now →
+        </Link>
+      </div>
+      <style>{`
+        @keyframes salePulse {
+          0%   { background-position: 0% 50%; }
+          50%  { background-position: 100% 50%; }
+          100% { background-position: 0% 50%; }
+        }
+      `}</style>
       {scrolled && (
         <div style={{
           position: "absolute", bottom: 0, left: 0, right: 0, height: "1px",

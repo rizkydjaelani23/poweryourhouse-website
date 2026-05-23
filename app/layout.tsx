@@ -92,7 +92,7 @@ export default function RootLayout({
           dangerouslySetInnerHTML={{ __html: JSON.stringify(jsonLd) }}
         />
         <Nav />
-        <main style={{ flex: 1, paddingTop: "68px" }}>
+        <main style={{ flex: 1, paddingTop: "104px" }}>
           {children}
         </main>
         <Footer />
