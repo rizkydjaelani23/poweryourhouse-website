@@ -15,8 +15,9 @@ interface MultiResult {
   error: string | null;
 }
 
-const GUEST_LIMIT   = 2;
-const MAX_COLOURS   = 6;
+const GUEST_LIMIT        = 2;
+const FREE_maxColours   = 6;
+const PRO_maxColours    = 20;
 
 export default function GeneratePage() {
   // ── Mode ──────────────────────────────────────────────────────────────────
@@ -52,13 +53,17 @@ export default function GeneratePage() {
   const [zipping,        setZipping]        = useState(false);
 
   // ── Auth / credits ─────────────────────────────────────────────────────────
-  const [credits,        setCredits]        = useState<{ standard: number; hd: number } | null>(null);
+  const [credits,        setCredits]        = useState<{ standard: number; hd: number; plan?: string } | null>(null);
+  const [showColourUpsell, setShowColourUpsell] = useState(false);
 
   // ── Guest state ────────────────────────────────────────────────────────────
   const [isGuest,           setIsGuest]           = useState(false);
   const [guestToken,        setGuestToken]        = useState<string | null>(null);
   const [guestUsed,         setGuestUsed]         = useState(0);
   const [guestLimitReached, setGuestLimitReached] = useState(false);
+
+  const isPremium  = credits?.plan === "pro" || credits?.plan === "business";
+  const maxColours = isGuest || !isPremium ? FREE_maxColours : PRO_maxColours;
 
   const selectionRef = useRef<SelectionEditorHandle | null>(null);
   const resultRef    = useRef<HTMLDivElement>(null);
@@ -120,7 +125,11 @@ export default function GeneratePage() {
 
   // ── Multi-colour helpers ───────────────────────────────────────────────────
   function addColour() {
-    if (multiColours.length >= MAX_COLOURS) return;
+    if (multiColours.length >= maxColours) {
+      if (!isPremium) setShowColourUpsell(true);
+      return;
+    }
+    setShowColourUpsell(false);
     setMultiColours(prev => [...prev, { id: Date.now().toString(), hex: "#c2410c", name: "" }]);
   }
   function removeColour(idx: number) {
@@ -487,7 +496,7 @@ export default function GeneratePage() {
           <div style={{ display: "grid", gridTemplateColumns: "1fr 1fr", gap: "16px" }} className="ctrl-grid">
 
             {/* ── Colour card ── */}
-            <Card title={genMode === "multi" ? `${stepNum(3)}. Pick your colours (up to ${MAX_COLOURS})` : `${stepNum(3)}. Target colour`}>
+            <Card title={genMode === "multi" ? `${stepNum(3)}. Pick your colours (up to ${maxColours})` : `${stepNum(3)}. Target colour`}>
 
               {genMode === "single" ? (
                 /* ── Single colour picker ── */
@@ -572,14 +581,43 @@ export default function GeneratePage() {
                     </div>
                   ))}
 
-                  {multiColours.length < MAX_COLOURS && (
+                  {multiColours.length < maxColours ? (
                     <button onClick={addColour} style={{
                       padding: "9px", borderRadius: "9px", background: "transparent",
                       border: "1px dashed #1e293b", color: "#475569",
                       fontSize: "12px", fontWeight: 700, cursor: "pointer", marginTop: "2px",
                     }}>
-                      + Add colour ({multiColours.length}/{MAX_COLOURS} max)
+                      + Add colour ({multiColours.length}/{maxColours} max)
                     </button>
+                  ) : !isPremium ? (
+                    <button onClick={() => setShowColourUpsell(true)} style={{
+                      padding: "9px", borderRadius: "9px", background: "transparent",
+                      border: "1px dashed #4f46e5", color: "#818cf8",
+                      fontSize: "12px", fontWeight: 700, cursor: "pointer", marginTop: "2px",
+                    }}>
+                      + Add more colours — upgrade to Pro
+                    </button>
+                  ) : null}
+
+                  {showColourUpsell && !isPremium && (
+                    <div style={{
+                      marginTop: "10px", padding: "14px 16px", borderRadius: "12px",
+                      background: "rgba(79,70,229,0.08)", border: "1px solid rgba(79,70,229,0.3)",
+                    }}>
+                      <div style={{ fontSize: "13px", fontWeight: 700, color: "#a5b4fc", marginBottom: "6px" }}>
+                        Want more than {FREE_MAX_COLOURS} colours?
+                      </div>
+                      <div style={{ fontSize: "12px", color: "#64748b", marginBottom: "12px", lineHeight: 1.6 }}>
+                        Pro and Business plans let you generate up to {PRO_MAX_COLOURS} colour variations from a single photo.
+                      </div>
+                      <Link href="/pricing" style={{
+                        display: "inline-block", padding: "8px 18px", borderRadius: "9px",
+                        background: "linear-gradient(135deg, #4f46e5, #3b82f6)",
+                        color: "#fff", fontSize: "12px", fontWeight: 700,
+                      }}>
+                        Upgrade to Pro →
+                      </Link>
+                    </div>
                   )}
                 </div>
               )}
