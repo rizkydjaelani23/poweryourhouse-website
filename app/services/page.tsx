@@ -278,12 +278,21 @@ export default function ServicesPage() {
                   </span>
                 </div>
                 <div style={{ marginBottom: "4px" }}>
-                  <div style={{ display: "flex", alignItems: "center", gap: "8px", marginBottom: "4px" }}>
-                    <span style={{ fontSize: "13px", color: "#475569", textDecoration: "line-through" }}>{plan.originalPrice}</span>
-                    <span style={{ fontSize: "10px", fontWeight: 800, color: "#ef4444", background: "rgba(239,68,68,0.12)", border: "1px solid rgba(239,68,68,0.25)", borderRadius: "999px", padding: "2px 8px" }}>50% OFF</span>
+                  {/* 50% discount sale label */}
+                  <div style={{
+                    display: "inline-flex", alignItems: "center", gap: "8px",
+                    background: "linear-gradient(135deg, #ef4444, #f97316)",
+                    borderRadius: "8px", padding: "5px 12px", marginBottom: "8px",
+                  }}>
+                    <span style={{ fontSize: "12px", fontWeight: 900, color: "#fff", letterSpacing: "0.04em" }}>
+                      🔥 50% DISCOUNT SALE
+                    </span>
                   </div>
-                  <span style={{ fontSize: "48px", fontWeight: 900, color: "#fff", lineHeight: 1 }}>{plan.price}</span>
-                  <span style={{ fontSize: "14px", color: "#475569", marginLeft: "6px" }}>{plan.freq}</span>
+                  <div style={{ display: "flex", alignItems: "baseline", gap: "10px" }}>
+                    <span style={{ fontSize: "48px", fontWeight: 900, color: "#fff", lineHeight: 1 }}>{plan.price}</span>
+                    <span style={{ fontSize: "20px", fontWeight: 700, color: "#475569", textDecoration: "line-through", lineHeight: 1 }}>{plan.originalPrice}</span>
+                  </div>
+                  <span style={{ fontSize: "14px", color: "#475569" }}>{plan.freq}</span>
                 </div>
 
                 <div style={{
@@ -349,12 +358,19 @@ export default function ServicesPage() {
                 borderRadius: "16px", padding: "24px",
               }}>
                 <div style={{ marginBottom: "6px" }}>
-                  <div style={{ display: "flex", alignItems: "center", gap: "8px", marginBottom: "2px" }}>
-                    <span style={{ fontSize: "12px", color: "#475569", textDecoration: "line-through" }}>{a.originalPrice}</span>
-                    <span style={{ fontSize: "10px", fontWeight: 800, color: "#ef4444", background: "rgba(239,68,68,0.10)", border: "1px solid rgba(239,68,68,0.22)", borderRadius: "999px", padding: "1px 7px" }}>50% OFF</span>
+                  {/* 50% discount sale label */}
+                  <div style={{
+                    display: "inline-flex", alignItems: "center",
+                    background: "linear-gradient(135deg, #ef4444, #f97316)",
+                    borderRadius: "6px", padding: "3px 9px", marginBottom: "6px",
+                  }}>
+                    <span style={{ fontSize: "10px", fontWeight: 900, color: "#fff", letterSpacing: "0.04em" }}>
+                      🔥 50% DISCOUNT SALE
+                    </span>
                   </div>
-                  <div style={{ display: "flex", alignItems: "baseline", gap: "6px" }}>
+                  <div style={{ display: "flex", alignItems: "baseline", gap: "8px" }}>
                     <span style={{ fontSize: "28px", fontWeight: 900, color: "#fff" }}>{a.price}</span>
+                    <span style={{ fontSize: "16px", fontWeight: 700, color: "#475569", textDecoration: "line-through" }}>{a.originalPrice}</span>
                     <span style={{ fontSize: "12px", color: "#475569" }}>{a.freq}</span>
                   </div>
                 </div>
