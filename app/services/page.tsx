@@ -10,7 +10,7 @@ export const metadata: Metadata = {
 const plans = [
   {
     name: "Starter",
-    price: "£197",
+    price: "$197",
     freq: "one-time",
     tagline: "Perfect for small shops getting started with social media.",
     posts: "30 posts",
@@ -20,7 +20,7 @@ const plans = [
       "30 AI-generated product images",
       "30 platform-specific captions + hashtags",
       "Facebook Page + Instagram Business connected",
-      "Automated scheduling via Make.com",
+      "Fully automated scheduling",
       "All posts go live at optimal times",
       "Content calendar handed to you",
       "7 days post-launch support via email",
@@ -31,7 +31,7 @@ const plans = [
   },
   {
     name: "Growth",
-    price: "£297",
+    price: "$297",
     freq: "one-time",
     tagline: "Double the presence. Twice daily posting keeps your brand front of mind.",
     posts: "60 posts",
@@ -41,9 +41,9 @@ const plans = [
       "60 AI-generated product images",
       "60 captions — morning & afternoon batches",
       "Facebook Page + Instagram Business connected",
-      "Automated scheduling via Make.com",
-      "Morning (08:00) + afternoon (17:00) posting",
-      "Content calendar + Google Sheet handed to you",
+      "Fully automated scheduling",
+      "Morning + afternoon posting, every day",
+      "Content calendar handed to you",
       "14 days post-launch support via email",
       "One free content refresh (swap images/captions)",
     ],
@@ -56,23 +56,23 @@ const plans = [
 const addons = [
   {
     name: "Monthly Maintenance",
-    price: "£49",
+    price: "$49",
     freq: "/ month",
-    desc: "We monitor the automation, fix any broken connections (API keys, page permissions, tokens), and keep everything running. Ideal if you want peace of mind month to month.",
+    desc: "We monitor the automation, fix any broken connections, and keep everything running smoothly. Ideal if you want peace of mind month to month.",
     colour: "#3b82f6",
   },
   {
     name: "One-Time Fix",
-    price: "£79",
+    price: "$19",
     freq: "flat fee",
-    desc: "Something broke? We diagnose and fix any automation issue — broken Make.com scenario, expired tokens, disconnected accounts — one flat charge, no subscription needed.",
+    desc: "Something broke? We diagnose and fix the issue — broken connections, expired permissions, disconnected accounts — one flat charge, no subscription needed.",
     colour: "#8b5cf6",
   },
   {
     name: "Content Refresh",
-    price: "£97",
+    price: "$40",
     freq: "one-time",
-    desc: "New month, new content. We generate a fresh 30-day batch of AI images and captions for your feed. Swap out the old schedule and keep your audience engaged.",
+    desc: "New month, new content. We generate a fresh 30-day batch of AI images and captions for your feed. Keep your audience engaged without lifting a finger.",
     colour: "#10b981",
   },
 ];
@@ -86,42 +86,17 @@ const steps = [
   {
     n: "02",
     title: "We build the content",
-    body: "We write AI image prompts tailored to your products and craft captions with relevant hashtags for both platforms.",
+    body: "We create AI-generated product images tailored to your business and write captions with relevant hashtags for both platforms.",
   },
   {
     n: "03",
     title: "We connect and automate",
-    body: "Your Facebook and Instagram accounts are linked via the Meta API. Make.com runs the scenario automatically at set times.",
+    body: "Your Facebook and Instagram accounts are linked via the official Meta API. Our automation system handles scheduling from there.",
   },
   {
     n: "04",
     title: "Posts go live — without you lifting a finger",
-    body: "The automation fires every morning and afternoon for 30 days. You get the content calendar so you always know what's posting.",
-  },
-];
-
-const thirdPartyCosts = [
-  {
-    platform: "Fal.ai",
-    what: "AI image generation",
-    free: "Free tier available (limited)",
-    paid: "~$0.05 per image",
-    example30: "1 post/day × 30 days = ~$1.50",
-    example60: "2 posts/day × 30 days = ~$3.00",
-    example90: "3 posts/day × 30 days = ~$4.50",
-    signup: "https://fal.ai",
-    colour: "#8b5cf6",
-  },
-  {
-    platform: "Make.com",
-    what: "Automation & scheduling",
-    free: "Free plan: 1,000 ops/month",
-    paid: "Core plan ~$9/month if exceeded",
-    example30: "1 post/day ≈ 210 ops — free",
-    example60: "2 posts/day ≈ 420 ops — free",
-    example90: "3 posts/day ≈ 630 ops — free",
-    signup: "https://make.com",
-    colour: "#3b82f6",
+    body: "The system fires every morning and afternoon for 30 days. You get the full content calendar so you always know what's posting.",
   },
 ];
 
@@ -131,12 +106,8 @@ const faqs = [
     a: "No. We connect through Facebook's official API. You authorise the connection from your own account — we never need your login credentials.",
   },
   {
-    q: "Do I pay for Fal.ai and Make.com separately?",
-    a: "Yes — those platform costs are yours to cover and are not included in our service fee. Fal.ai charges roughly $0.05 per AI-generated image, so a 30-day setup at 2 posts/day costs around $3 in image credits. Make.com's free plan covers up to 1,000 operations/month, which is enough for up to 3 posts/day without paying anything. We'll walk you through creating both accounts as part of the setup.",
-  },
-  {
     q: "What if I want more than 2 posts a day?",
-    a: "No problem — we can set up any posting frequency. Just be aware that more posts means more Fal.ai image credits (still very cheap — 3/day for 30 days costs around $4.50). Make.com's free plan covers up to about 3 posts/day; if you want 4 or more, their Core plan is around $9/month.",
+    a: "No problem — we can set up any posting frequency. Just mention it when you email us and we'll quote accordingly.",
   },
   {
     q: "What types of products work best?",
@@ -144,11 +115,11 @@ const faqs = [
   },
   {
     q: "Can you show products in different colours?",
-    a: "Yes — that's our speciality. We use the same AI colour-remaking technology behind our SaaS tool to show your products in multiple colourways across the 30-day feed.",
+    a: "Yes — that's our speciality. We use AI colour-remaking technology to show your products in multiple colourways across the 30-day feed.",
   },
   {
     q: "What happens after 30 days?",
-    a: "The automation stops automatically. You can order a Content Refresh add-on to queue another 30 days, or take over the Google Sheet yourself and queue new posts manually.",
+    a: "The automation stops automatically. You can order a Content Refresh ($40) to queue another 30 days of fresh posts.",
   },
   {
     q: "How long does setup take?",
@@ -156,7 +127,7 @@ const faqs = [
   },
   {
     q: "What if something breaks mid-month?",
-    a: "The Monthly Maintenance add-on covers you. Without it, a One-Time Fix (£79) gets everything back on track within 24 hours.",
+    a: "The Monthly Maintenance add-on covers you. Without it, a One-Time Fix ($19) gets everything back on track within 24 hours.",
   },
 ];
 
@@ -231,94 +202,6 @@ export default function ServicesPage() {
           </div>
         </div>
 
-        {/* ── What you'll need ── */}
-        <div style={{ marginBottom: "72px" }}>
-          <h2 style={{ fontSize: "22px", fontWeight: 800, color: "#e2e8f0", marginBottom: "8px", textAlign: "center" }}>
-            What you&apos;ll need (outside our fee)
-          </h2>
-          <p style={{ fontSize: "14px", color: "#475569", textAlign: "center", marginBottom: "32px", lineHeight: 1.7 }}>
-            The automation runs on two third-party platforms. You&apos;ll own your own accounts —
-            we set them up as part of the service. Their costs are billed directly to you and are
-            kept intentionally separate so you&apos;re never locked into us.
-          </p>
-
-          <div style={{ display: "grid", gridTemplateColumns: "repeat(auto-fit, minmax(340px, 1fr))", gap: "16px", marginBottom: "20px" }}>
-            {thirdPartyCosts.map((p) => (
-              <div key={p.platform} style={{
-                background: "#0d1424", border: `1px solid ${p.colour}22`,
-                borderRadius: "16px", padding: "24px",
-              }}>
-                {/* Header */}
-                <div style={{ display: "flex", alignItems: "center", gap: "10px", marginBottom: "16px" }}>
-                  <div style={{
-                    width: "10px", height: "10px", borderRadius: "50%",
-                    background: p.colour, flexShrink: 0,
-                  }} />
-                  <div>
-                    <div style={{ fontSize: "15px", fontWeight: 800, color: "#e2e8f0" }}>{p.platform}</div>
-                    <div style={{ fontSize: "12px", color: "#475569" }}>{p.what}</div>
-                  </div>
-                  <a
-                    href={p.signup}
-                    target="_blank"
-                    rel="noopener noreferrer"
-                    style={{
-                      marginLeft: "auto", fontSize: "11px", fontWeight: 700,
-                      padding: "4px 12px", borderRadius: "999px",
-                      background: `${p.colour}15`,
-                      border: `1px solid ${p.colour}35`,
-                      color: p.colour,
-                    }}
-                  >
-                    Sign up free →
-                  </a>
-                </div>
-
-                {/* Cost rows */}
-                <div style={{ display: "flex", flexDirection: "column", gap: "8px", marginBottom: "16px" }}>
-                  <div style={{ display: "flex", justifyContent: "space-between", alignItems: "center", fontSize: "12px" }}>
-                    <span style={{ color: "#475569" }}>Free tier</span>
-                    <span style={{ color: "#22c55e", fontWeight: 700 }}>{p.free}</span>
-                  </div>
-                  <div style={{ display: "flex", justifyContent: "space-between", alignItems: "center", fontSize: "12px" }}>
-                    <span style={{ color: "#475569" }}>Paid tier</span>
-                    <span style={{ color: "#94a3b8", fontWeight: 600 }}>{p.paid}</span>
-                  </div>
-                </div>
-
-                {/* Example costs */}
-                <div style={{
-                  background: "rgba(255,255,255,0.03)", borderRadius: "10px",
-                  padding: "12px 14px",
-                }}>
-                  <div style={{ fontSize: "11px", fontWeight: 700, color: "#475569", marginBottom: "8px", textTransform: "uppercase", letterSpacing: "0.08em" }}>
-                    Estimated cost per 30 days
-                  </div>
-                  {[
-                    { label: "1 post / day", val: p.example30 },
-                    { label: "2 posts / day", val: p.example60 },
-                    { label: "3 posts / day", val: p.example90 },
-                  ].map((row) => (
-                    <div key={row.label} style={{ display: "flex", justifyContent: "space-between", fontSize: "12px", marginBottom: "4px" }}>
-                      <span style={{ color: "#334155" }}>{row.label}</span>
-                      <span style={{ color: "#64748b", fontWeight: 600 }}>{row.val}</span>
-                    </div>
-                  ))}
-                </div>
-              </div>
-            ))}
-          </div>
-
-          <div style={{
-            padding: "14px 18px", borderRadius: "12px",
-            background: "rgba(34,197,94,0.06)", border: "1px solid rgba(34,197,94,0.2)",
-            fontSize: "13px", color: "#4ade80", fontWeight: 600, textAlign: "center",
-          }}>
-            For most businesses doing 2 posts/day, total third-party cost for 30 days is around{" "}
-            <strong>$3 USD</strong> — less than a coffee.
-          </div>
-        </div>
-
         {/* ── Pricing ── */}
         <div style={{ marginBottom: "72px" }}>
           <p style={{ fontSize: "11px", fontWeight: 800, color: "#64748b", letterSpacing: "0.14em", textTransform: "uppercase", textAlign: "center", marginBottom: "16px" }}>
@@ -364,7 +247,6 @@ export default function ServicesPage() {
                   <span style={{ fontSize: "14px", color: "#475569", marginLeft: "6px" }}>{plan.freq}</span>
                 </div>
 
-                {/* Posts pill */}
                 <div style={{
                   display: "inline-flex", alignItems: "center", gap: "6px",
                   fontSize: "11px", fontWeight: 700,
@@ -407,29 +289,8 @@ export default function ServicesPage() {
               </div>
             ))}
           </div>
-          {/* Third-party cost note */}
-          <div style={{
-            marginTop: "20px", padding: "16px 20px", borderRadius: "12px",
-            background: "rgba(245,158,11,0.06)", border: "1px solid rgba(245,158,11,0.2)",
-            display: "flex", gap: "12px", alignItems: "flex-start",
-          }}>
-            <span style={{ fontSize: "16px", flexShrink: 0, marginTop: "1px" }}>⚠️</span>
-            <div>
-              <div style={{ fontSize: "13px", fontWeight: 700, color: "#fbbf24", marginBottom: "4px" }}>
-                Platform credits are not included — and they&apos;re very cheap
-              </div>
-              <div style={{ fontSize: "12px", color: "#78716c", lineHeight: 1.7 }}>
-                The service fee covers our time to build, write, connect and launch everything.
-                Fal.ai (AI image generation) and Make.com (scheduling automation) are third-party
-                platforms billed directly to you. At 2 posts/day, expect around{" "}
-                <strong style={{ color: "#a8a29e" }}>$3 in Fal.ai image credits</strong> for the
-                full 30 days, and <strong style={{ color: "#a8a29e" }}>$0 for Make.com</strong>{" "}
-                (free plan covers up to ~3 posts/day). We help you set up both accounts.
-              </div>
-            </div>
-          </div>
-          <p style={{ fontSize: "12px", color: "#334155", textAlign: "center", marginTop: "12px" }}>
-            All packages are delivered within 2–4 business days · Invoiced via email · PayPal or bank transfer accepted
+          <p style={{ fontSize: "12px", color: "#334155", textAlign: "center", marginTop: "16px" }}>
+            Delivered within 2–4 business days · Invoiced via email · PayPal or bank transfer accepted
           </p>
         </div>
 
@@ -524,7 +385,7 @@ export default function ServicesPage() {
           <p style={{ fontSize: "13px", color: "#334155", lineHeight: 1.8 }}>
             Powered by the same AI colour-remaking technology as our{" "}
             <Link href="/generate" style={{ color: "#60a5fa" }}>SaaS tool</Link>
-            {" "}· Automation built on Make.com · Posts via Meta Graph API
+            {" "}· Posts published via the official Meta API
           </p>
         </div>
 
