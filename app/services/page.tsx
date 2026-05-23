@@ -21,7 +21,7 @@ const plans = [
   {
     name: "Starter",
     price: "$98",
-    originalPrice: "$197",
+    originalPrice: "$196",
     freq: "one-time",
     tagline: "Perfect for small shops getting started with social media.",
     posts: "30 posts",
@@ -45,7 +45,7 @@ const plans = [
   {
     name: "Growth",
     price: "$124",
-    originalPrice: "$249",
+    originalPrice: "$248",
     freq: "one-time",
     tagline: "Double the presence. Twice daily posting keeps your brand front of mind.",
     posts: "60 posts",
@@ -73,7 +73,7 @@ const addons = [
   {
     name: "Monthly Maintenance",
     price: "$24",
-    originalPrice: "$49",
+    originalPrice: "$48",
     freq: "/ month",
     desc: "We monitor the automation, fix any broken connections, and keep everything running smoothly. Ideal if you want peace of mind month to month.",
     colour: "#3b82f6",
@@ -82,7 +82,7 @@ const addons = [
   {
     name: "One-Time Fix",
     price: "$9",
-    originalPrice: "$19",
+    originalPrice: "$18",
     freq: "flat fee",
     desc: "Something broke? We diagnose and fix the issue — broken connections, expired permissions, disconnected accounts — one flat charge, no subscription needed.",
     colour: "#8b5cf6",
