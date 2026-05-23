@@ -73,6 +73,7 @@ const plans = [
     features: [
       "5 standard colour remakes",
       "1 HD photorealistic render",
+      "Up to 6 colours per generation",
       "Colour picker & swatch upload",
       "Download generated images",
       "Email support",
@@ -100,6 +101,7 @@ const plans = [
     features: [
       "100 standard credits / month",
       "10 HD photorealistic credits / month",
+      "Up to 6 colours per generation",
       "Credits refresh each billing cycle",
       "Colour picker & swatch upload",
       "Full generation history",
@@ -128,6 +130,8 @@ const plans = [
     features: [
       "500 standard credits / month",
       "60 HD photorealistic credits / month",
+      "Up to 20 colours per generation",
+      "Bulk swatch batches in one go",
       "Credits refresh each billing cycle",
       "Colour picker & swatch upload",
       "Full generation history",
@@ -157,6 +161,8 @@ const plans = [
     features: [
       "∞ Unlimited standard credits",
       "200 HD photorealistic credits / month",
+      "Up to 20 colours per generation",
+      "Bulk swatch batches in one go",
       "Credits refresh each billing cycle",
       "Colour picker & swatch upload",
       "Full generation history",

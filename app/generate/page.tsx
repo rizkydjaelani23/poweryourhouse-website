@@ -443,7 +443,7 @@ export default function GeneratePage() {
               border: genMode === "multi" ? "1px solid rgba(59,130,246,0.3)" : "1px solid rgba(255,255,255,0.08)",
               flexShrink: 0,
             }}>
-              1 image → up to 6 colours
+              1 image → up to 20 colours (Pro)
             </span>
           </button>
         </div>
@@ -898,7 +898,7 @@ export default function GeneratePage() {
               <span>Leave selection blank to recolour the whole image</span>
               <span>Scroll to zoom · Alt+drag to pan · Ctrl+Z to undo</span>
               <span>HD mode works best with a descriptive prompt</span>
-              <span>Multiple colours: 1 image recoloured into up to 6 shades at once</span>
+              <span>Multiple colours: recolour into up to 6 shades at once (up to 20 on Pro &amp; Business)</span>
             </div>
           </div>
 

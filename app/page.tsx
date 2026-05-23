@@ -63,7 +63,7 @@ const industries = [
 
 const steps = [
   { num: "01", colour: "#3b82f6", title: "Upload one product photo", desc: "Any product shot — fabric, furniture, clothing, bags. JPG, PNG or WebP." },
-  { num: "02", colour: "#8b5cf6", title: "Pick your colours", desc: "Add up to 6 colours at once. Use the picker, type a hex, or upload a fabric swatch." },
+  { num: "02", colour: "#8b5cf6", title: "Pick your colours", desc: "Add multiple colours at once — including full swatch batches. Use the picker, type a hex, or upload a fabric swatch. Pro users can do up to 20 in one go." },
   { num: "03", colour: "#10b981", title: "Download all variations", desc: "Every colour generated in seconds. Download individually or all at once as a ZIP." },
 ];
 
@@ -437,18 +437,22 @@ export default function HomePage() {
               <div style={{ display: "flex", alignItems: "flex-start", justifyContent: "space-between", gap: "32px", flexWrap: "wrap" }}>
                 <div style={{ flex: 1, minWidth: "260px" }}>
                   <p style={{ fontSize: "11px", fontWeight: 800, color: "#3b82f6", letterSpacing: "0.14em", textTransform: "uppercase", marginBottom: "16px" }}>
-                    Multiple colours mode
+                    Bulk swatch generation
                   </p>
 
                   <h2 style={{ fontSize: "clamp(22px, 3vw, 32px)", fontWeight: 900, color: "#fff", marginBottom: "14px", lineHeight: 1.15, letterSpacing: "-0.02em" }}>
-                    Pick 6 colours.
-                    <br />Generate all at once.
+                    Upload your whole
+                    <br />swatch range at once.
                     <br />
                     <span style={{ color: "#60a5fa" }}>Download as a ZIP.</span>
                   </h2>
 
-                  <p style={{ fontSize: "15px", color: "#64748b", lineHeight: 1.7, marginBottom: "24px", maxWidth: "420px" }}>
-                    Stop generating one at a time. Add all your colour options, hit generate, and every variation is ready in under a minute — packaged and ready to upload to your store.
+                  <p style={{ fontSize: "15px", color: "#64748b", lineHeight: 1.7, marginBottom: "12px", maxWidth: "420px" }}>
+                    Stop generating one colour at a time. Add your entire swatch range, hit generate, and every variation is ready in under a minute — packaged and ready to upload to your store.
+                  </p>
+
+                  <p style={{ fontSize: "13px", color: "#475569", lineHeight: 1.6, marginBottom: "24px", maxWidth: "420px" }}>
+                    Free plan includes up to 6 colours per batch. Pro and Business plans support up to 20 colour variations in a single generation.
                   </p>
 
                   <Link href="/generate" style={{
