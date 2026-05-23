@@ -1,24 +1,36 @@
 "use client";
 import { useState } from "react";
-import { useRouter } from "next/navigation";
 
 export default function LoginForm() {
-  const [pw, setPw]       = useState("");
-  const [err, setErr]     = useState("");
+  const [pw, setPw]           = useState("");
+  const [err, setErr]         = useState("");
   const [loading, setLoading] = useState(false);
-  const router = useRouter();
 
   async function submit(e: React.FormEvent) {
     e.preventDefault();
-    setErr(""); setLoading(true);
-    const res = await fetch("/api/admin-login", {
-      method: "POST",
-      headers: { "Content-Type": "application/json" },
-      body: JSON.stringify({ password: pw }),
-    });
-    setLoading(false);
-    if (res.ok) { router.refresh(); }
-    else { setErr("Wrong password"); }
+    setErr("");
+    setLoading(true);
+
+    try {
+      const res = await fetch("/api/admin-login", {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({ password: pw }),
+      });
+
+      const json = await res.json();
+
+      if (res.ok) {
+        // Hard reload so the server component re-reads the cookie cleanly
+        window.location.href = "/admin";
+      } else {
+        setErr(json.error ?? "Wrong password");
+      }
+    } catch {
+      setErr("Network error — try again");
+    } finally {
+      setLoading(false);
+    }
   }
 
   return (
@@ -45,9 +57,18 @@ export default function LoginForm() {
             background: "#0b1120", border: "1px solid rgba(255,255,255,0.1)",
             borderRadius: "10px", padding: "12px 16px",
             color: "#fff", fontSize: "15px", outline: "none", width: "100%",
+            boxSizing: "border-box",
           }}
         />
-        {err && <p style={{ color: "#ef4444", fontSize: "13px", margin: 0 }}>{err}</p>}
+        {err && (
+          <p style={{
+            color: "#f87171", fontSize: "13px", margin: 0,
+            background: "rgba(239,68,68,0.08)", border: "1px solid rgba(239,68,68,0.2)",
+            borderRadius: "8px", padding: "10px 12px",
+          }}>
+            {err}
+          </p>
+        )}
         <button
           type="submit"
           disabled={loading}

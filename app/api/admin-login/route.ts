@@ -1,17 +1,23 @@
 import { NextResponse } from "next/server";
 
-// Session marker stored in the cookie — never the raw password
 const SESSION_MARKER = "pyh_admin_ok";
 
 export async function POST(req: Request) {
-  const { password } = await req.json();
-  const expected = (process.env.ADMIN_PASSWORD ?? "").trim();
+  const body = await req.json().catch(() => ({}));
+  const submitted = ((body.password as string) ?? "").trim();
+  const expected  = (process.env.ADMIN_PASSWORD ?? "").trim();
+
+  // Debug: log what we see (remove after confirming it works)
+  console.log("[admin-login] expected length:", expected.length, "| submitted length:", submitted.length, "| match:", submitted === expected);
 
   if (!expected) {
-    return NextResponse.json({ error: "ADMIN_PASSWORD env var is not set" }, { status: 500 });
+    return NextResponse.json(
+      { error: "ADMIN_PASSWORD is not set on this server. Add it to your environment variables." },
+      { status: 500 }
+    );
   }
 
-  if (!password || (password as string).trim() !== expected) {
+  if (!submitted || submitted !== expected) {
     return NextResponse.json({ error: "Wrong password" }, { status: 401 });
   }
 
@@ -20,7 +26,7 @@ export async function POST(req: Request) {
     httpOnly: true,
     secure: process.env.NODE_ENV === "production",
     sameSite: "lax",
-    maxAge: 60 * 60 * 24, // 24 hours
+    maxAge: 60 * 60 * 24,
     path: "/",
   });
   return res;
