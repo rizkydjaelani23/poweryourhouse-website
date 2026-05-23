@@ -53,7 +53,7 @@ const jsonLd = {
   "@type": "Organization",
   name: "Power Your House",
   url: "https://poweryourhouse.io",
-  logo: "https://poweryourhouse.io/general__coniston-grey.jpg",
+  logo: "https://poweryourhouse.io/logo.png",
   description:
     "Software studio building focused Shopify apps for furniture, bedding and upholstery merchants worldwide. Specialising in AI-powered fabric colour visualisation.",
   foundingDate: "2024",

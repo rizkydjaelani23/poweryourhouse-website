@@ -42,7 +42,8 @@ function LoginForm() {
 
         <div style={{ textAlign: "center", marginBottom: "32px" }}>
           <div style={{ display: "inline-flex", alignItems: "center", gap: "10px", marginBottom: "8px" }}>
-            <div style={{ width: "38px", height: "38px", borderRadius: "10px", background: "linear-gradient(135deg, #3b82f6, #4f46e5)", display: "flex", alignItems: "center", justifyContent: "center", fontSize: "18px" }}>⚡</div>
+            {/* eslint-disable-next-line @next/next/no-img-element */}
+            <img src="/logo.png" alt="Power Your House" style={{ width: "38px", height: "38px", objectFit: "contain" }} />
             <span style={{ fontSize: "17px", fontWeight: 800, color: "#fff" }}>Power Your House</span>
           </div>
           <h1 style={{ fontSize: "24px", fontWeight: 800, color: "#fff", margin: "12px 0 6px" }}>Welcome back</h1>

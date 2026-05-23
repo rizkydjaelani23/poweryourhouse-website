@@ -89,13 +89,8 @@ export default function Nav() {
 
         {/* Logo */}
         <Link href="/" style={{ display: "flex", alignItems: "center", gap: "10px", flexShrink: 0 }}>
-          <div style={{
-            width: "36px", height: "36px", borderRadius: "10px",
-            background: "linear-gradient(135deg, #3b82f6, #4f46e5)",
-            display: "flex", alignItems: "center", justifyContent: "center",
-            fontSize: "18px", flexShrink: 0,
-            animation: "pulse-glow 3s ease-in-out infinite",
-          }}>⚡</div>
+          {/* eslint-disable-next-line @next/next/no-img-element */}
+          <img src="/logo.png" alt="Power Your House" style={{ width: "36px", height: "36px", objectFit: "contain", flexShrink: 0 }} />
           <span style={{ fontSize: "17px", fontWeight: 800, color: "#fff", letterSpacing: "-0.01em", whiteSpace: "nowrap" }}>
             Power Your House
           </span>

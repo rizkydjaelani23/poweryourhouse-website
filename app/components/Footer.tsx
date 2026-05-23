@@ -17,12 +17,8 @@ export default function Footer() {
           {/* Brand */}
           <div>
             <div style={{ display: "flex", alignItems: "center", gap: "10px", marginBottom: "14px" }}>
-              <div style={{
-                width: "34px", height: "34px", borderRadius: "9px",
-                background: "linear-gradient(135deg, #3b82f6, #4f46e5)",
-                display: "flex", alignItems: "center", justifyContent: "center",
-                fontSize: "16px",
-              }}>⚡</div>
+              {/* eslint-disable-next-line @next/next/no-img-element */}
+              <img src="/logo.png" alt="Power Your House" style={{ width: "34px", height: "34px", objectFit: "contain" }} />
               <span style={{ fontSize: "15px", fontWeight: 800, color: "#fff" }}>Power Your House</span>
             </div>
             <p style={{ fontSize: "13px", color: "#64748b", lineHeight: 1.7, maxWidth: "220px" }}>
