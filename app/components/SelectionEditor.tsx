@@ -139,11 +139,14 @@ export default function SelectionEditor({ imageSrc, handleRef, onMaskChange }: P
         ctx.setLineDash([]);
 
         pts.forEach((p, i) => {
+          // Dot radius shrinks as you zoom in → more precise placement at high zoom
+          const baseR = (i === 0 ? 5 : 3);
+          const r     = baseR / Math.max(scale, 0.4);
           ctx.beginPath();
-          ctx.arc(p.x, p.y, (i === 0 ? 7 : 4) / scale, 0, Math.PI * 2);
+          ctx.arc(p.x, p.y, r, 0, Math.PI * 2);
           ctx.fillStyle   = i === 0 ? "#a78bfa" : "#fff";
           ctx.strokeStyle = "#a78bfa";
-          ctx.lineWidth   = 1.5 / scale;
+          ctx.lineWidth   = 1 / scale;
           ctx.fill();
           ctx.stroke();
         });
