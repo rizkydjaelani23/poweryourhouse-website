@@ -49,17 +49,27 @@ async function extractHexFromSwatch(swatchBuffer: Buffer): Promise<string> {
 
 /** Standard recolour: tint preserving luminance via sharp's built-in tint()
  *  If a mask (B&W PNG) is provided, only the white areas are tinted.
+ *
+ *  We normalise EXIF orientation first (.rotate() with no args reads the EXIF
+ *  tag and bakes the rotation into pixels, then strips the tag).  This ensures
+ *  the image dimensions on the server always match what the browser showed when
+ *  the user drew the mask — preventing coordinate misalignment on portrait /
+ *  rotated phone photos.
  */
 async function standardRecolour(inputBuffer: Buffer, hex: string, maskBuffer?: Buffer): Promise<Buffer> {
   const { r, g, b } = hexToRgb(hex);
 
+  // Normalise EXIF orientation so pixel-space matches the browser display
+  const normalised = await sharp(inputBuffer).rotate().toBuffer();
+
   if (!maskBuffer) {
-    return sharp(inputBuffer).tint({ r, g, b }).jpeg({ quality: 92 }).toBuffer();
+    return sharp(normalised).tint({ r, g, b }).jpeg({ quality: 92 }).toBuffer();
   }
 
-  const tinted = await sharp(inputBuffer).tint({ r, g, b }).png().toBuffer();
+  const tinted = await sharp(normalised).tint({ r, g, b }).png().toBuffer();
 
-  const meta = await sharp(inputBuffer).metadata();
+  // Dimensions after EXIF normalisation (portrait photos are now portrait)
+  const meta = await sharp(normalised).metadata();
   const w = meta.width  || 800;
   const h = meta.height || 600;
   const mask = await sharp(maskBuffer).resize(w, h, { fit: "fill" }).greyscale().png().toBuffer();
@@ -70,7 +80,7 @@ async function standardRecolour(inputBuffer: Buffer, hex: string, maskBuffer?: B
     .png()
     .toBuffer();
 
-  return sharp(inputBuffer)
+  return sharp(normalised)
     .composite([{ input: tintedMasked, blend: "over" }])
     .jpeg({ quality: 92 })
     .toBuffer();
@@ -81,8 +91,11 @@ async function hdRecolour(inputBuffer: Buffer, hex: string, colourName: string, 
   const { fal } = await import("@fal-ai/client");
   fal.config({ credentials: process.env.FAL_KEY! });
 
+  // Normalise EXIF orientation before uploading — fal.ai does not read EXIF
+  const normalised = await sharp(inputBuffer).rotate().jpeg({ quality: 95 }).toBuffer();
+
   const uploadedUrl = await fal.storage.upload(
-    new File([new Uint8Array(inputBuffer)], "input.jpg", { type: "image/jpeg" })
+    new File([new Uint8Array(normalised)], "input.jpg", { type: "image/jpeg" })
   );
 
   const baseInstruction =

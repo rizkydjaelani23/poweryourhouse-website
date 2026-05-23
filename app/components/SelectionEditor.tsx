@@ -47,6 +47,10 @@ export default function SelectionEditor({ imageSrc, handleRef, onMaskChange }: P
   const isSpaceDown   = useRef(false);
   const lastMouse     = useRef<Pt>({ x: 0, y: 0 });
   const rafId         = useRef(0);
+  // Prevents snap-to-close from activating immediately after an undo when the
+  // cursor is already sitting near the first point.  Cleared once the cursor
+  // moves far enough away from the origin so a deliberate approach still snaps.
+  const snapSuppressed = useRef(false);
 
   // History for undo
   const historyRef = useRef<Snap[]>([]);
@@ -131,10 +135,12 @@ export default function SelectionEditor({ imageSrc, handleRef, onMaskChange }: P
         ctx.beginPath();
         ctx.moveTo(pts[0].x, pts[0].y);
         pts.slice(1).forEach((p) => ctx.lineTo(p.x, p.y));
-        // Snap preview: only show closing line when cursor is near the first point
-        // AND at least 15 points have been placed (no auto rubber-band otherwise)
+        // Snap preview: only show closing line when cursor is near the first point,
+        // at least 15 points have been placed, and snap hasn't been suppressed by
+        // a recent undo (cleared once cursor moves 32+ canvas-px from origin).
         const snapRadius = 16 / scale;
         const isNearOrigin = !closedRef.current &&
+          !snapSuppressed.current &&
           pts.length >= 15 &&
           cursorRef.current != null &&
           Math.hypot(cursorRef.current.x - pts[0].x, cursorRef.current.y - pts[0].y) < snapRadius;
@@ -204,6 +210,7 @@ export default function SelectionEditor({ imageSrc, handleRef, onMaskChange }: P
     pointsRef.current = prev.pts;
     closedRef.current = prev.closed;
     cursorRef.current = null;
+    snapSuppressed.current = true; // don't snap until cursor moves away from origin
 
     hasMaskRef.current = prev.hasMask;
     _setHasMask(prev.hasMask);
@@ -438,7 +445,8 @@ export default function SelectionEditor({ imageSrc, handleRef, onMaskChange }: P
       }
     }
     saveSnap();
-    pointsRef.current = [...pointsRef.current, ip];
+    pointsRef.current  = [...pointsRef.current, ip];
+    snapSuppressed.current = false; // adding a point re-enables snap normally
     setPtCount(pointsRef.current.length);
     render();
   }
@@ -459,6 +467,15 @@ export default function SelectionEditor({ imageSrc, handleRef, onMaskChange }: P
 
     if (toolRef.current === "outline" && !closedRef.current) {
       cursorRef.current = c2i(cp.x, cp.y);
+
+      // Lift snap suppression once cursor has moved well clear of the first dot
+      if (snapSuppressed.current && pointsRef.current.length > 0) {
+        const fp = i2c(pointsRef.current[0].x, pointsRef.current[0].y);
+        if (Math.hypot(cp.x - fp.x, cp.y - fp.y) > 32) {
+          snapSuppressed.current = false;
+        }
+      }
+
       render();
     }
 

@@ -100,13 +100,45 @@ export default function GeneratePage() {
 
   // ── Image upload ──────────────────────────────────────────────────────────
   function handleImageFile(file: File) {
-    setImageFile(file);
     setResult(null);
     setError(null);
     setHasMask(false);
     setMultiResults([]);
+
+    // Normalise EXIF orientation by drawing through a canvas.
+    // Browsers apply EXIF when rendering <img> and in ctx.drawImage(), but the
+    // raw File still carries the original (possibly rotated) bytes.  If we send
+    // the raw file to the server the pixel-space won't match the mask the user
+    // drew in the SelectionEditor → bleed-out on portrait / rotated photos.
     const reader = new FileReader();
-    reader.onload = (e) => setImagePreview(e.target?.result as string);
+    reader.onload = (ev) => {
+      const dataUrl = ev.target?.result as string;
+      const img = new window.Image();
+      img.onload = () => {
+        // naturalWidth/Height already reflect EXIF rotation in modern browsers
+        const canvas = document.createElement("canvas");
+        canvas.width  = img.naturalWidth;
+        canvas.height = img.naturalHeight;
+        canvas.getContext("2d")!.drawImage(img, 0, 0);
+
+        // Use the normalised data URL as preview so SelectionEditor matches
+        const normDataUrl = canvas.toDataURL("image/jpeg", 0.95);
+        setImagePreview(normDataUrl);
+
+        // Convert to a File so the API also receives the normalised orientation
+        canvas.toBlob(
+          (blob) => {
+            setImageFile(blob
+              ? new File([blob], file.name, { type: "image/jpeg" })
+              : file, // fallback to original if canvas fails
+            );
+          },
+          "image/jpeg",
+          0.95,
+        );
+      };
+      img.src = dataUrl;
+    };
     reader.readAsDataURL(file);
   }
 
