@@ -38,7 +38,7 @@ export async function getAdminData(password: string) {
     admin.from("saas_guest_usage").select("*", { count: "exact", head: true }),
     admin.from("saas_generations").select("id,user_id,type,colour_hex,status,created_at").order("created_at", { ascending: false }).limit(40),
     admin.from("saas_guest_usage").select("*").order("last_used", { ascending: false }),
-    admin.from("saas_credit_ledger").select("user_id,type,delta"),
+    admin.from("saas_credit_ledger").select("user_id,type,delta").limit(10000),
     admin.auth.admin.listUsers({ page: 1, perPage: 100 }),
   ]);
 
@@ -72,6 +72,31 @@ export async function getAdminData(password: string) {
     balanceMap,
     emailMap,
   };
+}
+
+/** Fetch the live STANDARD + HD balance for a single user (admin only). */
+export async function getUserBalances(
+  password: string,
+  userId: string
+): Promise<{ standard: number; hd: number; error?: string }> {
+  if (!checkPassword(password)) return { standard: 0, hd: 0, error: "Wrong password" };
+
+  const admin = await createAdminClient();
+
+  const { data, error } = await admin
+    .from("saas_credit_ledger")
+    .select("type,delta")
+    .eq("user_id", userId);
+
+  if (error) return { standard: 0, hd: 0, error: error.message };
+
+  let standard = 0, hd = 0;
+  for (const row of (data ?? [])) {
+    if (row.type === "STANDARD") standard += row.delta;
+    else if (row.type === "HD")  hd       += row.delta;
+  }
+
+  return { standard: Math.max(0, standard), hd: Math.max(0, hd) };
 }
 
 export async function adminAddCredits(

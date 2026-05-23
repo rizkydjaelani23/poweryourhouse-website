@@ -1,6 +1,6 @@
 "use client";
 import { useState, useEffect, useCallback } from "react";
-import { verifyAdminPassword, getAdminData, adminAddCredits } from "./actions";
+import { verifyAdminPassword, getAdminData, adminAddCredits, getUserBalances } from "./actions";
 
 // ── tiny helpers ──────────────────────────────────────────────────────────────
 
@@ -96,12 +96,32 @@ function UserRow({ u, balanceMap, password }: { u: { id: string; email?: string;
   const [flash, setFlash]   = useState("");
   const [err, setErr]       = useState("");
 
+  // Keep local state in sync if balanceMap is refreshed from outside
+  // (only update when the user is NOT mid-edit)
+  useEffect(() => {
+    if (adding) return; // don't clobber while the input is open
+    setStd(Math.max(0, balanceMap[u.id]?.STANDARD ?? 0));
+    setHd(Math.max(0, balanceMap[u.id]?.HD ?? 0));
+  // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [balanceMap]);
+
   async function topUp(type: "STANDARD" | "HD") {
     setLoading(true); setErr("");
     const result = await adminAddCredits(password, u.id, type, Number(amount));
     if (result.error) { setErr(result.error); setLoading(false); return; }
+
+    // Use the balance from the insert response immediately…
     if (type === "STANDARD") setStd(result.balance);
     else setHd(result.balance);
+
+    // …then re-fetch the live DB balance to confirm they match
+    getUserBalances(password, u.id).then(live => {
+      if (!live.error) {
+        setStd(live.standard);
+        setHd(live.hd);
+      }
+    });
+
     setFlash(`+${amount} ${type === "STANDARD" ? "standard" : "HD"}`);
     setTimeout(() => setFlash(""), 3000);
     setAdding(null);
@@ -161,12 +181,12 @@ function Dashboard({ password, onLogout }: { password: string; onLogout: () => v
   const [loading, setLoading] = useState(true);
   const [err, setErr]         = useState("");
 
-  const load = useCallback(async () => {
-    setLoading(true);
+  const load = useCallback(async (silent = false) => {
+    if (!silent) setLoading(true);
     const result = await getAdminData(password);
     if ("error" in result && result.error) { setErr(result.error); setLoading(false); return; }
     setData(result as AdminData);
-    setLoading(false);
+    if (!silent) setLoading(false);
   }, [password]);
 
   useEffect(() => { load(); }, [load]);
@@ -223,7 +243,7 @@ function Dashboard({ password, onLogout }: { password: string; onLogout: () => v
             </p>
           </div>
           <div style={{ display: "flex", gap: "10px" }}>
-            <button onClick={load} style={{ background: "rgba(59,130,246,0.1)", border: "1px solid rgba(59,130,246,0.2)", borderRadius: "8px", padding: "8px 14px", color: "#60a5fa", fontSize: "13px", fontWeight: 600, cursor: "pointer" }}>↻ Refresh</button>
+            <button onClick={() => load(true)} style={{ background: "rgba(59,130,246,0.1)", border: "1px solid rgba(59,130,246,0.2)", borderRadius: "8px", padding: "8px 14px", color: "#60a5fa", fontSize: "13px", fontWeight: 600, cursor: "pointer" }}>↻ Refresh</button>
             <button onClick={onLogout} style={{ background: "transparent", border: "1px solid rgba(255,255,255,0.1)", borderRadius: "8px", padding: "8px 16px", color: "#64748b", fontSize: "13px", fontWeight: 600, cursor: "pointer" }}>Sign out</button>
           </div>
         </div>
