@@ -184,14 +184,14 @@ export default function ServicesPage() {
             scheduling system that runs itself — you don&apos;t touch a thing.
           </p>
           <div style={{ display: "flex", gap: "10px", justifyContent: "center", flexWrap: "wrap" }}>
-            <a href="mailto:hello@poweryourhouse.io?subject=Social Media Automation Enquiry" style={{
+            <Link href="/consultation" style={{
               padding: "14px 28px", borderRadius: "12px",
               background: "linear-gradient(135deg, #3b82f6, #4f46e5)",
               color: "#fff", fontWeight: 800, fontSize: "15px",
               boxShadow: "0 4px 20px rgba(59,130,246,0.4)",
             }}>
-              Get started — email us →
-            </a>
+              Book free consultation →
+            </Link>
             <a href="#how-it-works" style={{
               padding: "14px 24px", borderRadius: "12px",
               border: "1px solid rgba(255,255,255,0.1)",
@@ -418,14 +418,24 @@ export default function ServicesPage() {
           border: "1px solid rgba(59,130,246,0.2)",
           borderRadius: "24px", padding: "48px 32px",
         }}>
+          <div style={{
+            display: "inline-flex", alignItems: "center", gap: "6px",
+            fontSize: "11px", fontWeight: 800, letterSpacing: "0.14em", color: "#10b981",
+            textTransform: "uppercase", background: "rgba(16,185,129,0.1)",
+            border: "1px solid rgba(16,185,129,0.25)", borderRadius: "999px",
+            padding: "4px 14px", marginBottom: "20px",
+          }}>
+            Free · No commitment
+          </div>
           <h2 style={{ fontSize: "clamp(20px, 3vw, 30px)", fontWeight: 900, color: "#fff", marginBottom: "12px", letterSpacing: "-0.02em" }}>
-            Ready to put your social media on autopilot?
+            Book a free consultation
           </h2>
           <p style={{ fontSize: "15px", color: "#475569", marginBottom: "28px", maxWidth: "460px", margin: "0 auto 28px", lineHeight: 1.7 }}>
-            Email us with your Facebook Page and Instagram handle and we&apos;ll get back to you within 24 hours.
+            Fill in your business details, then pick a time for a free 30-minute Google Meet.
+            We&apos;ll show you exactly what we&apos;d build for you — no pressure.
           </p>
-          <a
-            href="mailto:hello@poweryourhouse.io?subject=Social Media Automation Enquiry&body=Hi,%0A%0AI'd like to learn more about automating my social media.%0A%0ABusiness name: %0AFacebook Page: %0AInstagram handle: %0AProducts I sell: %0AWhich package interests you: %0A%0AThanks!"
+          <Link
+            href="/consultation"
             style={{
               display: "inline-block",
               padding: "16px 36px", borderRadius: "14px",
@@ -434,10 +444,10 @@ export default function ServicesPage() {
               boxShadow: "0 6px 28px rgba(59,130,246,0.4)",
             }}
           >
-            hello@poweryourhouse.io →
-          </a>
+            Sign up for free consultation →
+          </Link>
           <p style={{ fontSize: "12px", color: "#334155", marginTop: "14px" }}>
-            Typical response time: under 24 hours · No commitment required
+            30 min Google Meet · We come prepared with ideas · Cancel anytime
           </p>
         </div>
 
