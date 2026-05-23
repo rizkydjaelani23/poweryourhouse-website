@@ -1,7 +1,6 @@
 "use server";
 
 import { createAdminClient } from "../utils/supabase/server";
-import { addCredits } from "../utils/credits";
 
 function checkPassword(password: string): boolean {
   const expected = (process.env.ADMIN_PASSWORD ?? "").trim();
@@ -83,18 +82,35 @@ export async function adminAddCredits(
 ): Promise<{ balance: number; error?: string }> {
   if (!checkPassword(password)) return { balance: 0, error: "Wrong password" };
 
-  try {
-    await addCredits(userId, type, amount, "admin_topup");
-  } catch (e) {
-    return { balance: 0, error: `DB error: ${e instanceof Error ? e.message : String(e)}` };
-  }
+  // Validate env vars early so we surface a clear error
+  if (!process.env.NEXT_PUBLIC_SUPABASE_URL) return { balance: 0, error: "Missing SUPABASE_URL env var" };
+  if (!process.env.SUPABASE_SERVICE_ROLE_KEY) return { balance: 0, error: "Missing SUPABASE_SERVICE_ROLE_KEY env var" };
 
   const admin = await createAdminClient();
-  const { data } = await admin
+
+  // Insert directly so we can inspect the error (addCredits() swallows it)
+  const { error: insertError } = await admin.from("saas_credit_ledger").insert({
+    user_id: userId,
+    type,
+    delta:  amount,
+    reason: "admin_topup",
+    ref_id: null,
+  });
+
+  if (insertError) {
+    return { balance: 0, error: `Insert failed: ${insertError.message} (code ${insertError.code})` };
+  }
+
+  // Read back the new balance
+  const { data, error: selectError } = await admin
     .from("saas_credit_ledger")
     .select("delta")
     .eq("user_id", userId)
     .eq("type", type);
+
+  if (selectError) {
+    return { balance: 0, error: `Balance fetch failed: ${selectError.message}` };
+  }
 
   const balance = Math.max(0, (data ?? []).reduce((s: number, r: { delta: number }) => s + r.delta, 0));
   return { balance };
