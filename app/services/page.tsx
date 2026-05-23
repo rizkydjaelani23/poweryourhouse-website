@@ -1,5 +1,15 @@
 import Link from "next/link";
 import type { Metadata } from "next";
+import BuyButton from "./BuyButton";
+
+// ── LemonSqueezy variant IDs for service products ─────────────────────────────
+const VARIANTS = {
+  SERVICE_STARTER:     process.env.NEXT_PUBLIC_LS_VARIANT_SERVICE_STARTER     || "",
+  SERVICE_GROWTH:      process.env.NEXT_PUBLIC_LS_VARIANT_SERVICE_GROWTH      || "",
+  SERVICE_MAINTENANCE: process.env.NEXT_PUBLIC_LS_VARIANT_SERVICE_MAINTENANCE || "",
+  SERVICE_FIX:         process.env.NEXT_PUBLIC_LS_VARIANT_SERVICE_FIX         || "",
+  SERVICE_REFRESH:     process.env.NEXT_PUBLIC_LS_VARIANT_SERVICE_REFRESH     || "",
+};
 
 export const metadata: Metadata = {
   title: "Social Media Automation Service | Power Your House",
@@ -26,8 +36,10 @@ const plans = [
       "7 days post-launch support via email",
     ],
     highlight: false,
-    cta: "Get Starter",
+    cta: "Get Starter →",
     badge: null,
+    variantId: VARIANTS.SERVICE_STARTER,
+    mailtoSubject: "Starter Social Media Automation",
   },
   {
     name: "Growth",
@@ -48,8 +60,10 @@ const plans = [
       "One free content refresh (swap images/captions)",
     ],
     highlight: true,
-    cta: "Get Growth",
+    cta: "Get Growth →",
     badge: "Most Popular",
+    variantId: VARIANTS.SERVICE_GROWTH,
+    mailtoSubject: "Growth Social Media Automation",
   },
 ];
 
@@ -60,6 +74,7 @@ const addons = [
     freq: "/ month",
     desc: "We monitor the automation, fix any broken connections, and keep everything running smoothly. Ideal if you want peace of mind month to month.",
     colour: "#3b82f6",
+    variantId: VARIANTS.SERVICE_MAINTENANCE,
   },
   {
     name: "One-Time Fix",
@@ -67,6 +82,7 @@ const addons = [
     freq: "flat fee",
     desc: "Something broke? We diagnose and fix the issue — broken connections, expired permissions, disconnected accounts — one flat charge, no subscription needed.",
     colour: "#8b5cf6",
+    variantId: VARIANTS.SERVICE_FIX,
   },
   {
     name: "Content Refresh",
@@ -74,6 +90,7 @@ const addons = [
     freq: "one-time",
     desc: "New month, new content. We generate a fresh 30-day batch of AI images and captions for your feed. Keep your audience engaged without lifting a finger.",
     colour: "#10b981",
+    variantId: VARIANTS.SERVICE_REFRESH,
   },
 ];
 
@@ -271,8 +288,10 @@ export default function ServicesPage() {
                   ))}
                 </div>
 
-                <a
-                  href={`mailto:hello@poweryourhouse.io?subject=${encodeURIComponent(plan.name + " Social Media Automation")}&body=${encodeURIComponent("Hi,\n\nI'd like to get started with the " + plan.name + " package (" + plan.price + ").\n\nBusiness name: \nFacebook Page: \nInstagram handle: \nProducts I sell: \n\nThanks!")}`}
+                <BuyButton
+                  variantId={plan.variantId}
+                  label={plan.cta}
+                  fallbackHref={`mailto:hello@poweryourhouse.io?subject=${encodeURIComponent(plan.mailtoSubject)}&body=${encodeURIComponent("Hi,\n\nI'd like to get started with the " + plan.name + " package (" + plan.price + ").\n\nBusiness name: \nFacebook Page: \nInstagram handle: \nProducts I sell: \n\nThanks!")}`}
                   style={{
                     display: "block", textAlign: "center",
                     padding: "14px", borderRadius: "12px",
@@ -283,14 +302,12 @@ export default function ServicesPage() {
                     color: "#fff", fontWeight: 700, fontSize: "14px",
                     boxShadow: plan.highlight ? "0 4px 20px rgba(59,130,246,0.35)" : undefined,
                   }}
-                >
-                  {plan.cta} →
-                </a>
+                />
               </div>
             ))}
           </div>
           <p style={{ fontSize: "12px", color: "#334155", textAlign: "center", marginTop: "16px" }}>
-            Delivered within 2–4 business days · Invoiced via email · PayPal or bank transfer accepted
+            Delivered within 2–4 business days · Payments processed securely via Lemon Squeezy
           </p>
         </div>
 
@@ -315,8 +332,10 @@ export default function ServicesPage() {
                 </div>
                 <div style={{ fontSize: "14px", fontWeight: 700, color: "#e2e8f0", marginBottom: "8px" }}>{a.name}</div>
                 <p style={{ fontSize: "12px", color: "#475569", lineHeight: 1.7, marginBottom: "16px" }}>{a.desc}</p>
-                <a
-                  href={`mailto:hello@poweryourhouse.io?subject=${encodeURIComponent(a.name + " Enquiry")}`}
+                <BuyButton
+                  variantId={a.variantId}
+                  label={a.variantId ? `Buy ${a.name} →` : "Enquire →"}
+                  fallbackHref={`mailto:hello@poweryourhouse.io?subject=${encodeURIComponent(a.name + " Enquiry")}`}
                   style={{
                     display: "block", textAlign: "center",
                     padding: "9px", borderRadius: "9px",
@@ -324,9 +343,7 @@ export default function ServicesPage() {
                     border: `1px solid ${a.colour}35`,
                     color: a.colour, fontSize: "12px", fontWeight: 700,
                   }}
-                >
-                  Enquire →
-                </a>
+                />
               </div>
             ))}
           </div>
