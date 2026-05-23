@@ -2,6 +2,7 @@ import { cookies } from "next/headers";
 import { createAdminClient } from "../utils/supabase/server";
 import LoginForm from "./LoginForm";
 import LogoutButton from "./LogoutButton";
+import TopUpRow from "./TopUpRow";
 import type { Metadata } from "next";
 
 export const metadata: Metadata = { title: "Admin — Power Your House", robots: "noindex" };
@@ -256,28 +257,16 @@ export default async function AdminPage() {
                   </tr>
                 </thead>
                 <tbody>
-                  {sortedUsers.map(u => {
-                    const std = Math.max(0, balanceMap[u.id]?.STANDARD ?? 0);
-                    const hd  = Math.max(0, balanceMap[u.id]?.HD ?? 0);
-                    return (
-                      <tr key={u.id}>
-                        <td style={{ ...TD, maxWidth: "180px" }}>
-                          <span style={{ fontSize: "12px", display: "block", overflow: "hidden", textOverflow: "ellipsis", whiteSpace: "nowrap" }}>
-                            {u.email ?? "—"}
-                          </span>
-                        </td>
-                        <td style={TD}>
-                          <span style={{ fontWeight: 700, color: std === 0 ? "#ef4444" : "#60a5fa" }}>{std}</span>
-                        </td>
-                        <td style={TD}>
-                          <span style={{ fontWeight: 700, color: hd > 0 ? "#a78bfa" : "#475569" }}>{hd}</span>
-                        </td>
-                        <td style={{ ...TD, fontSize: "12px", color: "#475569" }}>
-                          {new Date(u.created_at).toLocaleDateString("en-AU", { day: "numeric", month: "short" })}
-                        </td>
-                      </tr>
-                    );
-                  })}
+                  {sortedUsers.map(u => (
+                    <TopUpRow
+                      key={u.id}
+                      userId={u.id}
+                      email={u.email ?? "—"}
+                      initStd={Math.max(0, balanceMap[u.id]?.STANDARD ?? 0)}
+                      initHd={Math.max(0, balanceMap[u.id]?.HD ?? 0)}
+                      joinDate={new Date(u.created_at).toLocaleDateString("en-AU", { day: "numeric", month: "short" })}
+                    />
+                  ))}
                   {!users.length && (
                     <tr><td colSpan={4} style={{ ...TD, textAlign: "center", color: "#475569" }}>No users yet</td></tr>
                   )}
