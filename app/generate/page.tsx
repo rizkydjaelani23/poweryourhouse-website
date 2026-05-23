@@ -42,6 +42,9 @@ export default function GeneratePage() {
   const [hasMask,             setHasMask]             = useState(false);
   const [lastCreditUsed,      setLastCreditUsed]      = useState(false);
 
+  // ── Lightbox ───────────────────────────────────────────────────────────────
+  const [lightbox, setLightbox] = useState<{ url: string; label: string } | null>(null);
+
   // ── Multi mode state ───────────────────────────────────────────────────────
   const [multiColours,   setMultiColours]   = useState<MultiColour[]>([
     { id: "1", hex: "#5b3a8b", name: "" },
@@ -68,6 +71,13 @@ export default function GeneratePage() {
   const selectionRef = useRef<SelectionEditorHandle | null>(null);
   const resultRef    = useRef<HTMLDivElement>(null);
   const multiResultRef = useRef<HTMLDivElement>(null);
+
+  // ── Close lightbox on Escape ──────────────────────────────────────────────
+  useEffect(() => {
+    const handler = (e: KeyboardEvent) => { if (e.key === "Escape") setLightbox(null); };
+    window.addEventListener("keydown", handler);
+    return () => window.removeEventListener("keydown", handler);
+  }, []);
 
   // ── On mount: detect auth + init guest if needed ──────────────────────────
   useEffect(() => {
@@ -798,7 +808,12 @@ export default function GeneratePage() {
               {result && !loading && (
                 <Card title="Result">
                   {/* eslint-disable-next-line @next/next/no-img-element */}
-                  <img src={result} alt="Generated result" style={{ width: "100%", borderRadius: "10px", display: "block" }} />
+                  <img
+                    src={result}
+                    alt="Generated result"
+                    onClick={() => setLightbox({ url: result, label: colourName || colourHex })}
+                    style={{ width: "100%", borderRadius: "10px", display: "block", cursor: "zoom-in" }}
+                  />
                   <div style={{ display: "flex", gap: "10px", marginTop: "14px" }}>
                     <a href={result} download="recoloured.jpg" target="_blank" rel="noopener noreferrer"
                       style={{ flex: 1, padding: "13px", borderRadius: "10px", background: "linear-gradient(135deg, #10b981, #059669)", color: "#fff", fontWeight: 700, fontSize: "14px", textAlign: "center", display: "block" }}>
@@ -873,7 +888,12 @@ export default function GeneratePage() {
                         )}
                         {r.status === "done" && r.url && (
                           // eslint-disable-next-line @next/next/no-img-element
-                          <img src={r.url} alt={r.colourName || r.colourHex} style={{ width: "100%", height: "100%", objectFit: "cover", display: "block" }} />
+                          <img
+                            src={r.url}
+                            alt={r.colourName || r.colourHex}
+                            onClick={() => setLightbox({ url: r.url!, label: r.colourName || r.colourHex })}
+                            style={{ width: "100%", height: "100%", objectFit: "cover", display: "block", cursor: "zoom-in" }}
+                          />
                         )}
                         {r.status === "error" && (
                           <div style={{ position: "absolute", inset: 0, display: "flex", flexDirection: "column", alignItems: "center", justifyContent: "center", padding: "12px", textAlign: "center" }}>
@@ -937,8 +957,80 @@ export default function GeneratePage() {
         </div>
       </div>
 
+      {/* ── Lightbox ── */}
+      {lightbox && (
+        <div
+          onClick={() => setLightbox(null)}
+          style={{
+            position: "fixed", inset: 0, zIndex: 2000,
+            background: "rgba(4,9,18,0.92)",
+            display: "flex", flexDirection: "column",
+            alignItems: "center", justifyContent: "center",
+            padding: "20px",
+            animation: "lbFadeIn 0.15s ease",
+          }}
+        >
+          {/* Label + close row */}
+          <div style={{
+            display: "flex", alignItems: "center", gap: "12px",
+            marginBottom: "14px", width: "100%", maxWidth: "900px",
+          }}>
+            <div style={{ display: "flex", alignItems: "center", gap: "8px", flex: 1 }}>
+              <div style={{ width: "16px", height: "16px", borderRadius: "4px", background: lightbox.label.startsWith("#") ? lightbox.label : undefined, flexShrink: 0, border: "1px solid rgba(255,255,255,0.15)" }} />
+              <span style={{ fontSize: "14px", fontWeight: 700, color: "#e2e8f0" }}>{lightbox.label}</span>
+            </div>
+            <button
+              onClick={() => setLightbox(null)}
+              style={{
+                width: "32px", height: "32px", borderRadius: "8px",
+                background: "rgba(255,255,255,0.07)", border: "1px solid rgba(255,255,255,0.12)",
+                color: "#94a3b8", fontSize: "16px", cursor: "pointer",
+                display: "flex", alignItems: "center", justifyContent: "center", flexShrink: 0,
+              }}
+            >
+              ✕
+            </button>
+          </div>
+
+          {/* Image — click on image itself does NOT close (only the overlay behind does) */}
+          {/* eslint-disable-next-line @next/next/no-img-element */}
+          <img
+            src={lightbox.url}
+            alt={lightbox.label}
+            onClick={(e) => e.stopPropagation()}
+            style={{
+              maxWidth: "100%", maxHeight: "80vh",
+              borderRadius: "12px", display: "block",
+              boxShadow: "0 24px 80px rgba(0,0,0,0.7)",
+              animation: "lbSlideUp 0.18s ease",
+            }}
+          />
+
+          {/* Download button */}
+          <a
+            href={lightbox.url}
+            download={`${lightbox.label.replace("#", "")}.jpg`}
+            target="_blank"
+            rel="noopener noreferrer"
+            onClick={(e) => e.stopPropagation()}
+            style={{
+              marginTop: "16px",
+              padding: "10px 24px", borderRadius: "10px",
+              background: "linear-gradient(135deg, #10b981, #059669)",
+              color: "#fff", fontSize: "13px", fontWeight: 700,
+              boxShadow: "0 4px 16px rgba(16,185,129,0.3)",
+            }}
+          >
+            ⬇ Download
+          </a>
+          <p style={{ marginTop: "10px", fontSize: "11px", color: "#334155" }}>Click outside or press Esc to close</p>
+        </div>
+      )}
+
       <style>{`
         @keyframes spin { 0% { transform: rotate(0deg); } 100% { transform: rotate(360deg); } }
+        @keyframes lbFadeIn   { from { opacity: 0; }               to { opacity: 1; } }
+        @keyframes lbSlideUp  { from { transform: translateY(12px); opacity: 0; } to { transform: none; opacity: 1; } }
         @media (max-width: 680px) {
           .ctrl-grid  { grid-template-columns: 1fr !important; }
           .tips-grid  { grid-template-columns: 1fr !important; }
