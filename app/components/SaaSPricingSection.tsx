@@ -1,34 +1,35 @@
 "use client";
 import Link from "next/link";
-import { usePaddle } from "./PaddleButton";
+import { useLemonSqueezy } from "./LemonSqueezyButton";
 
-// Paddle price IDs — public-facing identifiers, not secrets
-const PRICES = {
-  STARTER:       "pri_01ks5m3tq9g10sckf3exza9dtd",
-  PRO:           "pri_01ks5m5gg125j4tgf7htp1xpxx",
-  BUSINESS:      "pri_01ks5mfff8eknsr0k13e49wcgp",
-  STANDARD_PACK: "pri_01ks5menxmzvh9d0ev7jy7kvdw",
-  HD_PACK:       "pri_01ks5mdp7cf5x29rnjw7cvep9v",
+// LemonSqueezy variant IDs — set in your Railway / .env.local after creating
+// the products in your LemonSqueezy dashboard (Store → Products → Variants).
+const VARIANTS = {
+  STARTER:       process.env.NEXT_PUBLIC_LS_VARIANT_STARTER       || "",
+  PRO:           process.env.NEXT_PUBLIC_LS_VARIANT_PRO           || "",
+  BUSINESS:      process.env.NEXT_PUBLIC_LS_VARIANT_BUSINESS      || "",
+  STANDARD_PACK: process.env.NEXT_PUBLIC_LS_VARIANT_STANDARD_PACK || "",
+  HD_PACK:       process.env.NEXT_PUBLIC_LS_VARIANT_HD_PACK       || "",
 };
 
 function PlanButton({
-  priceId,
+  variantId,
   label,
   background,
   color = "#fff",
   border,
   shadow,
 }: {
-  priceId: string | null;
+  variantId: string | null;
   label: string;
   background: string;
   color?: string;
   border?: string;
   shadow?: string;
 }) {
-  const { openCheckout } = usePaddle();
+  const { openCheckout } = useLemonSqueezy();
 
-  if (!priceId) {
+  if (!variantId) {
     return (
       <Link
         href="/signup"
@@ -46,7 +47,7 @@ function PlanButton({
 
   return (
     <button
-      onClick={() => openCheckout(priceId)}
+      onClick={() => openCheckout(variantId)}
       style={{
         width: "100%", padding: "14px", borderRadius: "12px",
         background, border: border || "none",
@@ -89,7 +90,7 @@ const plans = [
     best: false,
   },
   {
-    id: PRICES.STARTER,
+    id: VARIANTS.STARTER,
     badge: "Starter",
     badgeBg: "rgba(59,130,246,0.12)",
     badgeBorder: "1px solid rgba(59,130,246,0.35)",
@@ -118,7 +119,7 @@ const plans = [
     best: false,
   },
   {
-    id: PRICES.PRO,
+    id: VARIANTS.PRO,
     badge: "Pro",
     badgeBg: "rgba(79,70,229,0.15)",
     badgeBorder: "1px solid rgba(79,70,229,0.4)",
@@ -149,7 +150,7 @@ const plans = [
     best: false,
   },
   {
-    id: PRICES.BUSINESS,
+    id: VARIANTS.BUSINESS,
     badge: "Business",
     badgeBg: "rgba(16,185,129,0.12)",
     badgeBorder: "1px solid rgba(16,185,129,0.4)",
@@ -183,7 +184,7 @@ const plans = [
 
 const packs = [
   {
-    id: PRICES.STANDARD_PACK,
+    id: VARIANTS.STANDARD_PACK,
     label: "Standard Pack",
     amount: "100 credits",
     price: "$9",
@@ -193,7 +194,7 @@ const packs = [
     border: "1px solid rgba(59,130,246,0.25)",
   },
   {
-    id: PRICES.HD_PACK,
+    id: VARIANTS.HD_PACK,
     label: "HD Pack",
     amount: "20 HD credits",
     price: "$14",
@@ -209,7 +210,7 @@ function CheckIcon({ color }: { color: string }) {
 }
 
 export default function SaaSPricingSection() {
-  const { openCheckout } = usePaddle();
+  const { openCheckout } = useLemonSqueezy();
 
   return (
     <section style={{ padding: "72px 0 60px", background: "#080d1a" }}>
@@ -312,7 +313,7 @@ export default function SaaSPricingSection() {
               </div>
 
               <PlanButton
-                priceId={plan.id}
+                variantId={plan.id}
                 label={plan.buttonLabel}
                 background={plan.buttonBg}
                 color={plan.buttonColor}
@@ -336,7 +337,7 @@ export default function SaaSPricingSection() {
           <div style={{ display: "grid", gridTemplateColumns: "repeat(auto-fit, minmax(240px, 1fr))", gap: "16px", maxWidth: "600px", margin: "0 auto" }}>
             {packs.map((pack) => (
               <div
-                key={pack.id}
+                key={pack.label}
                 style={{
                   background: pack.bg, border: pack.border,
                   borderRadius: "16px", padding: "22px",
@@ -344,7 +345,6 @@ export default function SaaSPricingSection() {
                 }}
               >
                 <div style={{ display: "flex", alignItems: "center", gap: "12px" }}>
-                  {/* Coloured dot — no emoji */}
                   <div style={{ width: "10px", height: "10px", borderRadius: "50%", background: pack.colour, flexShrink: 0 }} />
                   <div style={{ flex: 1 }}>
                     <div style={{ fontSize: "14px", fontWeight: 700, color: "#e2e8f0" }}>{pack.label}</div>
@@ -374,7 +374,7 @@ export default function SaaSPricingSection() {
         {/* CTA */}
         <div style={{ textAlign: "center", marginTop: "48px" }}>
           <p style={{ fontSize: "14px", color: "#475569", marginBottom: "16px" }}>
-            All plans are billed through Paddle · Cancel anytime · Questions?{" "}
+            All plans are billed through Lemon Squeezy · Cancel anytime · Questions?{" "}
             <a href="mailto:hello@poweryourhouse.io" style={{ color: "#60a5fa" }}>hello@poweryourhouse.io</a>
           </p>
         </div>
