@@ -96,13 +96,6 @@ export default function Nav() {
           🔥 50% LAUNCH SALE — All plans half price. Limited time only. Grab it now →
         </Link>
       </div>
-      <style>{`
-        @keyframes salePulse {
-          0%   { background-position: 0% 50%; }
-          50%  { background-position: 100% 50%; }
-          100% { background-position: 0% 50%; }
-        }
-      `}</style>
       {scrolled && (
         <div style={{
           position: "absolute", bottom: 0, left: 0, right: 0, height: "1px",
