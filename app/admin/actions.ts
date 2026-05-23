@@ -88,6 +88,19 @@ export async function adminAddCredits(
 
   const admin = await createAdminClient();
 
+  // Ensure a saas_profiles row exists — users who never confirmed their email
+  // won't have one, which causes the FK on saas_credit_ledger to fail.
+  const { data: authUser } = await admin.auth.admin.getUserById(userId);
+  await admin.from("saas_profiles").upsert(
+    {
+      id:                userId,
+      email:             authUser?.user?.email ?? "",
+      marketing_consent: false,
+      plan:              "free",
+    },
+    { onConflict: "id", ignoreDuplicates: true }
+  );
+
   // Insert directly so we can inspect the error (addCredits() swallows it)
   const { error: insertError } = await admin.from("saas_credit_ledger").insert({
     user_id: userId,
