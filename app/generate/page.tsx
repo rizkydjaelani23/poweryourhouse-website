@@ -605,10 +605,10 @@ export default function GeneratePage() {
                       background: "rgba(79,70,229,0.08)", border: "1px solid rgba(79,70,229,0.3)",
                     }}>
                       <div style={{ fontSize: "13px", fontWeight: 700, color: "#a5b4fc", marginBottom: "6px" }}>
-                        Want more than {FREE_MAX_COLOURS} colours?
+                        Want more than {FREE_maxColours} colours?
                       </div>
                       <div style={{ fontSize: "12px", color: "#64748b", marginBottom: "12px", lineHeight: 1.6 }}>
-                        Pro and Business plans let you generate up to {PRO_MAX_COLOURS} colour variations from a single photo.
+                        Pro and Business plans let you generate up to {PRO_maxColours} colour variations from a single photo.
                       </div>
                       <Link href="/pricing" style={{
                         display: "inline-block", padding: "8px 18px", borderRadius: "9px",
