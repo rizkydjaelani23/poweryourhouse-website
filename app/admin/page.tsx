@@ -51,7 +51,7 @@ export default async function AdminPage() {
   // ── Auth gate ───────────────────────────────────────────────────────────
   const cookieStore = await cookies();
   const token = cookieStore.get("pyh_admin")?.value;
-  if (!token || token !== process.env.ADMIN_PASSWORD) {
+  if (token !== "pyh_admin_ok") {
     return <LoginForm />;
   }
 
