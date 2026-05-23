@@ -62,16 +62,16 @@ const industries = [
 ];
 
 const steps = [
-  { num: "1", icon: "🖼️", colour: "#3b82f6", title: "Upload one product photo", desc: "Any product shot — fabric, furniture, clothing, bags. JPG, PNG or WebP." },
-  { num: "2", icon: "🎨", colour: "#8b5cf6", title: "Pick your colours", desc: "Add up to 6 colours at once. Use the picker, type a hex, or upload a fabric swatch." },
-  { num: "3", icon: "📦", colour: "#10b981", title: "Download all variations", desc: "Every colour generated in seconds. Download individually or all at once as a ZIP." },
+  { num: "01", colour: "#3b82f6", title: "Upload one product photo", desc: "Any product shot — fabric, furniture, clothing, bags. JPG, PNG or WebP." },
+  { num: "02", colour: "#8b5cf6", title: "Pick your colours", desc: "Add up to 6 colours at once. Use the picker, type a hex, or upload a fabric swatch." },
+  { num: "03", colour: "#10b981", title: "Download all variations", desc: "Every colour generated in seconds. Download individually or all at once as a ZIP." },
 ];
 
 const compare = [
-  { label: "Cost per colour variation", old: "$150 – $400", ours: "$0.40 – $2" },
-  { label: "Time to get results",       old: "1 – 3 weeks",  ours: "Under 60 seconds" },
-  { label: "Revisions / changes",       old: "$200 extra/day", ours: "Unlimited, instant" },
-  { label: "8 colour variations",       old: "$1,200 – $3,200", ours: "Under $16" },
+  { label: "Cost per colour variation", old: "$150 – $400",      ours: "$0.40 – $2" },
+  { label: "Time to get results",       old: "1 – 3 weeks",       ours: "Under 60 seconds" },
+  { label: "Revisions / changes",       old: "$200 extra/day",    ours: "Unlimited, instant" },
+  { label: "8 colour variations",       old: "$1,200 – $3,200",   ours: "Under $16" },
 ];
 
 export default function HomePage() {
@@ -110,25 +110,22 @@ export default function HomePage() {
         display: "flex", alignItems: "center", overflow: "hidden",
         background: "#040912",
       }}>
-        <div style={{ position: "absolute", top: "-10%", right: "-8%", width: "600px", height: "600px", borderRadius: "50%", background: "radial-gradient(circle, rgba(139,92,246,0.18) 0%, transparent 70%)", pointerEvents: "none", animation: "float-slow 10s ease-in-out infinite" }} />
-        <div style={{ position: "absolute", bottom: "-5%", left: "-8%", width: "500px", height: "500px", borderRadius: "50%", background: "radial-gradient(circle, rgba(59,130,246,0.14) 0%, transparent 70%)", pointerEvents: "none", animation: "float-slow 13s ease-in-out infinite reverse" }} />
-        <div style={{ position: "absolute", inset: 0, pointerEvents: "none", backgroundImage: "radial-gradient(circle at 1px 1px, rgba(139,92,246,0.05) 1px, transparent 0)", backgroundSize: "48px 48px" }} />
+        {/* Subtle ambient glow — one, not three */}
+        <div style={{ position: "absolute", top: "10%", right: "0%", width: "640px", height: "640px", borderRadius: "50%", background: "radial-gradient(circle, rgba(99,102,241,0.12) 0%, transparent 68%)", pointerEvents: "none" }} />
 
         <div className="container" style={{ position: "relative", zIndex: 1, padding: "100px 24px 80px" }}>
           <div className="hero-grid">
 
             {/* Left */}
             <div>
-              <div className="anim-fade-up" style={{ marginBottom: "20px" }}>
-                <span style={{
-                  display: "inline-flex", alignItems: "center", gap: "8px",
-                  background: "rgba(139,92,246,0.12)", border: "1px solid rgba(139,92,246,0.3)",
-                  color: "#a78bfa", padding: "6px 14px", borderRadius: "999px",
-                  fontSize: "12px", fontWeight: 800, letterSpacing: "0.05em",
-                }}>
-                  ✨ AI COLOUR REMAKING
-                </span>
-              </div>
+              {/* Eyebrow label — no emoji, no pill */}
+              <p className="anim-fade-up" style={{
+                fontSize: "11px", fontWeight: 800, color: "#6366f1",
+                letterSpacing: "0.14em", textTransform: "uppercase",
+                marginBottom: "22px",
+              }}>
+                AI Colour Generation
+              </p>
 
               <h1 className="anim-fade-up" style={{
                 fontSize: "clamp(36px, 5vw, 66px)", fontWeight: 900,
@@ -180,7 +177,7 @@ export default function HomePage() {
               <div className="anim-fade-up" style={{ display: "flex", gap: "20px", flexWrap: "wrap", animationDelay: "0.4s" }}>
                 {["Free to start", "No card required", "Download as ZIP"].map((t) => (
                   <span key={t} style={{ display: "flex", alignItems: "center", gap: "6px", fontSize: "13px", color: "#64748b", fontWeight: 500 }}>
-                    <span style={{ color: "#22c55e", fontWeight: 700 }}>✓</span>{t}
+                    <span style={{ color: "#22c55e", fontWeight: 700, fontSize: "11px" }}>✓</span>{t}
                   </span>
                 ))}
               </div>
@@ -199,7 +196,9 @@ export default function HomePage() {
         <div className="container" style={{ maxWidth: "860px" }}>
           <ScrollReveal>
             <div style={{ textAlign: "center", marginBottom: "48px" }}>
-              <div className="badge section-eyebrow" style={{ marginBottom: "16px" }}>The old way vs our way</div>
+              <p style={{ fontSize: "11px", fontWeight: 800, color: "#64748b", letterSpacing: "0.14em", textTransform: "uppercase", marginBottom: "16px" }}>
+                The old way vs our way
+              </p>
               <h2 className="section-title">
                 A colour photoshoot costs $500–$2,000.
                 <br />
@@ -216,13 +215,12 @@ export default function HomePage() {
             <div style={{ borderRadius: "20px", overflow: "hidden", border: "1px solid rgba(255,255,255,0.08)" }}>
               {/* Header row */}
               <div className="compare-grid" style={{ background: "#0d1424", borderBottom: "1px solid rgba(255,255,255,0.08)" }}>
-                <div style={{ padding: "14px 20px", fontSize: "12px", fontWeight: 700, color: "#475569", textTransform: "uppercase", letterSpacing: "0.07em" }}>
-                </div>
+                <div style={{ padding: "14px 20px" }} />
                 <div style={{ padding: "14px 20px", fontSize: "12px", fontWeight: 800, color: "#64748b", textTransform: "uppercase", letterSpacing: "0.07em", textAlign: "center", borderLeft: "1px solid rgba(255,255,255,0.06)" }}>
-                  📸 Photoshoot
+                  Traditional photoshoot
                 </div>
                 <div style={{ padding: "14px 20px", fontSize: "12px", fontWeight: 800, color: "#60a5fa", textTransform: "uppercase", letterSpacing: "0.07em", textAlign: "center", background: "rgba(59,130,246,0.06)", borderLeft: "1px solid rgba(59,130,246,0.2)" }}>
-                  ⚡ Power Your House
+                  Power Your House
                 </div>
               </div>
 
@@ -262,7 +260,9 @@ export default function HomePage() {
         <div className="container">
           <div style={{ textAlign: "center", marginBottom: "40px" }}>
             <ScrollReveal>
-              <div className="badge section-eyebrow" style={{ marginBottom: "16px" }}>Who it&apos;s for</div>
+              <p style={{ fontSize: "11px", fontWeight: 800, color: "#64748b", letterSpacing: "0.14em", textTransform: "uppercase", marginBottom: "16px" }}>
+                Who it&apos;s for
+              </p>
               <h2 className="section-title">
                 If you sell it in multiple colours,
                 <br />this is for you.
@@ -280,7 +280,6 @@ export default function HomePage() {
                   position: "relative", borderRadius: "16px", overflow: "hidden",
                   height: "210px", display: "block",
                 }}>
-                  {/* Photo */}
                   {/* eslint-disable-next-line @next/next/no-img-element */}
                   <img
                     src={ind.photo}
@@ -293,12 +292,10 @@ export default function HomePage() {
                     }}
                     className="ind-img"
                   />
-                  {/* Gradient overlay */}
                   <div style={{
                     position: "absolute", inset: 0,
                     background: "linear-gradient(to top, rgba(4,8,20,0.92) 0%, rgba(4,8,20,0.45) 55%, rgba(4,8,20,0.08) 100%)",
                   }} />
-                  {/* Text */}
                   <div style={{
                     position: "absolute", bottom: 0, left: 0, right: 0,
                     padding: "14px 16px",
@@ -318,7 +315,9 @@ export default function HomePage() {
         <div className="container">
           <div style={{ textAlign: "center", marginBottom: "48px" }}>
             <ScrollReveal>
-              <div className="badge section-eyebrow" style={{ marginBottom: "16px" }}>How it works</div>
+              <p style={{ fontSize: "11px", fontWeight: 800, color: "#64748b", letterSpacing: "0.14em", textTransform: "uppercase", marginBottom: "16px" }}>
+                How it works
+              </p>
               <h2 className="section-title">Three steps. Under a minute.</h2>
               <p className="section-sub" style={{ margin: "14px auto 0" }}>
                 No design skills. No Photoshop. No waiting on a photographer.
@@ -330,22 +329,21 @@ export default function HomePage() {
             {steps.map((step, i) => (
               <ScrollReveal key={step.num} delay={i + 1}>
                 <div style={{
-                  background: "#0d1424", border: `1px solid ${step.colour}22`,
-                  borderRadius: "18px", padding: "28px", height: "100%",
+                  background: "#0d1424",
+                  border: "1px solid rgba(255,255,255,0.07)",
                   borderTop: `3px solid ${step.colour}`,
+                  borderRadius: "18px", padding: "32px", height: "100%",
                 }}>
+                  {/* Large step number instead of emoji */}
                   <div style={{
-                    width: "46px", height: "46px", borderRadius: "12px",
-                    background: `${step.colour}18`, border: `1px solid ${step.colour}33`,
-                    display: "flex", alignItems: "center", justifyContent: "center",
-                    fontSize: "22px", marginBottom: "16px",
+                    fontSize: "52px", fontWeight: 900, lineHeight: 1,
+                    color: step.colour, opacity: 0.35,
+                    marginBottom: "20px", letterSpacing: "-0.03em",
+                    fontVariantNumeric: "tabular-nums",
                   }}>
-                    {step.icon}
+                    {step.num}
                   </div>
-                  <div style={{ fontSize: "11px", fontWeight: 800, color: step.colour, marginBottom: "8px", letterSpacing: "0.06em" }}>
-                    STEP {step.num}
-                  </div>
-                  <h3 style={{ fontSize: "16px", fontWeight: 700, color: "#fff", marginBottom: "8px" }}>{step.title}</h3>
+                  <h3 style={{ fontSize: "17px", fontWeight: 700, color: "#fff", marginBottom: "10px" }}>{step.title}</h3>
                   <p style={{ fontSize: "14px", color: "#94a3b8", lineHeight: 1.7 }}>{step.desc}</p>
                 </div>
               </ScrollReveal>
@@ -360,23 +358,16 @@ export default function HomePage() {
           <ScrollReveal>
             <div style={{
               borderRadius: "24px", overflow: "hidden",
-              background: "linear-gradient(135deg, rgba(59,130,246,0.08), rgba(139,92,246,0.06))",
-              border: "1px solid rgba(59,130,246,0.2)",
+              background: "linear-gradient(135deg, rgba(59,130,246,0.07), rgba(139,92,246,0.05))",
+              border: "1px solid rgba(59,130,246,0.18)",
               padding: "48px",
               position: "relative",
             }}>
-              <div style={{ position: "absolute", top: "-60px", right: "-60px", width: "300px", height: "300px", borderRadius: "50%", background: "radial-gradient(circle, rgba(139,92,246,0.15) 0%, transparent 70%)", pointerEvents: "none" }} />
-
-              <div style={{ display: "flex", alignItems: "flex-start", justifyContent: "space-between", gap: "32px", flexWrap: "wrap", position: "relative" }}>
+              <div style={{ display: "flex", alignItems: "flex-start", justifyContent: "space-between", gap: "32px", flexWrap: "wrap" }}>
                 <div style={{ flex: 1, minWidth: "260px" }}>
-                  <div style={{
-                    display: "inline-flex", alignItems: "center", gap: "6px", marginBottom: "16px",
-                    padding: "4px 12px", borderRadius: "999px",
-                    background: "rgba(59,130,246,0.15)", border: "1px solid rgba(59,130,246,0.3)",
-                    fontSize: "11px", fontWeight: 800, color: "#60a5fa", letterSpacing: "0.06em",
-                  }}>
-                    🎨 MULTIPLE COLOURS MODE
-                  </div>
+                  <p style={{ fontSize: "11px", fontWeight: 800, color: "#3b82f6", letterSpacing: "0.14em", textTransform: "uppercase", marginBottom: "16px" }}>
+                    Multiple colours mode
+                  </p>
 
                   <h2 style={{ fontSize: "clamp(22px, 3vw, 32px)", fontWeight: 900, color: "#fff", marginBottom: "14px", lineHeight: 1.15, letterSpacing: "-0.02em" }}>
                     Pick 6 colours.
@@ -399,7 +390,7 @@ export default function HomePage() {
                   </Link>
                 </div>
 
-                {/* Visual: colour stack */}
+                {/* Colour stack visual */}
                 <div style={{ display: "flex", flexDirection: "column", gap: "8px", flexShrink: 0 }}>
                   {[
                     { hex: "#5b3a8b", name: "Plum Velvet" },
@@ -415,13 +406,13 @@ export default function HomePage() {
                       background: "rgba(255,255,255,0.04)", border: "1px solid rgba(255,255,255,0.08)",
                       animation: `anim-fade-up 0.5s ease ${i * 0.08}s both`,
                     }}>
-                      <div style={{ width: "18px", height: "18px", borderRadius: "5px", background: c.hex, flexShrink: 0 }} />
+                      <div style={{ width: "16px", height: "16px", borderRadius: "4px", background: c.hex, flexShrink: 0 }} />
                       <span style={{ fontSize: "13px", color: "#94a3b8", fontWeight: 600, whiteSpace: "nowrap" }}>{c.name}</span>
                       <span style={{ marginLeft: "auto", fontSize: "11px", color: "#22c55e", fontWeight: 700 }}>✓</span>
                     </div>
                   ))}
                   <div style={{ textAlign: "center", fontSize: "12px", color: "#334155", marginTop: "4px", fontWeight: 600 }}>
-                    All 6 → ready to download
+                    All 6 — ready to download
                   </div>
                 </div>
               </div>
@@ -460,11 +451,11 @@ export default function HomePage() {
       </section>
 
       {/* ── SHOPIFY APP CTA ────────────────────────────────────────────────── */}
-      <section style={{ padding: "56px 0", background: "linear-gradient(135deg, #0d1830, #111827)", borderTop: "1px solid rgba(59,130,246,0.1)" }}>
+      <section style={{ padding: "56px 0", background: "linear-gradient(135deg, #0d1830, #111827)", borderTop: "1px solid rgba(59,130,246,0.08)" }}>
         <div className="container" style={{ textAlign: "center" }}>
           <ScrollReveal>
-            <p style={{ fontSize: "12px", color: "#334155", marginBottom: "10px", fontWeight: 700, letterSpacing: "0.06em" }}>
-              🛍️ GOT A SHOPIFY STORE?
+            <p style={{ fontSize: "11px", fontWeight: 800, color: "#334155", letterSpacing: "0.14em", textTransform: "uppercase", marginBottom: "12px" }}>
+              Got a Shopify store?
             </p>
             <h3 style={{ fontSize: "22px", fontWeight: 800, color: "#fff", marginBottom: "10px" }}>
               We also have a dedicated Shopify app

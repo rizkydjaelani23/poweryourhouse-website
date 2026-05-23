@@ -178,7 +178,6 @@ const plans = [
 const packs = [
   {
     id: PRICES.STANDARD_PACK,
-    icon: "⚡",
     label: "Standard Pack",
     amount: "100 credits",
     price: "$9",
@@ -189,7 +188,6 @@ const packs = [
   },
   {
     id: PRICES.HD_PACK,
-    icon: "✨",
     label: "HD Pack",
     amount: "20 HD credits",
     price: "$14",
@@ -213,14 +211,9 @@ export default function SaaSPricingSection() {
 
         {/* Section header */}
         <div style={{ textAlign: "center", marginBottom: "48px" }}>
-          <div style={{
-            display: "inline-flex", alignItems: "center", gap: "8px",
-            background: "rgba(139,92,246,0.12)", border: "1px solid rgba(139,92,246,0.3)",
-            color: "#a78bfa", padding: "5px 14px", borderRadius: "999px",
-            fontSize: "12px", fontWeight: 800, marginBottom: "16px",
-          }}>
-            ✨ AI COLOUR REMAKER
-          </div>
+          <p style={{ fontSize: "11px", fontWeight: 800, color: "#64748b", letterSpacing: "0.14em", textTransform: "uppercase", marginBottom: "16px" }}>
+            Pricing
+          </p>
           <h2 style={{
             fontSize: "clamp(24px, 4vw, 38px)", fontWeight: 900, color: "#fff",
             margin: "0 0 12px", letterSpacing: "-0.02em",
@@ -344,20 +337,14 @@ export default function SaaSPricingSection() {
                   display: "flex", flexDirection: "column", gap: "12px",
                 }}
               >
-                <div style={{ display: "flex", alignItems: "center", gap: "10px" }}>
-                  <div style={{
-                    width: "40px", height: "40px", borderRadius: "10px",
-                    background: `${pack.colour}20`, border: `1px solid ${pack.colour}30`,
-                    display: "flex", alignItems: "center", justifyContent: "center",
-                    fontSize: "20px", flexShrink: 0,
-                  }}>
-                    {pack.icon}
-                  </div>
-                  <div>
+                <div style={{ display: "flex", alignItems: "center", gap: "12px" }}>
+                  {/* Coloured dot — no emoji */}
+                  <div style={{ width: "10px", height: "10px", borderRadius: "50%", background: pack.colour, flexShrink: 0 }} />
+                  <div style={{ flex: 1 }}>
                     <div style={{ fontSize: "14px", fontWeight: 700, color: "#e2e8f0" }}>{pack.label}</div>
-                    <div style={{ fontSize: "12px", color: pack.colour, fontWeight: 700 }}>{pack.amount}</div>
+                    <div style={{ fontSize: "12px", color: pack.colour, fontWeight: 600 }}>{pack.amount}</div>
                   </div>
-                  <div style={{ marginLeft: "auto" }}>
+                  <div style={{ textAlign: "right" }}>
                     <div style={{ fontSize: "22px", fontWeight: 900, color: "#fff" }}>{pack.price}</div>
                     <div style={{ fontSize: "11px", color: "#475569" }}>{pack.desc}</div>
                   </div>
