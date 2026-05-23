@@ -536,13 +536,13 @@ export default function HomePage() {
                 }}>
                   See packages →
                 </Link>
-                <a href="mailto:hello@poweryourhouse.io?subject=Social Media Automation Enquiry" style={{
+                <Link href="/consultation" style={{
                   padding: "12px 20px", borderRadius: "10px",
                   border: "1px solid rgba(255,255,255,0.1)",
                   color: "#94a3b8", fontWeight: 600, fontSize: "14px",
                 }}>
-                  Email us directly
-                </a>
+                  Free consultation →
+                </Link>
               </div>
             </div>
             <div style={{ display: "grid", gridTemplateColumns: "1fr 1fr", gap: "12px" }}>
