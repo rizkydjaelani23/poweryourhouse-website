@@ -20,8 +20,8 @@ export const metadata: Metadata = {
 const plans = [
   {
     name: "Starter",
-    price: "$98",
-    originalPrice: "$196",
+    price: "$196",
+    originalPrice: "$392",
     freq: "one-time",
     tagline: "Perfect for small shops getting started with social media.",
     posts: "30 posts",
@@ -44,8 +44,8 @@ const plans = [
   },
   {
     name: "Growth",
-    price: "$124",
-    originalPrice: "$248",
+    price: "$248",
+    originalPrice: "$496",
     freq: "one-time",
     tagline: "Double the presence. Twice daily posting keeps your brand front of mind.",
     posts: "60 posts",
@@ -72,8 +72,8 @@ const plans = [
 const addons = [
   {
     name: "Monthly Maintenance",
-    price: "$24",
-    originalPrice: "$48",
+    price: "$48",
+    originalPrice: "$96",
     freq: "/ month",
     desc: "We monitor the automation, fix any broken connections, and keep everything running smoothly. Ideal if you want peace of mind month to month.",
     colour: "#3b82f6",
@@ -81,8 +81,8 @@ const addons = [
   },
   {
     name: "One-Time Fix",
-    price: "$9",
-    originalPrice: "$18",
+    price: "$18",
+    originalPrice: "$36",
     freq: "flat fee",
     desc: "Something broke? We diagnose and fix the issue — broken connections, expired permissions, disconnected accounts — one flat charge, no subscription needed.",
     colour: "#8b5cf6",
@@ -90,8 +90,8 @@ const addons = [
   },
   {
     name: "Content Refresh × 3",
-    price: "$25",
-    originalPrice: "$50",
+    price: "$50",
+    originalPrice: "$100",
     freq: "one-time",
     desc: "3 fresh 30-day content batches — 90 days of new AI images and captions delivered in one go. New month, new content, without lifting a finger.",
     colour: "#10b981",
@@ -141,7 +141,7 @@ const faqs = [
   },
   {
     q: "What happens after 30 days?",
-    a: "The automation stops automatically. You can order a Content Refresh × 3 bundle ($25) to get 90 more days of fresh content queued up automatically.",
+    a: "The automation stops automatically. You can order a Content Refresh × 3 bundle ($50) to get 90 more days of fresh content queued up automatically.",
   },
   {
     q: "How long does setup take?",
@@ -149,7 +149,7 @@ const faqs = [
   },
   {
     q: "What if something breaks mid-month?",
-    a: "The Monthly Maintenance add-on covers you. Without it, a One-Time Fix ($9) gets everything back on track within 24 hours.",
+    a: "The Monthly Maintenance add-on covers you. Without it, a One-Time Fix ($18) gets everything back on track within 24 hours.",
   },
 ];
 

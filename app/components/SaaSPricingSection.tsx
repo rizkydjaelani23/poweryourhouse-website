@@ -96,6 +96,7 @@ const plans = [
     badgeBorder: "1px solid rgba(59,130,246,0.35)",
     badgeColor: "#60a5fa",
     price: "$9",
+    originalPrice: "$18",
     period: "/ month",
     desc: "Perfect for individuals who recolour regularly.",
     credits: "100 Standard + 10 HD / month",
@@ -125,6 +126,7 @@ const plans = [
     badgeBorder: "1px solid rgba(79,70,229,0.4)",
     badgeColor: "#818cf8",
     price: "$29",
+    originalPrice: "$58",
     period: "/ month",
     desc: "For studios & teams with high-volume colour work.",
     credits: "500 Standard + 60 HD / month",
@@ -156,6 +158,7 @@ const plans = [
     badgeBorder: "1px solid rgba(16,185,129,0.4)",
     badgeColor: "#10b981",
     price: "$79",
+    originalPrice: "$158",
     period: "/ month",
     desc: "Unlimited standard renders for power users & agencies.",
     credits: "Unlimited Standard + 200 HD / month",
@@ -188,6 +191,7 @@ const packs = [
     label: "Standard Pack",
     amount: "100 credits",
     price: "$9",
+    originalPrice: "$18",
     desc: "One-time top-up",
     colour: "#3b82f6",
     bg: "rgba(59,130,246,0.08)",
@@ -198,6 +202,7 @@ const packs = [
     label: "HD Pack",
     amount: "20 HD credits",
     price: "$14",
+    originalPrice: "$28",
     desc: "One-time top-up",
     colour: "#8b5cf6",
     bg: "rgba(139,92,246,0.08)",
@@ -284,8 +289,27 @@ export default function SaaSPricingSection() {
 
               {/* Price */}
               <div style={{ marginBottom: "6px" }}>
-                <span style={{ fontSize: "46px", fontWeight: 900, color: "#fff", lineHeight: 1 }}>{plan.price}</span>
-                <span style={{ fontSize: "14px", color: "#64748b", marginLeft: "6px" }}>{plan.period}</span>
+                {(plan as { originalPrice?: string }).originalPrice && (
+                  <>
+                    <div style={{
+                      display: "inline-flex", alignItems: "center",
+                      background: "linear-gradient(135deg, #ef4444, #f97316)",
+                      borderRadius: "7px", padding: "4px 10px", marginBottom: "6px",
+                    }}>
+                      <span style={{ fontSize: "11px", fontWeight: 900, color: "#fff", letterSpacing: "0.04em" }}>🔥 50% DISCOUNT SALE</span>
+                    </div>
+                    <br />
+                  </>
+                )}
+                <div style={{ display: "flex", alignItems: "baseline", gap: "10px" }}>
+                  <span style={{ fontSize: "46px", fontWeight: 900, color: "#fff", lineHeight: 1 }}>{plan.price}</span>
+                  {(plan as { originalPrice?: string }).originalPrice && (
+                    <span style={{ fontSize: "18px", fontWeight: 700, color: "#475569", textDecoration: "line-through", lineHeight: 1 }}>
+                      {(plan as { originalPrice?: string }).originalPrice}
+                    </span>
+                  )}
+                </div>
+                <span style={{ fontSize: "14px", color: "#64748b" }}>{plan.period}</span>
               </div>
 
               {/* Credits pill */}
@@ -351,7 +375,13 @@ export default function SaaSPricingSection() {
                     <div style={{ fontSize: "12px", color: pack.colour, fontWeight: 600 }}>{pack.amount}</div>
                   </div>
                   <div style={{ textAlign: "right" }}>
-                    <div style={{ fontSize: "22px", fontWeight: 900, color: "#fff" }}>{pack.price}</div>
+                    <div style={{ display: "inline-flex", alignItems: "center", background: "linear-gradient(135deg, #ef4444, #f97316)", borderRadius: "5px", padding: "2px 7px", marginBottom: "3px" }}>
+                      <span style={{ fontSize: "9px", fontWeight: 900, color: "#fff", letterSpacing: "0.04em" }}>🔥 50% OFF</span>
+                    </div>
+                    <div style={{ display: "flex", alignItems: "baseline", gap: "6px", justifyContent: "flex-end" }}>
+                      <div style={{ fontSize: "22px", fontWeight: 900, color: "#fff" }}>{pack.price}</div>
+                      <div style={{ fontSize: "13px", fontWeight: 700, color: "#475569", textDecoration: "line-through" }}>{(pack as { originalPrice?: string }).originalPrice}</div>
+                    </div>
                     <div style={{ fontSize: "11px", color: "#475569" }}>{pack.desc}</div>
                   </div>
                 </div>
