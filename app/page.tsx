@@ -55,7 +55,7 @@ const industries = [
     example: "Tan, Black, Burgundy",
   },
   {
-    photo: "/large-window-draped-curtain.jpeg",
+    photo: "/recoloured-all-colours-1.jpg",
     label: "Curtains & blinds",
     example: "Grey, White, Terracotta",
   },
@@ -102,6 +102,9 @@ export default function HomePage() {
         .ind-card:hover .ind-img { transform: scale(1.06); }
         .ind-card { border: 1px solid rgba(255,255,255,0.08); transition: box-shadow 0.3s ease; }
         .ind-card:hover { box-shadow: 0 12px 40px rgba(0,0,0,0.5); }
+
+        .gallery-grid { display: grid; grid-template-columns: repeat(3, 1fr); gap: 10px; }
+        @media (max-width: 680px) { .gallery-grid { grid-template-columns: repeat(2, 1fr); } }
       `}</style>
 
       {/* ── HERO ──────────────────────────────────────────────────────────── */}
@@ -188,6 +191,74 @@ export default function HomePage() {
               <HeroDemo />
             </div>
           </div>
+        </div>
+      </section>
+
+      {/* ── REAL RESULTS GALLERY ──────────────────────────────────────────── */}
+      <section style={{ background: "#040912", padding: "0 0 80px" }}>
+        <div className="container">
+          <ScrollReveal>
+            <div style={{ textAlign: "center", marginBottom: "36px" }}>
+              <p style={{ fontSize: "11px", fontWeight: 800, color: "#64748b", letterSpacing: "0.14em", textTransform: "uppercase", marginBottom: "16px" }}>
+                Real results
+              </p>
+              <h2 style={{
+                fontSize: "clamp(22px, 3vw, 34px)", fontWeight: 900, color: "#fff",
+                margin: "0 0 12px", letterSpacing: "-0.02em",
+              }}>
+                One photo. Six colours. Under a minute.
+              </h2>
+              <p style={{ fontSize: "15px", color: "#64748b", margin: "0 auto", maxWidth: "500px", lineHeight: 1.7 }}>
+                Every image below was generated from the same single curtain photo —
+                no photographer, no Photoshop, no waiting.
+              </p>
+            </div>
+          </ScrollReveal>
+
+          <div className="gallery-grid">
+            {[
+              { src: "/recoloured-all-colours-1.jpg", colour: "Lavender" },
+              { src: "/recoloured-all-colours-2.jpg", colour: "Periwinkle" },
+              { src: "/recoloured-all-colours-3.jpg", colour: "Sage Green" },
+              { src: "/recoloured-all-colours-4.jpg", colour: "Peach" },
+              { src: "/recoloured-all-colours-5.jpg", colour: "Violet" },
+              { src: "/recoloured-all-colours-6.jpg", colour: "Hot Pink" },
+            ].map((item, i) => (
+              <ScrollReveal key={item.colour} delay={(i % 3) + 1}>
+                <div style={{ position: "relative", borderRadius: "14px", overflow: "hidden" }}>
+                  {/* eslint-disable-next-line @next/next/no-img-element */}
+                  <img
+                    src={item.src}
+                    alt={`Curtain recoloured in ${item.colour}`}
+                    loading="lazy"
+                    style={{ width: "100%", display: "block", aspectRatio: "3/4", objectFit: "cover" }}
+                  />
+                  <div style={{
+                    position: "absolute", bottom: 0, left: 0, right: 0,
+                    padding: "14px 16px",
+                    background: "linear-gradient(to top, rgba(4,9,18,0.88) 0%, transparent 100%)",
+                  }}>
+                    <span style={{ fontSize: "13px", fontWeight: 700, color: "#fff" }}>{item.colour}</span>
+                  </div>
+                </div>
+              </ScrollReveal>
+            ))}
+          </div>
+
+          <ScrollReveal>
+            <div style={{ textAlign: "center", marginTop: "28px" }}>
+              <p style={{ fontSize: "13px", color: "#334155", marginBottom: "16px" }}>
+                All 6 generated from one upload · Ready to download as a ZIP
+              </p>
+              <Link href="/generate" style={{
+                display: "inline-block", padding: "13px 28px", borderRadius: "12px",
+                background: "rgba(255,255,255,0.06)", border: "1px solid rgba(255,255,255,0.1)",
+                color: "#cbd5e1", fontWeight: 700, fontSize: "14px",
+              }}>
+                Try it with your own photo →
+              </Link>
+            </div>
+          </ScrollReveal>
         </div>
       </section>
 
