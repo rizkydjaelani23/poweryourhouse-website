@@ -131,10 +131,21 @@ export default function SelectionEditor({ imageSrc, handleRef, onMaskChange }: P
         ctx.beginPath();
         ctx.moveTo(pts[0].x, pts[0].y);
         pts.slice(1).forEach((p) => ctx.lineTo(p.x, p.y));
-        if (!closedRef.current && cursorRef.current) {
-          ctx.lineTo(cursorRef.current.x, cursorRef.current.y);
+        // Snap preview: only show closing line when cursor is near the first point
+        // AND at least 15 points have been placed (no auto rubber-band otherwise)
+        const snapRadius = 16 / scale;
+        const isNearOrigin = !closedRef.current &&
+          pts.length >= 15 &&
+          cursorRef.current != null &&
+          Math.hypot(cursorRef.current.x - pts[0].x, cursorRef.current.y - pts[0].y) < snapRadius;
+
+        if (closedRef.current) {
+          ctx.closePath();
+        } else if (isNearOrigin) {
+          // Draw snap preview back to first point
+          ctx.lineTo(pts[0].x, pts[0].y);
         }
-        if (closedRef.current) ctx.closePath();
+        // else: open path only — no rubber-band line to cursor
         ctx.stroke();
         ctx.setLineDash([]);
 
@@ -144,8 +155,10 @@ export default function SelectionEditor({ imageSrc, handleRef, onMaskChange }: P
           const r     = baseR / Math.max(scale, 0.4);
           ctx.beginPath();
           ctx.arc(p.x, p.y, r, 0, Math.PI * 2);
-          ctx.fillStyle   = i === 0 ? "#a78bfa" : "#fff";
-          ctx.strokeStyle = "#a78bfa";
+          // First dot turns green when snap is active
+          const snapActive = i === 0 && isNearOrigin;
+          ctx.fillStyle   = snapActive ? "#22c55e" : (i === 0 ? "#a78bfa" : "#fff");
+          ctx.strokeStyle = snapActive ? "#22c55e" : "#a78bfa";
           ctx.lineWidth   = 1 / scale;
           ctx.fill();
           ctx.stroke();
@@ -417,7 +430,7 @@ export default function SelectionEditor({ imageSrc, handleRef, onMaskChange }: P
     // Outline tool
     if (closedRef.current) return;
     const ip = c2i(cp.x, cp.y);
-    if (pointsRef.current.length >= 3) {
+    if (pointsRef.current.length >= 15) {
       const fp = i2c(pointsRef.current[0].x, pointsRef.current[0].y);
       if (Math.hypot(cp.x - fp.x, cp.y - fp.y) < 16) {
         closeOutline();
@@ -516,8 +529,24 @@ export default function SelectionEditor({ imageSrc, handleRef, onMaskChange }: P
           {ptCount === 0 && regionCount  >  0 && "Region added — draw another outline"}
           {ptCount === 1 && "Click to add more points"}
           {ptCount === 2 && "Keep adding points…"}
-          {ptCount >= 3  && "Click ● first point or double-click to close"}
+          {ptCount >= 3  && ptCount < 15 && "Keep adding points · click Finish when done"}
+          {ptCount >= 15 && "Move near ● start to snap-close · or click Finish"}
         </span>
+      )}
+
+      {/* Finish Outline button — shown once 3+ points placed */}
+      {tool === "outline" && ptCount >= 3 && (
+        <button
+          onClick={closeOutline}
+          style={{
+            padding: "5px 12px", borderRadius: "8px", fontSize: "12px", fontWeight: 700,
+            border: "1px solid rgba(139,92,246,0.5)",
+            background: "rgba(139,92,246,0.18)",
+            color: "#a78bfa", cursor: "pointer",
+          }}
+        >
+          ✓ Finish Outline
+        </button>
       )}
       {tool === "pan" && (
         <span style={{ fontSize: "11px", color: "#64748b" }}>Click and drag to move around the image</span>
@@ -610,7 +639,7 @@ export default function SelectionEditor({ imageSrc, handleRef, onMaskChange }: P
   const hint = (
     <p style={{ fontSize: "11px", color: "#334155", marginTop: "6px", lineHeight: 1.6 }}>
       {tool === "outline"
-        ? "Click to place points · click ● or double-click to close · close to start another outline"
+        ? "Click to place points · click Finish Outline or snap to ● start (15+ pts) to close · draw another outline to add more regions"
         : tool === "brush"
         ? "Click & drag to paint the area"
         : "Click & drag to move the image"}
