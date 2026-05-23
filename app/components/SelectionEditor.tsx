@@ -51,15 +51,16 @@ export default function SelectionEditor({ imageSrc, handleRef, onMaskChange }: P
   const historyRef = useRef<Snap[]>([]);
 
   // React state — only for UI labels / button enables
-  const [tool,       setTool]       = useState<Tool>("outline");
-  const toolRef                     = useRef<Tool>("outline");
-  const [brushSz,    setBrushSz]    = useState(24);
-  const brushSzRef                  = useRef(24);
-  const [zoomPct,    setZoomPct]    = useState(100);
-  const [ptCount,    setPtCount]    = useState(0);
-  const [_closed,    _setClosed]    = useState(false);
-  const [_hasMask,   _setHasMask]   = useState(false);
-  const [historyLen, setHistoryLen] = useState(0);
+  const [tool,        setTool]       = useState<Tool>("outline");
+  const toolRef                      = useRef<Tool>("outline");
+  const [brushSz,     setBrushSz]    = useState(24);
+  const brushSzRef                   = useRef(24);
+  const [zoomPct,     setZoomPct]    = useState(100);
+  const [ptCount,     setPtCount]    = useState(0);
+  const [_closed,     _setClosed]    = useState(false);
+  const [_hasMask,    _setHasMask]   = useState(false);
+  const [historyLen,  setHistoryLen] = useState(0);
+  const [regionCount, setRegionCount] = useState(0); // how many outlines have been committed
 
   function changeTool(t: Tool) { toolRef.current = t; setTool(t); }
   function changeBrush(n: number) { brushSzRef.current = n; setBrushSz(n); }
@@ -227,7 +228,7 @@ export default function SelectionEditor({ imageSrc, handleRef, onMaskChange }: P
       hasMaskRef.current = false;
       historyRef.current = [];
       setPtCount(0); _setClosed(false); _setHasMask(false);
-      setHistoryLen(0);
+      setHistoryLen(0); setRegionCount(0);
       onMaskChange(false);
       render();
     };
@@ -317,6 +318,8 @@ export default function SelectionEditor({ imageSrc, handleRef, onMaskChange }: P
     const mask = maskRef.current;
     if (pts.length < 3 || !mask) return;
     saveSnap(); // save state before filling
+
+    // Fill this polygon into the mask canvas
     const ctx = mask.getContext("2d")!;
     ctx.beginPath();
     ctx.moveTo(pts[0].x, pts[0].y);
@@ -324,12 +327,20 @@ export default function SelectionEditor({ imageSrc, handleRef, onMaskChange }: P
     ctx.closePath();
     ctx.fillStyle = "#fff";
     ctx.fill();
-    closedRef.current  = true;
-    _setClosed(true);
+
     hasMaskRef.current = true;
     _setHasMask(true);
     onMaskChange(true);
-    cursorRef.current  = null;
+
+    // ── KEY CHANGE: reset outline so a new one can be drawn immediately ──
+    // The filled region stays on the mask; we just clear the in-progress points.
+    pointsRef.current = [];
+    cursorRef.current = null;
+    closedRef.current = false;   // allow new outline clicks
+    _setClosed(false);
+    setPtCount(0);
+    setRegionCount(prev => prev + 1);
+
     render();
   }
 
@@ -343,7 +354,7 @@ export default function SelectionEditor({ imageSrc, handleRef, onMaskChange }: P
     hasMaskRef.current = false;
     historyRef.current = [];
     setPtCount(0); _setClosed(false); _setHasMask(false);
-    setHistoryLen(0);
+    setHistoryLen(0); setRegionCount(0);
     onMaskChange(false);
     render();
   }
@@ -448,16 +459,24 @@ export default function SelectionEditor({ imageSrc, handleRef, onMaskChange }: P
         )}
 
         {/* Outline status hint */}
-        {tool === "outline" && !_closed && (
+        {tool === "outline" && (
           <span style={{ fontSize: "11px", color: "#64748b" }}>
-            {ptCount === 0 && "Click to start outline"}
+            {ptCount === 0 && regionCount === 0 && "Click to start outline"}
+            {ptCount === 0 && regionCount  >  0 && "Region added — draw another outline or switch to brush"}
             {ptCount === 1 && "Click to add more points"}
             {ptCount === 2 && "Keep adding points…"}
             {ptCount >= 3  && "Click ● first point or double-click to close"}
           </span>
         )}
-        {tool === "outline" && _closed && (
-          <span style={{ fontSize: "11px", color: "#a78bfa", fontWeight: 700 }}>✓ Outline closed</span>
+        {/* Region counter badge */}
+        {regionCount > 0 && ptCount === 0 && (
+          <span style={{
+            fontSize: "11px", fontWeight: 700, color: "#22c55e",
+            background: "rgba(34,197,94,0.1)", border: "1px solid rgba(34,197,94,0.25)",
+            borderRadius: "6px", padding: "2px 8px",
+          }}>
+            {regionCount} region{regionCount > 1 ? "s" : ""} selected
+          </span>
         )}
 
         {/* Zoom + Undo on the right */}
@@ -527,8 +546,8 @@ export default function SelectionEditor({ imageSrc, handleRef, onMaskChange }: P
 
       <p style={{ fontSize: "11px", color: "#334155", marginTop: "6px", lineHeight: 1.6 }}>
         {tool === "outline"
-          ? "⬡ Click to place points · click ● first point or double-click to close"
-          : "🖌️ Click & drag to paint the area"}
+          ? "Click to place points · click ● first point or double-click to close · close one outline to start another"
+          : "Click & drag to paint the area"}
         {" "}&middot; Scroll to zoom &middot; Alt+drag to pan &middot; Ctrl+Z to undo
       </p>
     </div>
