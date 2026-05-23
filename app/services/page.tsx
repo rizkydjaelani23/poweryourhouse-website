@@ -20,7 +20,8 @@ export const metadata: Metadata = {
 const plans = [
   {
     name: "Starter",
-    price: "$197",
+    price: "$98",
+    originalPrice: "$197",
     freq: "one-time",
     tagline: "Perfect for small shops getting started with social media.",
     posts: "30 posts",
@@ -43,7 +44,8 @@ const plans = [
   },
   {
     name: "Growth",
-    price: "$249",
+    price: "$124",
+    originalPrice: "$249",
     freq: "one-time",
     tagline: "Double the presence. Twice daily posting keeps your brand front of mind.",
     posts: "60 posts",
@@ -70,7 +72,8 @@ const plans = [
 const addons = [
   {
     name: "Monthly Maintenance",
-    price: "$49",
+    price: "$24",
+    originalPrice: "$49",
     freq: "/ month",
     desc: "We monitor the automation, fix any broken connections, and keep everything running smoothly. Ideal if you want peace of mind month to month.",
     colour: "#3b82f6",
@@ -78,17 +81,19 @@ const addons = [
   },
   {
     name: "One-Time Fix",
-    price: "$19",
+    price: "$9",
+    originalPrice: "$19",
     freq: "flat fee",
     desc: "Something broke? We diagnose and fix the issue — broken connections, expired permissions, disconnected accounts — one flat charge, no subscription needed.",
     colour: "#8b5cf6",
     variantId: VARIANTS.SERVICE_FIX,
   },
   {
-    name: "Content Refresh",
-    price: "$50",
+    name: "Content Refresh × 3",
+    price: "$25",
+    originalPrice: "$50",
     freq: "one-time",
-    desc: "New month, new content. We generate a fresh 30-day batch of AI images and captions for your feed. Keep your audience engaged without lifting a finger.",
+    desc: "3 fresh 30-day content batches — 90 days of new AI images and captions delivered in one go. New month, new content, without lifting a finger.",
     colour: "#10b981",
     variantId: VARIANTS.SERVICE_REFRESH,
   },
@@ -136,7 +141,7 @@ const faqs = [
   },
   {
     q: "What happens after 30 days?",
-    a: "The automation stops automatically. You can order a Content Refresh ($50) to queue another 30 days of fresh posts.",
+    a: "The automation stops automatically. You can order a Content Refresh × 3 bundle ($25) to get 90 more days of fresh content queued up automatically.",
   },
   {
     q: "How long does setup take?",
@@ -144,7 +149,7 @@ const faqs = [
   },
   {
     q: "What if something breaks mid-month?",
-    a: "The Monthly Maintenance add-on covers you. Without it, a One-Time Fix ($19) gets everything back on track within 24 hours.",
+    a: "The Monthly Maintenance add-on covers you. Without it, a One-Time Fix ($9) gets everything back on track within 24 hours.",
   },
 ];
 
@@ -227,9 +232,22 @@ export default function ServicesPage() {
           <h2 style={{ fontSize: "28px", fontWeight: 900, color: "#fff", textAlign: "center", marginBottom: "8px", letterSpacing: "-0.02em" }}>
             Simple, one-time packages
           </h2>
-          <p style={{ fontSize: "14px", color: "#475569", textAlign: "center", marginBottom: "40px" }}>
+          <p style={{ fontSize: "14px", color: "#475569", textAlign: "center", marginBottom: "28px" }}>
             No monthly retainer required. Pay once, get 30 days of automated posting.
           </p>
+
+          {/* Launch offer banner */}
+          <div style={{
+            display: "flex", alignItems: "center", justifyContent: "center", gap: "10px",
+            background: "linear-gradient(135deg, rgba(239,68,68,0.10), rgba(251,146,60,0.10))",
+            border: "1px solid rgba(239,68,68,0.28)",
+            borderRadius: "12px", padding: "12px 20px", marginBottom: "32px",
+          }}>
+            <span style={{ fontSize: "18px" }}>🔥</span>
+            <span style={{ fontSize: "14px", fontWeight: 800, color: "#fca5a5" }}>
+              Launch Offer — 50% off all packages. Limited time only.
+            </span>
+          </div>
 
           <div style={{ display: "grid", gridTemplateColumns: "repeat(auto-fit, minmax(280px, 1fr))", gap: "20px", marginBottom: "16px" }}>
             {plans.map((plan) => (
@@ -260,6 +278,10 @@ export default function ServicesPage() {
                   </span>
                 </div>
                 <div style={{ marginBottom: "4px" }}>
+                  <div style={{ display: "flex", alignItems: "center", gap: "8px", marginBottom: "4px" }}>
+                    <span style={{ fontSize: "13px", color: "#475569", textDecoration: "line-through" }}>{plan.originalPrice}</span>
+                    <span style={{ fontSize: "10px", fontWeight: 800, color: "#ef4444", background: "rgba(239,68,68,0.12)", border: "1px solid rgba(239,68,68,0.25)", borderRadius: "999px", padding: "2px 8px" }}>50% OFF</span>
+                  </div>
                   <span style={{ fontSize: "48px", fontWeight: 900, color: "#fff", lineHeight: 1 }}>{plan.price}</span>
                   <span style={{ fontSize: "14px", color: "#475569", marginLeft: "6px" }}>{plan.freq}</span>
                 </div>
@@ -326,9 +348,15 @@ export default function ServicesPage() {
                 border: `1px solid ${a.colour}28`,
                 borderRadius: "16px", padding: "24px",
               }}>
-                <div style={{ display: "flex", alignItems: "baseline", gap: "6px", marginBottom: "6px" }}>
-                  <span style={{ fontSize: "28px", fontWeight: 900, color: "#fff" }}>{a.price}</span>
-                  <span style={{ fontSize: "12px", color: "#475569" }}>{a.freq}</span>
+                <div style={{ marginBottom: "6px" }}>
+                  <div style={{ display: "flex", alignItems: "center", gap: "8px", marginBottom: "2px" }}>
+                    <span style={{ fontSize: "12px", color: "#475569", textDecoration: "line-through" }}>{a.originalPrice}</span>
+                    <span style={{ fontSize: "10px", fontWeight: 800, color: "#ef4444", background: "rgba(239,68,68,0.10)", border: "1px solid rgba(239,68,68,0.22)", borderRadius: "999px", padding: "1px 7px" }}>50% OFF</span>
+                  </div>
+                  <div style={{ display: "flex", alignItems: "baseline", gap: "6px" }}>
+                    <span style={{ fontSize: "28px", fontWeight: 900, color: "#fff" }}>{a.price}</span>
+                    <span style={{ fontSize: "12px", color: "#475569" }}>{a.freq}</span>
+                  </div>
                 </div>
                 <div style={{ fontSize: "14px", fontWeight: 700, color: "#e2e8f0", marginBottom: "8px" }}>{a.name}</div>
                 <p style={{ fontSize: "12px", color: "#475569", lineHeight: 1.7, marginBottom: "16px" }}>{a.desc}</p>
