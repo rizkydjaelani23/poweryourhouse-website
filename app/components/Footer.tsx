@@ -77,6 +77,39 @@ export default function Footer() {
             <p style={{ marginTop: "10px", fontSize: "13px", color: "#64748b" }}>
               We reply within 24 hours.
             </p>
+            {/* Social links */}
+            <div style={{ display: "flex", gap: "10px", marginTop: "16px" }}>
+              <a
+                href="https://www.instagram.com/poweryourhouse2/"
+                target="_blank"
+                rel="noopener noreferrer"
+                style={{
+                  display: "inline-flex", alignItems: "center", justifyContent: "center",
+                  width: "36px", height: "36px", borderRadius: "10px",
+                  background: "linear-gradient(135deg, #f97316, #ec4899, #8b5cf6)",
+                  color: "#fff", fontSize: "16px",
+                  flexShrink: 0,
+                }}
+                title="Instagram"
+              >
+                📷
+              </a>
+              <a
+                href="https://www.facebook.com/profile.php?id=61590558021861"
+                target="_blank"
+                rel="noopener noreferrer"
+                style={{
+                  display: "inline-flex", alignItems: "center", justifyContent: "center",
+                  width: "36px", height: "36px", borderRadius: "10px",
+                  background: "#1877f2",
+                  color: "#fff", fontSize: "16px",
+                  flexShrink: 0,
+                }}
+                title="Facebook"
+              >
+                f
+              </a>
+            </div>
           </div>
         </div>
 
@@ -94,6 +127,33 @@ export default function Footer() {
           </p>
           <div style={{ display: "flex", alignItems: "center", gap: "20px", flexWrap: "wrap" }}>
             <span style={{ fontSize: "13px", color: "#475569" }}>Built with ⚡ in Australia</span>
+            <div style={{ display: "flex", gap: "8px" }}>
+              <a
+                href="https://www.instagram.com/poweryourhouse2/"
+                target="_blank"
+                rel="noopener noreferrer"
+                style={{
+                  display: "inline-flex", alignItems: "center", gap: "5px",
+                  fontSize: "13px", color: "#64748b",
+                  transition: "color 0.15s",
+                }}
+              >
+                Instagram
+              </a>
+              <span style={{ color: "#334155" }}>·</span>
+              <a
+                href="https://www.facebook.com/profile.php?id=61590558021861"
+                target="_blank"
+                rel="noopener noreferrer"
+                style={{
+                  display: "inline-flex", alignItems: "center", gap: "5px",
+                  fontSize: "13px", color: "#64748b",
+                  transition: "color 0.15s",
+                }}
+              >
+                Facebook
+              </a>
+            </div>
             <a
               href="https://www.producthunt.com/products/poweryourhouse?embed=true&utm_source=badge-featured&utm_medium=badge&utm_campaign=badge-poweryourhouse"
               target="_blank"

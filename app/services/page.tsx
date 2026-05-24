@@ -89,11 +89,11 @@ const addons = [
     variantId: VARIANTS.SERVICE_FIX,
   },
   {
-    name: "Content Refresh × 3",
+    name: "Content Refresh — 30 Days",
     price: "$50",
     originalPrice: "$100",
     freq: "one-time",
-    desc: "3 fresh 30-day content batches — 90 days of new AI images and captions delivered in one go. New month, new content, without lifting a finger.",
+    desc: "A brand-new batch of 30 days of AI-generated images and captions delivered to your automation. New month, new content, without lifting a finger.",
     colour: "#10b981",
     variantId: VARIANTS.SERVICE_REFRESH,
   },
@@ -141,7 +141,7 @@ const faqs = [
   },
   {
     q: "What happens after 30 days?",
-    a: "The automation stops automatically. You can order a Content Refresh × 3 bundle ($50) to get 90 more days of fresh content queued up automatically.",
+    a: "The automation stops automatically. You can order a Content Refresh ($50) to get another 30 days of fresh content queued up automatically.",
   },
   {
     q: "How long does setup take?",
