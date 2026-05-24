@@ -254,6 +254,30 @@ export async function POST(request: Request) {
           .insert({ token: ipKey, count: 1 });
       }
 
+      // ── Abuse tracking ────────────────────────────────────────────────────
+      // If this IP has been seen before (ipRow exists) but with a DIFFERENT
+      // token (tokenRow is null = fresh token), the user is cycling tokens
+      // (private mode / localStorage clear / VPN). Track it so you can review.
+      if (!tokenRow && ipRow) {
+        const abuseKey = `abuse:${ip}`;
+        const { data: abuseRow } = await admin
+          .from("saas_guest_usage")
+          .select("count")
+          .eq("token", abuseKey)
+          .maybeSingle();
+
+        if (abuseRow) {
+          await admin
+            .from("saas_guest_usage")
+            .update({ count: (abuseRow.count as number) + 1, last_used: now })
+            .eq("token", abuseKey);
+        } else {
+          await admin
+            .from("saas_guest_usage")
+            .insert({ token: abuseKey, count: 1 });
+        }
+      }
+
       return NextResponse.json({
         ok:           true,
         outputUrl,
