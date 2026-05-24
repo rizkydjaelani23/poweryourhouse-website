@@ -182,16 +182,33 @@ export async function POST(request: Request) {
 
       const admin = await createAdminClient();
 
-      // Check existing usage
-      const { data: existing } = await admin
+      // Extract client IP for secondary rate-limiting (so clearing localStorage
+      // doesn't bypass the limit — both token AND IP are checked)
+      const ip =
+        request.headers.get("x-forwarded-for")?.split(",")[0]?.trim() ||
+        request.headers.get("x-real-ip") ||
+        "unknown";
+      const ipKey = `ip:${ip}`;
+
+      // Check token-based usage
+      const { data: tokenRow } = await admin
         .from("saas_guest_usage")
         .select("count")
         .eq("token", guestToken)
         .maybeSingle();
 
-      const currentCount = (existing?.count as number) ?? 0;
+      // Check IP-based usage
+      const { data: ipRow } = await admin
+        .from("saas_guest_usage")
+        .select("count")
+        .eq("token", ipKey)
+        .maybeSingle();
 
-      if (currentCount >= GUEST_LIMIT) {
+      const tokenCount = (tokenRow?.count as number) ?? 0;
+      const ipCount    = (ipRow?.count   as number) ?? 0;
+
+      // Block if either token OR IP has hit the limit
+      if (tokenCount >= GUEST_LIMIT || ipCount >= GUEST_LIMIT) {
         return NextResponse.json(
           {
             error: `You've used your ${GUEST_LIMIT} free generations. Sign up free to get 5 more!`,
@@ -211,11 +228,13 @@ export async function POST(request: Request) {
         contentType: "image/jpeg",
       });
 
-      // Record / increment usage
-      if (existing) {
+      const now = new Date().toISOString();
+
+      // Increment token usage
+      if (tokenRow) {
         await admin
           .from("saas_guest_usage")
-          .update({ count: currentCount + 1, last_used: new Date().toISOString() })
+          .update({ count: tokenCount + 1, last_used: now })
           .eq("token", guestToken);
       } else {
         await admin
@@ -223,11 +242,23 @@ export async function POST(request: Request) {
           .insert({ token: guestToken, count: 1 });
       }
 
+      // Increment IP usage
+      if (ipRow) {
+        await admin
+          .from("saas_guest_usage")
+          .update({ count: ipCount + 1, last_used: now })
+          .eq("token", ipKey);
+      } else {
+        await admin
+          .from("saas_guest_usage")
+          .insert({ token: ipKey, count: 1 });
+      }
+
       return NextResponse.json({
         ok:           true,
         outputUrl,
         generationId: genId,
-        guestUsed:    currentCount + 1,
+        guestUsed:    tokenCount + 1,
         guestLimit:   GUEST_LIMIT,
       });
     }
