@@ -17,8 +17,9 @@ export async function getAdminData(password: string) {
   const admin = await createAdminClient();
 
   const nowIso  = new Date().toISOString();
-  const todayIso = nowIso.slice(0, 10) + "T00:00:00.000Z";
-  const weekAgo  = new Date(Date.now() - 7 * 86400000).toISOString();
+  // Use "last 24 hours" instead of UTC midnight so it's timezone-agnostic
+  const todayIso = new Date(Date.now() - 24 * 3600_000).toISOString();
+  const weekAgo  = new Date(Date.now() - 7 * 86400_000).toISOString();
 
   const [
     { count: totalGens },
@@ -35,9 +36,9 @@ export async function getAdminData(password: string) {
     admin.from("saas_generations").select("*", { count: "exact", head: true }).gte("created_at", todayIso),
     admin.from("saas_generations").select("*", { count: "exact", head: true }).gte("created_at", weekAgo),
     admin.from("saas_generations").select("*", { count: "exact", head: true }).eq("type", "HD"),
-    admin.from("saas_guest_usage").select("*", { count: "exact", head: true }),
+    admin.from("saas_guest_usage").select("*", { count: "exact", head: true }).not("token", "like", "ip:%").not("token", "like", "abuse:%"),
     admin.from("saas_generations").select("id,user_id,type,colour_hex,status,created_at").order("created_at", { ascending: false }).limit(40),
-    admin.from("saas_guest_usage").select("*").order("last_used", { ascending: false }),
+    admin.from("saas_guest_usage").select("*").not("token", "like", "ip:%").not("token", "like", "abuse:%").order("last_used", { ascending: false }),
     admin.from("saas_credit_ledger").select("user_id,type,delta").limit(10000),
     admin.auth.admin.listUsers({ page: 1, perPage: 100 }),
   ]);

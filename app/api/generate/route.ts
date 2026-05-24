@@ -245,7 +245,7 @@ export async function POST(request: Request) {
       } else {
         await admin
           .from("saas_guest_usage")
-          .insert({ token: guestToken, count: 1 });
+          .insert({ token: guestToken, count: 1, last_used: now });
       }
 
       // Increment IP usage
@@ -257,7 +257,7 @@ export async function POST(request: Request) {
       } else {
         await admin
           .from("saas_guest_usage")
-          .insert({ token: ipKey, count: 1 });
+          .insert({ token: ipKey, count: 1, last_used: now });
       }
 
       // ── Abuse tracking ────────────────────────────────────────────────────
