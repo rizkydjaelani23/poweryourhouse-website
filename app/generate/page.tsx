@@ -229,10 +229,12 @@ export default function GeneratePage() {
 
       setResult(data.outputUrl);
 
-      if (isGuest && data.guestUsed !== undefined) {
-        setGuestUsed(data.guestUsed);
-        localStorage.setItem("pyh_guest_used", String(data.guestUsed));
-        if (data.guestUsed >= GUEST_LIMIT) setGuestLimitReached(true);
+      if (isGuest) {
+        // Always increment locally — don't rely on server count which may lag
+        const newUsed = guestUsed + 1;
+        setGuestUsed(newUsed);
+        localStorage.setItem("pyh_guest_used", String(newUsed));
+        if (newUsed >= GUEST_LIMIT) setGuestLimitReached(true);
       }
 
       if (isLastAuthCredit) setLastCreditUsed(true);
@@ -306,14 +308,20 @@ export default function GeneratePage() {
           setMultiResults(prev => prev.map((r, idx) =>
             idx === i ? { ...r, url: data.outputUrl, status: "done" } : r
           ));
-          if (isGuest && data.guestUsed !== undefined) {
-            setGuestUsed(data.guestUsed);
-            localStorage.setItem("pyh_guest_used", String(data.guestUsed));
-            if (data.guestUsed >= GUEST_LIMIT) {
-              setGuestLimitReached(true);
-              setMultiResults(prev => prev.map((r, idx) =>
-                idx > i ? { ...r, status: "error", error: "Free limit reached — sign up for more" } : r
-              ));
+          if (isGuest) {
+            // Increment locally each successful generation
+            setGuestUsed(prev => {
+              const newUsed = prev + 1;
+              localStorage.setItem("pyh_guest_used", String(newUsed));
+              if (newUsed >= GUEST_LIMIT) {
+                setGuestLimitReached(true);
+                setMultiResults(p => p.map((r, idx) =>
+                  idx > i ? { ...r, status: "error", error: "Free limit reached — sign up for more" } : r
+                ));
+              }
+              return newUsed;
+            });
+            if (guestUsed + 1 >= GUEST_LIMIT) {
               break;
             }
           }
