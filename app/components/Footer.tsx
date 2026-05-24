@@ -83,16 +83,11 @@ export default function Footer() {
                 href="https://www.instagram.com/poweryourhouse2/"
                 target="_blank"
                 rel="noopener noreferrer"
-                style={{
-                  display: "inline-flex", alignItems: "center", justifyContent: "center",
-                  width: "36px", height: "36px", borderRadius: "10px",
-                  background: "linear-gradient(135deg, #f97316, #ec4899, #8b5cf6)",
-                  color: "#fff", fontSize: "16px",
-                  flexShrink: 0,
-                }}
+                style={{ display: "inline-flex", flexShrink: 0 }}
                 title="Instagram"
               >
-                📷
+                {/* eslint-disable-next-line @next/next/no-img-element */}
+                <img src="/Instagram_Logo.jpg" alt="Instagram" style={{ width: "36px", height: "36px", borderRadius: "10px", objectFit: "cover", display: "block" }} />
               </a>
               <a
                 href="https://www.facebook.com/profile.php?id=61590558021861"
