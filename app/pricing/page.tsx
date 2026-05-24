@@ -522,6 +522,195 @@ export default function PricingPage() {
         </div>
       </section>
 
+      {/* ── Social Media Automation divider ── */}
+      <div style={{
+        background: "linear-gradient(180deg, #0d1424 0%, #080d1a 100%)",
+        borderTop: "1px solid rgba(139,92,246,0.1)",
+        borderBottom: "1px solid rgba(139,92,246,0.1)",
+        padding: "56px 0 48px",
+        textAlign: "center",
+      }}>
+        <div className="container">
+          <div style={{
+            display: "inline-flex", alignItems: "center", gap: "8px",
+            background: "rgba(139,92,246,0.1)", border: "1px solid rgba(139,92,246,0.25)",
+            color: "#a78bfa", padding: "5px 14px", borderRadius: "999px",
+            fontSize: "12px", fontWeight: 800, marginBottom: "16px",
+          }}>
+            📱 SOCIAL MEDIA AUTOMATION
+          </div>
+          <h2 className="section-title" style={{ margin: "0 auto", maxWidth: "600px" }}>
+            30 days of social media, fully automated
+          </h2>
+          <p className="section-sub" style={{ margin: "14px auto 0", maxWidth: "520px" }}>
+            We build and run your Facebook & Instagram for 30 days. AI-generated images, captions, hashtags — posted automatically every day. You do nothing.
+          </p>
+        </div>
+      </div>
+
+      {/* Social media plan cards */}
+      <section className="section">
+        <div className="container">
+          <div style={{
+            display: "grid",
+            gridTemplateColumns: "repeat(auto-fit, minmax(300px, 1fr))",
+            gap: "24px",
+            maxWidth: "840px",
+            margin: "0 auto",
+          }}>
+
+            {/* Starter */}
+            <div style={{
+              background: "linear-gradient(160deg, #131c2e, #111827)",
+              border: "1px solid rgba(139,92,246,0.25)",
+              borderRadius: "24px", padding: "36px 32px", position: "relative",
+            }}>
+              <div style={{
+                display: "inline-block",
+                background: "rgba(139,92,246,0.12)", border: "1px solid rgba(139,92,246,0.3)",
+                color: "#a78bfa", padding: "4px 14px", borderRadius: "999px",
+                fontSize: "13px", fontWeight: 700, marginBottom: "20px",
+              }}>Starter</div>
+
+              <div style={{ display: "flex", alignItems: "baseline", gap: "10px", marginBottom: "4px" }}>
+                <span style={{ fontSize: "52px", fontWeight: 900, color: "#fff", lineHeight: 1 }}>$196</span>
+                <span style={{ fontSize: "20px", fontWeight: 700, color: "#475569", textDecoration: "line-through" }}>$392</span>
+              </div>
+              <div style={{ fontSize: "12px", color: "#a78bfa", fontWeight: 700, marginBottom: "8px" }}>one-time · 50% off launch price</div>
+              <p style={{ fontSize: "13px", color: "#64748b", marginBottom: "8px", lineHeight: 1.6 }}>
+                1 post/day · 30 posts · Facebook + Instagram
+              </p>
+              <p style={{ fontSize: "13px", color: "#94a3b8", marginBottom: "28px", lineHeight: 1.6 }}>
+                Perfect for small shops getting started with social media.
+              </p>
+
+              <div style={{ borderTop: "1px solid rgba(255,255,255,0.06)", paddingTop: "20px", marginBottom: "28px" }}>
+                {[
+                  "30 AI-generated product images",
+                  "30 captions + hashtags",
+                  "Facebook Page + Instagram connected",
+                  "Fully automated scheduling",
+                  "Content calendar handed to you",
+                  "7 days post-launch support",
+                ].map((f) => <FeatureRow key={f} text={f} color="#a78bfa" />)}
+              </div>
+
+              <Link href="/services" style={{
+                display: "block", padding: "14px", borderRadius: "12px",
+                background: "rgba(139,92,246,0.15)", border: "1px solid rgba(139,92,246,0.35)",
+                color: "#a78bfa", textAlign: "center",
+                fontSize: "14px", fontWeight: 700, textDecoration: "none",
+              }}>
+                Get Starter →
+              </Link>
+            </div>
+
+            {/* Growth */}
+            <div style={{
+              background: "linear-gradient(160deg, #1a1535, #111827)",
+              border: "2px solid #8b5cf6",
+              borderRadius: "24px", padding: "36px 32px", position: "relative",
+              boxShadow: "0 0 48px rgba(139,92,246,0.15)",
+            }}>
+              <div style={{
+                position: "absolute", top: "-16px", left: "50%", transform: "translateX(-50%)",
+                background: "linear-gradient(135deg, #7c3aed, #8b5cf6)",
+                color: "#fff", padding: "5px 18px", borderRadius: "999px",
+                fontSize: "11px", fontWeight: 800, whiteSpace: "nowrap",
+              }}>MOST POPULAR</div>
+
+              <div style={{
+                display: "inline-block",
+                background: "rgba(139,92,246,0.15)", border: "1px solid rgba(139,92,246,0.4)",
+                color: "#a78bfa", padding: "4px 14px", borderRadius: "999px",
+                fontSize: "13px", fontWeight: 700, marginBottom: "20px",
+              }}>Growth</div>
+
+              <div style={{ display: "flex", alignItems: "baseline", gap: "10px", marginBottom: "4px" }}>
+                <span style={{ fontSize: "52px", fontWeight: 900, color: "#fff", lineHeight: 1 }}>$248</span>
+                <span style={{ fontSize: "20px", fontWeight: 700, color: "#475569", textDecoration: "line-through" }}>$496</span>
+              </div>
+              <div style={{ fontSize: "12px", color: "#a78bfa", fontWeight: 700, marginBottom: "8px" }}>one-time · 50% off launch price</div>
+              <p style={{ fontSize: "13px", color: "#94a3b8", marginBottom: "8px", lineHeight: 1.6 }}>
+                2 posts/day · 60 posts · Facebook + Instagram
+              </p>
+              <p style={{ fontSize: "13px", color: "#94a3b8", marginBottom: "28px", lineHeight: 1.6 }}>
+                Double the presence. Twice daily posting keeps your brand front of mind.
+              </p>
+
+              <div style={{ borderTop: "1px solid rgba(255,255,255,0.06)", paddingTop: "20px", marginBottom: "28px" }}>
+                {[
+                  "60 AI-generated product images",
+                  "60 captions — morning & afternoon batches",
+                  "Facebook Page + Instagram connected",
+                  "Fully automated scheduling",
+                  "Morning + afternoon posting, every day",
+                  "Content calendar handed to you",
+                  "14 days post-launch support",
+                  "One free content refresh included",
+                ].map((f) => <FeatureRow key={f} text={f} color="#a78bfa" />)}
+              </div>
+
+              <Link href="/services" style={{
+                display: "block", padding: "15px", borderRadius: "12px",
+                background: "linear-gradient(135deg, #7c3aed, #8b5cf6)",
+                color: "#fff", textAlign: "center",
+                fontSize: "14px", fontWeight: 700,
+                boxShadow: "0 4px 20px rgba(139,92,246,0.4)",
+                textDecoration: "none",
+              }}>
+                Get Growth →
+              </Link>
+              <p style={{ textAlign: "center", fontSize: "11px", color: "#475569", marginTop: "12px" }}>
+                Launch sale pricing · Limited time
+              </p>
+            </div>
+          </div>
+
+          {/* Add-ons */}
+          <div style={{ maxWidth: "840px", margin: "40px auto 0" }}>
+            <div style={{ fontSize: "12px", fontWeight: 800, color: "#64748b", letterSpacing: "0.08em", marginBottom: "16px", textAlign: "center" }}>
+              ADD-ONS
+            </div>
+            <div style={{
+              display: "grid",
+              gridTemplateColumns: "repeat(auto-fit, minmax(240px, 1fr))",
+              gap: "16px",
+            }}>
+              {[
+                { name: "Monthly Maintenance", price: "$48", freq: "/mo", was: "$96", desc: "We monitor the automation, fix broken connections, and keep everything running.", colour: "#3b82f6" },
+                { name: "One-Time Fix", price: "$18", freq: "flat", was: "$36", desc: "Something broke? We diagnose and fix it — one flat charge, no subscription.", colour: "#8b5cf6" },
+                { name: "Content Refresh — 30 Days", price: "$50", freq: "one-time", was: "$100", desc: "A fresh batch of 30 days of content delivered to your automation.", colour: "#10b981" },
+              ].map((a) => (
+                <div key={a.name} style={{
+                  background: `${a.colour}08`,
+                  border: `1px solid ${a.colour}28`,
+                  borderRadius: "16px", padding: "22px 24px",
+                }}>
+                  <div style={{ display: "flex", alignItems: "baseline", gap: "8px", marginBottom: "4px" }}>
+                    <span style={{ fontSize: "28px", fontWeight: 900, color: "#fff" }}>{a.price}</span>
+                    <span style={{ fontSize: "14px", color: "#475569", textDecoration: "line-through" }}>{a.was}</span>
+                    <span style={{ fontSize: "12px", color: "#64748b" }}>{a.freq}</span>
+                  </div>
+                  <div style={{ fontSize: "13px", fontWeight: 700, color: "#e2e8f0", marginBottom: "6px" }}>{a.name}</div>
+                  <p style={{ fontSize: "12px", color: "#64748b", lineHeight: 1.6, margin: 0 }}>{a.desc}</p>
+                </div>
+              ))}
+            </div>
+            <div style={{ textAlign: "center", marginTop: "28px" }}>
+              <Link href="/services" style={{
+                display: "inline-block", padding: "14px 32px", borderRadius: "12px",
+                background: "linear-gradient(135deg, #7c3aed, #8b5cf6)",
+                color: "#fff", fontSize: "14px", fontWeight: 700, textDecoration: "none",
+                boxShadow: "0 4px 20px rgba(139,92,246,0.3)",
+              }}>
+                See full service details →
+              </Link>
+            </div>
+          </div>
+        </div>
+      </section>
+
       {/* FAQ */}
       <section className="section" style={{ background: "#0d1424", paddingTop: "72px" }}>
         <div className="container" style={{ maxWidth: "720px" }}>
