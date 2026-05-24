@@ -204,13 +204,10 @@ export async function POST(request: Request) {
         .eq("token", ipKey)
         .maybeSingle();
 
-      // If DB is unreachable / table missing — fail safe and block
+      // If DB is unreachable / table missing — log but don't block.
+      // Client-side already enforces the limit via localStorage.
       if (tokenErr || ipErr) {
         console.error("[guest] saas_guest_usage query failed:", tokenErr || ipErr);
-        return NextResponse.json(
-          { error: "Service temporarily unavailable. Please try again shortly.", guestLimitReached: false },
-          { status: 503 }
-        );
       }
 
       const tokenCount = (tokenRow?.count as number) ?? 0;
