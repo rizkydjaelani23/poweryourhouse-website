@@ -181,15 +181,25 @@ function Dashboard({ password, onLogout }: { password: string; onLogout: () => v
   const [loading, setLoading] = useState(true);
   const [err, setErr]         = useState("");
 
+  const [lastRefresh, setLastRefresh] = useState<Date | null>(null);
+
   const load = useCallback(async (silent = false) => {
     if (!silent) setLoading(true);
     const result = await getAdminData(password);
     if ("error" in result && result.error) { setErr(result.error); setLoading(false); return; }
     setData(result as AdminData);
+    setLastRefresh(new Date());
     if (!silent) setLoading(false);
   }, [password]);
 
+  // Initial load
   useEffect(() => { load(); }, [load]);
+
+  // Auto-refresh every 30 seconds (silent — no spinner)
+  useEffect(() => {
+    const interval = setInterval(() => load(true), 30_000);
+    return () => clearInterval(interval);
+  }, [load]);
 
   if (loading) return (
     <div style={{ minHeight: "100vh", background: "#040912", display: "flex", alignItems: "center", justifyContent: "center" }}>
@@ -242,7 +252,12 @@ function Dashboard({ password, onLogout }: { password: string; onLogout: () => v
               {new Date().toLocaleDateString("en-AU", { weekday: "long", day: "numeric", month: "long", year: "numeric" })}
             </p>
           </div>
-          <div style={{ display: "flex", gap: "10px" }}>
+          <div style={{ display: "flex", alignItems: "center", gap: "10px" }}>
+            {lastRefresh && (
+              <span style={{ fontSize: "11px", color: "#475569" }}>
+                Updated {ago(lastRefresh.toISOString())} · auto-refreshes every 30s
+              </span>
+            )}
             <button onClick={() => load(true)} style={{ background: "rgba(59,130,246,0.1)", border: "1px solid rgba(59,130,246,0.2)", borderRadius: "8px", padding: "8px 14px", color: "#60a5fa", fontSize: "13px", fontWeight: 600, cursor: "pointer" }}>↻ Refresh</button>
             <button onClick={onLogout} style={{ background: "transparent", border: "1px solid rgba(255,255,255,0.1)", borderRadius: "8px", padding: "8px 16px", color: "#64748b", fontSize: "13px", fontWeight: 600, cursor: "pointer" }}>Sign out</button>
           </div>
