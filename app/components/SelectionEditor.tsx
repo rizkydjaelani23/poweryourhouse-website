@@ -114,6 +114,15 @@ export default function SelectionEditor({ imageSrc, handleRef, onMaskChange }: P
 
       const ctx = canvas.getContext("2d")!;
       const { scale, tx, ty } = vt.current;
+
+      // cssScale: how many CSS pixels each canvas pixel occupies.
+      // Accounts for the canvas being displayed larger when expanded —
+      // without this, dots and lines look oversized in expanded mode.
+      const rect     = canvas.getBoundingClientRect();
+      const cssScale = rect.width > 0 ? rect.width / canvas.width : 1;
+      // Combined scale for sizing overlay elements to a consistent physical size
+      const dispScale = scale * cssScale;
+
       ctx.clearRect(0, 0, canvas.width, canvas.height);
       ctx.save();
       ctx.setTransform(scale, 0, 0, scale, tx, ty);
@@ -128,17 +137,17 @@ export default function SelectionEditor({ imageSrc, handleRef, onMaskChange }: P
 
       const pts = pointsRef.current;
       if (pts.length > 0) {
-        const lw = 2 / scale;
+        const lw = 2 / dispScale;
         ctx.strokeStyle = "#a78bfa";
         ctx.lineWidth   = lw;
-        ctx.setLineDash([6 / scale, 4 / scale]);
+        ctx.setLineDash([6 / dispScale, 4 / dispScale]);
         ctx.beginPath();
         ctx.moveTo(pts[0].x, pts[0].y);
         pts.slice(1).forEach((p) => ctx.lineTo(p.x, p.y));
         // Snap preview: only show closing line when cursor is near the first point,
         // at least 15 points have been placed, and snap hasn't been suppressed by
         // a recent undo (cleared once cursor moves 32+ canvas-px from origin).
-        const snapRadius = 16 / scale;
+        const snapRadius = 16 / dispScale;
         const isNearOrigin = !closedRef.current &&
           !snapSuppressed.current &&
           pts.length >= 15 &&
@@ -156,16 +165,16 @@ export default function SelectionEditor({ imageSrc, handleRef, onMaskChange }: P
         ctx.setLineDash([]);
 
         pts.forEach((p, i) => {
-          // Dot radius shrinks as you zoom in → more precise placement at high zoom
+          // Dot radius is a fixed physical size regardless of zoom or expand state
           const baseR = (i === 0 ? 5 : 3);
-          const r     = baseR / Math.max(scale, 0.4);
+          const r     = baseR / Math.max(dispScale, 0.4);
           ctx.beginPath();
           ctx.arc(p.x, p.y, r, 0, Math.PI * 2);
           // First dot turns green when snap is active
           const snapActive = i === 0 && isNearOrigin;
           ctx.fillStyle   = snapActive ? "#22c55e" : (i === 0 ? "#a78bfa" : "#fff");
           ctx.strokeStyle = snapActive ? "#22c55e" : "#a78bfa";
-          ctx.lineWidth   = 1 / scale;
+          ctx.lineWidth   = 1 / dispScale;
           ctx.fill();
           ctx.stroke();
         });
