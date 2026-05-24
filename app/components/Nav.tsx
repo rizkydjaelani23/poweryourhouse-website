@@ -229,19 +229,19 @@ export default function Nav() {
             ) : (
               /* ── Guest / not logged in ── */
               <>
-                {/* Bulk teaser — guests see this, clicking redirects to login */}
-                <Link href="/bulk" style={{
+                {/* Instant try — no account needed */}
+                <Link href="/generate" style={{
                   display: "inline-flex", alignItems: "center", gap: "5px",
                   marginLeft: "6px",
                   padding: "7px 13px", borderRadius: "8px",
                   fontSize: "13px", fontWeight: 700,
-                  background: "rgba(59,130,246,0.08)",
-                  border: "1px solid rgba(59,130,246,0.22)",
-                  color: "#7dd3fc",
+                  background: "rgba(139,92,246,0.1)",
+                  border: "1px solid rgba(139,92,246,0.28)",
+                  color: "#c4b5fd",
                   whiteSpace: "nowrap", flexShrink: 0,
                   transition: "all 0.15s",
                 }}>
-                  ⚡ Try Bulk
+                  Try now — no account
                 </Link>
 
                 <Link href="/login" style={{
@@ -261,7 +261,7 @@ export default function Nav() {
                   boxShadow: "0 2px 12px rgba(59,130,246,0.35)",
                   whiteSpace: "nowrap", flexShrink: 0,
                 }}>
-                  Try free →
+                  Get 5 free →
                 </Link>
               </>
             )
@@ -359,16 +359,24 @@ export default function Nav() {
 
           {!loadingUser && !user && (
             <>
-              <Link href="/login" onClick={() => setOpen(false)} style={{ display: "block", padding: "12px 0", fontSize: "16px", fontWeight: 600, color: "#94a3b8", borderBottom: "1px solid rgba(255,255,255,0.05)" }}>
+              <Link href="/generate" onClick={() => setOpen(false)} style={{
+                display: "block", marginTop: "14px", padding: "13px",
+                borderRadius: "10px",
+                background: "linear-gradient(135deg, #8b5cf6, #3b82f6)",
+                color: "#fff", fontSize: "15px", fontWeight: 700, textAlign: "center",
+              }}>
+                Try free — no account needed →
+              </Link>
+              <Link href="/login" onClick={() => setOpen(false)} style={{ display: "block", padding: "12px 0", marginTop: "8px", fontSize: "16px", fontWeight: 600, color: "#94a3b8", borderBottom: "1px solid rgba(255,255,255,0.05)" }}>
                 Sign in
               </Link>
               <Link href="/signup" onClick={() => setOpen(false)} style={{
-                display: "block", marginTop: "14px", padding: "13px",
+                display: "block", marginTop: "8px", padding: "13px",
                 borderRadius: "10px",
-                background: "linear-gradient(135deg, #3b82f6, #4f46e5)",
-                color: "#fff", fontSize: "15px", fontWeight: 700, textAlign: "center",
+                background: "rgba(59,130,246,0.1)", border: "1px solid rgba(59,130,246,0.3)",
+                color: "#7dd3fc", fontSize: "15px", fontWeight: 700, textAlign: "center",
               }}>
-                Try free →
+                Sign up for 5 free credits →
               </Link>
             </>
           )}

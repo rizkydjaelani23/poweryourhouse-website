@@ -161,25 +161,25 @@ export default function HomePage() {
               </p>
 
               <div className="anim-fade-up" style={{ display: "flex", gap: "12px", flexWrap: "wrap", marginBottom: "28px", animationDelay: "0.3s" }}>
-                <Link href="/signup" style={{
+                <Link href="/generate" style={{
                   padding: "15px 30px", borderRadius: "12px",
                   background: "linear-gradient(135deg, #8b5cf6, #3b82f6)",
                   color: "#fff", fontWeight: 800, fontSize: "15px",
                   boxShadow: "0 4px 24px rgba(139,92,246,0.45)",
                 }}>
-                  Try free — 5 credits →
+                  Try free — no account needed →
                 </Link>
-                <Link href="/generate" style={{
+                <Link href="/signup" style={{
                   padding: "15px 24px", borderRadius: "12px",
                   background: "rgba(255,255,255,0.06)", border: "1px solid rgba(255,255,255,0.12)",
                   color: "#cbd5e1", fontWeight: 700, fontSize: "15px",
                 }}>
-                  Open the tool
+                  Sign up for 5 free credits
                 </Link>
               </div>
 
               <div className="anim-fade-up" style={{ display: "flex", gap: "20px", flexWrap: "wrap", animationDelay: "0.4s" }}>
-                {["Free to start", "No card required", "Download as ZIP"].map((t) => (
+                {["No account needed", "No card ever", "Download as ZIP"].map((t) => (
                   <span key={t} style={{ display: "flex", alignItems: "center", gap: "6px", fontSize: "13px", color: "#64748b", fontWeight: 500 }}>
                     <span style={{ color: "#22c55e", fontWeight: 700, fontSize: "11px" }}>✓</span>{t}
                   </span>
