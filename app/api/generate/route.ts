@@ -191,18 +191,27 @@ export async function POST(request: Request) {
       const ipKey = `ip:${ip}`;
 
       // Check token-based usage
-      const { data: tokenRow } = await admin
+      const { data: tokenRow, error: tokenErr } = await admin
         .from("saas_guest_usage")
         .select("count")
         .eq("token", guestToken)
         .maybeSingle();
 
       // Check IP-based usage
-      const { data: ipRow } = await admin
+      const { data: ipRow, error: ipErr } = await admin
         .from("saas_guest_usage")
         .select("count")
         .eq("token", ipKey)
         .maybeSingle();
+
+      // If DB is unreachable / table missing — fail safe and block
+      if (tokenErr || ipErr) {
+        console.error("[guest] saas_guest_usage query failed:", tokenErr || ipErr);
+        return NextResponse.json(
+          { error: "Service temporarily unavailable. Please try again shortly.", guestLimitReached: false },
+          { status: 503 }
+        );
+      }
 
       const tokenCount = (tokenRow?.count as number) ?? 0;
       const ipCount    = (ipRow?.count   as number) ?? 0;

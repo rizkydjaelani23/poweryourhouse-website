@@ -251,17 +251,25 @@ export default function GeneratePage() {
     if (!imageFile || multiColours.length === 0 || multiGenerating) return;
     setMultiGenerating(true);
     setError(null);
+
+    // Guests: cap the queue to however many free generations they have left
+    const coloursToRun = isGuest
+      ? multiColours.slice(0, Math.max(0, GUEST_LIMIT - guestUsed))
+      : multiColours;
+
     setMultiResults(multiColours.map(c => ({
       colourHex: c.hex, colourName: c.name,
-      url: null, status: "queued", error: null,
+      url: null,
+      status: coloursToRun.find(r => r.id === c.id) ? "queued" : "error",
+      error: coloursToRun.find(r => r.id === c.id) ? null : "Free limit reached — sign up for more",
     })));
 
     setTimeout(() => multiResultRef.current?.scrollIntoView({ behavior: "smooth", block: "start" }), 150);
 
     const maskBlob = selectionRef.current ? await selectionRef.current.getMask() : null;
 
-    for (let i = 0; i < multiColours.length; i++) {
-      const c = multiColours[i];
+    for (let i = 0; i < coloursToRun.length; i++) {
+      const c = coloursToRun[i];
       setMultiResults(prev => prev.map((r, idx) => idx === i ? { ...r, status: "generating" } : r));
 
       const form = new FormData();
