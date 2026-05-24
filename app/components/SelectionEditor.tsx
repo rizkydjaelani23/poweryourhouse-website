@@ -600,7 +600,7 @@ export default function SelectionEditor({ imageSrc, handleRef, onMaskChange }: P
         <span style={{ fontSize: "11px", color: "#475569", minWidth: "38px", textAlign: "center" }}>{zoomPct}%</span>
         <button onClick={() => applyZoom(1 / 1.25)} style={zBtn} title="Zoom out">－</button>
         {zoomPct !== 100 && (
-          <button onClick={resetZoom} style={{ ...zBtn, padding: "3px 8px", fontSize: "10px", width: "auto" }}>Fit</button>
+          <button onClick={resetZoom} style={{ ...zBtn, padding: "5px 14px", fontSize: "12px", fontWeight: 700, width: "auto", background: "#1e3a5f", color: "#60a5fa", borderRadius: "7px", border: "1px solid rgba(96,165,250,0.25)" }}>↺ Reset Image</button>
         )}
 
         <div style={{ width: "1px", height: "18px", background: "#1e293b", margin: "0 2px" }} />
