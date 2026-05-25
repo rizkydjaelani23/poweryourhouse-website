@@ -12,6 +12,18 @@ const nextConfig: NextConfig = {
       { protocol: "https", hostname: "**.fal.media" },
     ],
   },
+
+  // 301 redirect www → non-www so Google only indexes one canonical version
+  async redirects() {
+    return [
+      {
+        source: "/:path*",
+        has: [{ type: "host", value: "www.poweryourhouse.io" }],
+        destination: "https://poweryourhouse.io/:path*",
+        permanent: true,
+      },
+    ];
+  },
 };
 
 export default nextConfig;
