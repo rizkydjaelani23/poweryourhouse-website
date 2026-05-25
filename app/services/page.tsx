@@ -15,6 +15,14 @@ export const metadata: Metadata = {
   title: "Social Media Automation Service | Power Your House",
   description:
     "We set up and automate 30 days of Facebook & Instagram posts for your home decor or furniture business — AI-generated images, captions, hashtags, and scheduled posting. Done for you.",
+  alternates: { canonical: "https://poweryourhouse.io/services" },
+  openGraph: {
+    title: "Social Media Automation Service | Power Your House",
+    description:
+      "Done-for-you Facebook & Instagram content for home decor and furniture businesses. AI-generated images, captions and scheduled posting — 30 days set up in 48 hours.",
+    url: "https://poweryourhouse.io/services",
+    type: "website",
+  },
 };
 
 const plans = [
