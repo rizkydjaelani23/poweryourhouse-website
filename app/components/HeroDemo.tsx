@@ -38,7 +38,6 @@ export default function HeroDemo() {
 
         {/* eslint-disable-next-line @next/next/no-img-element */}
         <img
-          key={active}
           src={colours[active].src}
           alt={`Sofa in ${colours[active].label}`}
           style={{

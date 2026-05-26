@@ -73,7 +73,6 @@ export default function DemoSection() {
             <div style={{ background: "#f0f2f5", position: "relative", overflow: "hidden", minHeight: "480px" }}>
               {/* eslint-disable-next-line @next/next/no-img-element */}
               <img
-                key={currentPhoto}
                 src={currentPhoto}
                 alt={selected ? selected.name : "Original colour"}
                 style={{
@@ -242,7 +241,8 @@ export default function DemoSection() {
       <style>{`
         @media (max-width: 700px) {
           .demo-grid { grid-template-columns: 1fr !important; }
-          .demo-grid > div:first-child { min-height: 260px !important; }
+          .demo-grid > div:first-child { min-height: 300px !important; aspect-ratio: 4/3; }
+          .demo-grid > div:first-child img { position: absolute !important; inset: 0 !important; width: 100% !important; height: 100% !important; }
         }
       `}</style>
     </section>
