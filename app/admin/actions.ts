@@ -109,48 +109,59 @@ export async function adminAddCredits(
   if (!checkPassword(password)) return { balance: 0, error: "Wrong password" };
 
   // Validate env vars early so we surface a clear error
-  if (!process.env.NEXT_PUBLIC_SUPABASE_URL) return { balance: 0, error: "Missing SUPABASE_URL env var" };
-  if (!process.env.SUPABASE_SERVICE_ROLE_KEY) return { balance: 0, error: "Missing SUPABASE_SERVICE_ROLE_KEY env var" };
+  if (!process.env.NEXT_PUBLIC_SUPABASE_URL)    return { balance: 0, error: "Missing SUPABASE_URL env var" };
+  if (!process.env.SUPABASE_SERVICE_ROLE_KEY)   return { balance: 0, error: "Missing SUPABASE_SERVICE_ROLE_KEY env var" };
+  if (!amount || amount < 1)                    return { balance: 0, error: "Amount must be at least 1" };
 
-  const admin = await createAdminClient();
+  try {
+    const admin = await createAdminClient();
 
-  // Ensure a saas_profiles row exists — users who never confirmed their email
-  // won't have one, which causes the FK on saas_credit_ledger to fail.
-  const { data: authUser } = await admin.auth.admin.getUserById(userId);
-  await admin.from("saas_profiles").upsert(
-    {
-      id:                userId,
-      email:             authUser?.user?.email ?? "",
-      marketing_consent: false,
-      plan:              "free",
-    },
-    { onConflict: "id", ignoreDuplicates: true }
-  );
+    // Ensure a saas_profiles row exists — users who never confirmed their email
+    // won't have one, which causes the FK on saas_credit_ledger to fail.
+    const { data: authUser } = await admin.auth.admin.getUserById(userId);
+    const { error: upsertErr } = await admin.from("saas_profiles").upsert(
+      {
+        id:                userId,
+        email:             authUser?.user?.email ?? "",
+        marketing_consent: false,
+        plan:              "free",
+      },
+      { onConflict: "id", ignoreDuplicates: true }
+    );
+    if (upsertErr) {
+      return { balance: 0, error: `Profile upsert failed: ${upsertErr.message}` };
+    }
 
-  // Insert directly so we can inspect the error (addCredits() swallows it)
-  const { error: insertError } = await admin.from("saas_credit_ledger").insert({
-    user_id: userId,
-    type,
-    delta:  amount,
-    reason: "admin_topup",
-    ref_id: null,
-  });
+    // Insert credit row — reason "admin_topup" is unrestricted (no check constraint)
+    const { error: insertError } = await admin.from("saas_credit_ledger").insert({
+      user_id: userId,
+      type,
+      delta:   amount,
+      reason:  "admin_topup",
+      ref_id:  null,
+    });
 
-  if (insertError) {
-    return { balance: 0, error: `Insert failed: ${insertError.message} (code ${insertError.code})` };
+    if (insertError) {
+      return { balance: 0, error: `Insert failed: ${insertError.message} (code ${insertError.code})` };
+    }
+
+    // Read back the new balance
+    const { data, error: selectError } = await admin
+      .from("saas_credit_ledger")
+      .select("delta")
+      .eq("user_id", userId)
+      .eq("type", type);
+
+    if (selectError) {
+      return { balance: 0, error: `Balance fetch failed: ${selectError.message}` };
+    }
+
+    const balance = Math.max(0, (data ?? []).reduce((s: number, r: { delta: number }) => s + r.delta, 0));
+    return { balance };
+
+  } catch (e) {
+    const msg = e instanceof Error ? e.message : String(e);
+    console.error("[adminAddCredits]", msg);
+    return { balance: 0, error: `Unexpected error: ${msg}` };
   }
-
-  // Read back the new balance
-  const { data, error: selectError } = await admin
-    .from("saas_credit_ledger")
-    .select("delta")
-    .eq("user_id", userId)
-    .eq("type", type);
-
-  if (selectError) {
-    return { balance: 0, error: `Balance fetch failed: ${selectError.message}` };
-  }
-
-  const balance = Math.max(0, (data ?? []).reduce((s: number, r: { delta: number }) => s + r.delta, 0));
-  return { balance };
 }

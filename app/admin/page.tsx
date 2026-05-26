@@ -107,25 +107,30 @@ function UserRow({ u, balanceMap, password }: { u: { id: string; email?: string;
 
   async function topUp(type: "STANDARD" | "HD") {
     setLoading(true); setErr("");
-    const result = await adminAddCredits(password, u.id, type, Number(amount));
-    if (result.error) { setErr(result.error); setLoading(false); return; }
+    try {
+      const result = await adminAddCredits(password, u.id, type, Number(amount));
+      if (result.error) { setErr(result.error); setLoading(false); return; }
 
-    // Use the balance from the insert response immediately…
-    if (type === "STANDARD") setStd(result.balance);
-    else setHd(result.balance);
+      // Use the balance from the insert response immediately…
+      if (type === "STANDARD") setStd(result.balance);
+      else setHd(result.balance);
 
-    // …then re-fetch the live DB balance to confirm they match
-    getUserBalances(password, u.id).then(live => {
-      if (!live.error) {
-        setStd(live.standard);
-        setHd(live.hd);
-      }
-    });
+      // …then re-fetch the live DB balance to confirm they match
+      getUserBalances(password, u.id).then(live => {
+        if (!live.error) {
+          setStd(live.standard);
+          setHd(live.hd);
+        }
+      });
 
-    setFlash(`+${amount} ${type === "STANDARD" ? "standard" : "HD"}`);
-    setTimeout(() => setFlash(""), 3000);
-    setAdding(null);
-    setLoading(false);
+      setFlash(`+${amount} ${type === "STANDARD" ? "standard" : "HD"}`);
+      setTimeout(() => setFlash(""), 3000);
+      setAdding(null);
+    } catch (e) {
+      setErr(e instanceof Error ? e.message : "Network error — please try again");
+    } finally {
+      setLoading(false);
+    }
   }
 
   function CreditCell({ type, value, colour }: { type: "STANDARD" | "HD"; value: number; colour: string }) {
@@ -185,11 +190,20 @@ function Dashboard({ password, onLogout }: { password: string; onLogout: () => v
 
   const load = useCallback(async (silent = false) => {
     if (!silent) setLoading(true);
-    const result = await getAdminData(password);
-    if ("error" in result && result.error) { setErr(result.error); setLoading(false); return; }
-    setData(result as AdminData);
-    setLastRefresh(new Date());
-    if (!silent) setLoading(false);
+    try {
+      const result = await getAdminData(password);
+      if ("error" in result && result.error) {
+        setErr(result.error);
+      } else {
+        setData(result as AdminData);
+        setLastRefresh(new Date());
+        setErr("");
+      }
+    } catch (e) {
+      if (!silent) setErr(e instanceof Error ? e.message : "Failed to load — check your connection");
+    } finally {
+      if (!silent) setLoading(false);
+    }
   }, [password]);
 
   // Initial load

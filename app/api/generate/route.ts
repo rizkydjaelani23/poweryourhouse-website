@@ -313,7 +313,7 @@ export async function POST(request: Request) {
       contentType: "image/jpeg",
     });
 
-    await admin.from("saas_generations").insert({
+    const { error: insertErr } = await admin.from("saas_generations").insert({
       id:              genId,
       user_id:         user!.id,
       type,
@@ -321,16 +321,25 @@ export async function POST(request: Request) {
       colour_hex:      colourHex,
       status:          "processing",
     });
+    if (insertErr) {
+      console.error("[api/generate] saas_generations insert failed:", insertErr);
+      return NextResponse.json({ error: `DB error: ${insertErr.message}` }, { status: 500 });
+    }
 
     // Deduct credit first (prevents double-spend on failure)
     await deductCredit(user!.id, type, genId);
 
-    // Generate output
+    // Generate output — mark failed in DB if generation throws
     let outputBuffer: Buffer;
-    if (type === "HD") {
-      outputBuffer = await hdRecolour(inputBuffer, colourHex, colourName, userPrompt || undefined);
-    } else {
-      outputBuffer = await standardRecolour(inputBuffer, colourHex, maskBuffer || undefined);
+    try {
+      if (type === "HD") {
+        outputBuffer = await hdRecolour(inputBuffer, colourHex, colourName, userPrompt || undefined);
+      } else {
+        outputBuffer = await standardRecolour(inputBuffer, colourHex, maskBuffer || undefined);
+      }
+    } catch (genErr) {
+      await admin.from("saas_generations").update({ status: "failed", error: String(genErr) }).eq("id", genId);
+      throw genErr; // re-throw so the outer catch returns 500
     }
 
     // Upload output
