@@ -236,8 +236,12 @@ export default function SelectionEditor({ imageSrc, handleRef, onMaskChange }: P
   // ── keyboard shortcuts ────────────────────────────────────────────────────
   useEffect(() => {
     const onDown = (e: KeyboardEvent) => {
-      // Ctrl/Cmd+Z → undo
-      if ((e.ctrlKey || e.metaKey) && e.key === "z") {
+      // Never intercept keyboard shortcuts when the user is typing in an input field
+      const tag = (e.target as HTMLElement)?.tagName;
+      const isTyping = tag === "INPUT" || tag === "TEXTAREA" || (e.target as HTMLElement)?.isContentEditable;
+
+      // Ctrl/Cmd+Z → undo (canvas only)
+      if ((e.ctrlKey || e.metaKey) && e.key === "z" && !isTyping) {
         e.preventDefault();
         undoRef.current();
         return;
@@ -247,8 +251,8 @@ export default function SelectionEditor({ imageSrc, handleRef, onMaskChange }: P
         setExpanded(false);
         return;
       }
-      // Spacebar → temporary pan
-      if (e.code === "Space" && !e.repeat) {
+      // Spacebar → temporary pan (canvas only — don't steal space from text inputs)
+      if (e.code === "Space" && !e.repeat && !isTyping) {
         e.preventDefault();
         isSpaceDown.current = true;
         const el = displayRef.current;

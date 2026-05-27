@@ -108,6 +108,24 @@ export default function GeneratePage() {
     if (res.ok) { const d = await res.json(); setCredits(d); }
   }
 
+  // ── Programmatic file download (cross-origin URLs ignore <a download>) ────
+  async function downloadImage(url: string, filename: string) {
+    try {
+      const res  = await fetch(url);
+      const blob = await res.blob();
+      const a    = document.createElement("a");
+      a.href     = URL.createObjectURL(blob);
+      a.download = filename;
+      document.body.appendChild(a);
+      a.click();
+      document.body.removeChild(a);
+      URL.revokeObjectURL(a.href);
+    } catch {
+      // Fallback: open in new tab if fetch fails (e.g. opaque request)
+      window.open(url, "_blank");
+    }
+  }
+
   // ── Image upload ──────────────────────────────────────────────────────────
   function handleImageFile(file: File) {
     setResult(null);
@@ -554,10 +572,30 @@ export default function GeneratePage() {
           <div style={{ display: "grid", gridTemplateColumns: "1fr 1fr", gap: "16px" }} className="ctrl-grid">
 
             {/* ── Colour card ── */}
-            <Card title={genMode === "multi" ? `${stepNum(3)}. Pick your colours (up to ${maxColours})` : `${stepNum(3)}. Target colour`}>
+            <Card title={genMode === "multi" ? `${stepNum(3)}. Pick your colours (up to ${maxColours})` : genType === "HD" ? `${stepNum(3)}. Colour swatch` : `${stepNum(3)}. Target colour`}>
 
               {genMode === "single" ? (
-                /* ── Single colour picker ── */
+                genType === "HD" ? (
+                  /* ── HD mode: swatch upload only (colour comes from swatch + prompt) ── */
+                  <label style={{ display: "flex", gap: "12px", alignItems: "center", cursor: "pointer", padding: "14px", borderRadius: "10px", border: `1px dashed ${swatchFile ? "rgba(139,92,246,0.5)" : "#1e293b"}`, background: swatchFile ? "rgba(139,92,246,0.05)" : "#0d1424", transition: "all 0.15s" }}>
+                    {swatchPreview
+                      // eslint-disable-next-line @next/next/no-img-element
+                      ? <img src={swatchPreview} alt="swatch" style={{ width: "56px", height: "56px", borderRadius: "8px", objectFit: "cover", flexShrink: 0, border: "1px solid rgba(139,92,246,0.3)" }} />
+                      : <div style={{ width: "56px", height: "56px", borderRadius: "8px", background: "#111827", display: "flex", alignItems: "center", justifyContent: "center", fontSize: "24px", flexShrink: 0 }}>🧵</div>
+                    }
+                    <div style={{ flex: 1 }}>
+                      <div style={{ color: swatchFile ? "#a78bfa" : "#64748b", fontSize: "13px", fontWeight: 700, marginBottom: "3px" }}>
+                        {swatchFile ? `✓ ${swatchFile.name}` : "Upload a colour swatch (optional)"}
+                      </div>
+                      <div style={{ color: "#334155", fontSize: "11px", lineHeight: 1.5 }}>
+                        The AI will match this colour · or just describe it in the prompt below
+                      </div>
+                    </div>
+                    <input type="file" accept="image/*" style={{ display: "none" }}
+                      onChange={(e) => { const f = e.target.files?.[0]; if (f) handleSwatchFile(f); }} />
+                  </label>
+                ) : (
+                /* ── Standard mode: picker / swatch toggle ── */
                 <>
                   <div style={{ display: "flex", gap: "8px", marginBottom: "14px" }}>
                     {(["picker", "swatch"] as const).map((mode) => (
@@ -599,6 +637,7 @@ export default function GeneratePage() {
                     </label>
                   )}
                 </>
+                )
               ) : (
                 /* ── Multi-colour palette builder ── */
                 <div style={{ display: "flex", flexDirection: "column", gap: "8px" }}>
@@ -831,10 +870,10 @@ export default function GeneratePage() {
                     style={{ width: "100%", borderRadius: "10px", display: "block", cursor: "zoom-in" }}
                   />
                   <div style={{ display: "flex", gap: "10px", marginTop: "14px" }}>
-                    <a href={result} download="recoloured.jpg" target="_blank" rel="noopener noreferrer"
-                      style={{ flex: 1, padding: "13px", borderRadius: "10px", background: "linear-gradient(135deg, #10b981, #059669)", color: "#fff", fontWeight: 700, fontSize: "14px", textAlign: "center", display: "block" }}>
+                    <button onClick={() => downloadImage(result!, "recoloured.jpg")}
+                      style={{ flex: 1, padding: "13px", borderRadius: "10px", background: "linear-gradient(135deg, #10b981, #059669)", color: "#fff", fontWeight: 700, fontSize: "14px", textAlign: "center", border: "none", cursor: "pointer" }}>
                       ⬇ Download image
-                    </a>
+                    </button>
                     {!guestLimitReached && (
                       <button onClick={() => { setResult(null); setError(null); setLastCreditUsed(false); }}
                         style={{ padding: "13px 20px", borderRadius: "10px", background: "transparent", border: "1px solid #1e293b", color: "#64748b", fontSize: "13px", fontWeight: 600, cursor: "pointer" }}>
@@ -922,10 +961,10 @@ export default function GeneratePage() {
                       {/* Download */}
                       {r.status === "done" && r.url && (
                         <div style={{ padding: "8px" }}>
-                          <a href={r.url} download={`${r.colourName || r.colourHex.replace("#", "")}.jpg`} target="_blank" rel="noopener noreferrer"
-                            style={{ display: "block", padding: "7px", borderRadius: "7px", background: "rgba(16,185,129,0.1)", border: "1px solid rgba(16,185,129,0.2)", color: "#10b981", fontSize: "11px", fontWeight: 700, textAlign: "center" }}>
+                          <button onClick={() => downloadImage(r.url!, `${r.colourName || r.colourHex.replace("#", "")}.jpg`)}
+                            style={{ display: "block", width: "100%", padding: "7px", borderRadius: "7px", background: "rgba(16,185,129,0.1)", border: "1px solid rgba(16,185,129,0.2)", color: "#10b981", fontSize: "11px", fontWeight: 700, textAlign: "center", cursor: "pointer" }}>
                             ⬇ Download
-                          </a>
+                          </button>
                         </div>
                       )}
                     </div>
@@ -1023,22 +1062,19 @@ export default function GeneratePage() {
           />
 
           {/* Download button */}
-          <a
-            href={lightbox.url}
-            download={`${lightbox.label.replace("#", "")}.jpg`}
-            target="_blank"
-            rel="noopener noreferrer"
-            onClick={(e) => e.stopPropagation()}
+          <button
+            onClick={(e) => { e.stopPropagation(); downloadImage(lightbox.url, `${lightbox.label.replace("#", "")}.jpg`); }}
             style={{
               marginTop: "16px",
               padding: "10px 24px", borderRadius: "10px",
               background: "linear-gradient(135deg, #10b981, #059669)",
               color: "#fff", fontSize: "13px", fontWeight: 700,
               boxShadow: "0 4px 16px rgba(16,185,129,0.3)",
+              border: "none", cursor: "pointer",
             }}
           >
             ⬇ Download
-          </a>
+          </button>
           <p style={{ marginTop: "10px", fontSize: "11px", color: "#334155" }}>Click outside or press Esc to close</p>
         </div>
       )}
