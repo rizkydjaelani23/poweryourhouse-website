@@ -1,35 +1,46 @@
 "use client";
-import Link from "next/link";
-import { useLemonSqueezy } from "./LemonSqueezyButton";
+/**
+ * SaaS Pricing Section — FastSpring popup checkout.
+ *
+ * Env vars (NEXT_PUBLIC_ so they are embedded at build time):
+ *   NEXT_PUBLIC_FS_STORE               — e.g. "poweryourhouse.onfastspring.com/popup"
+ *   NEXT_PUBLIC_FS_PRODUCT_STARTER     — FastSpring product path for Starter plan
+ *   NEXT_PUBLIC_FS_PRODUCT_PRO         — FastSpring product path for Pro plan
+ *   NEXT_PUBLIC_FS_PRODUCT_BUSINESS    — FastSpring product path for Business plan
+ *   NEXT_PUBLIC_FS_PRODUCT_STANDARD_PACK — FastSpring product path for Standard credit pack
+ *   NEXT_PUBLIC_FS_PRODUCT_HD_PACK       — FastSpring product path for HD credit pack
+ */
 
-// LemonSqueezy variant IDs — set in your Railway / .env.local after creating
-// the products in your LemonSqueezy dashboard (Store → Products → Variants).
-const VARIANTS = {
-  STARTER:       process.env.NEXT_PUBLIC_LS_VARIANT_STARTER       || "",
-  PRO:           process.env.NEXT_PUBLIC_LS_VARIANT_PRO           || "",
-  BUSINESS:      process.env.NEXT_PUBLIC_LS_VARIANT_BUSINESS      || "",
-  STANDARD_PACK: process.env.NEXT_PUBLIC_LS_VARIANT_STANDARD_PACK || "",
-  HD_PACK:       process.env.NEXT_PUBLIC_LS_VARIANT_HD_PACK       || "",
+import Link from "next/link";
+import { useFastSpring } from "./FastSpringButton";
+
+const PRODUCTS = {
+  STARTER:       process.env.NEXT_PUBLIC_FS_PRODUCT_STARTER       || "",
+  PRO:           process.env.NEXT_PUBLIC_FS_PRODUCT_PRO           || "",
+  BUSINESS:      process.env.NEXT_PUBLIC_FS_PRODUCT_BUSINESS      || "",
+  STANDARD_PACK: process.env.NEXT_PUBLIC_FS_PRODUCT_STANDARD_PACK || "",
+  HD_PACK:       process.env.NEXT_PUBLIC_FS_PRODUCT_HD_PACK       || "",
 };
 
 function PlanButton({
-  variantId,
+  productPath,
   label,
   background,
   color = "#fff",
   border,
   shadow,
 }: {
-  variantId: string | null;
-  label: string;
-  background: string;
-  color?: string;
-  border?: string;
-  shadow?: string;
+  productPath: string | null;
+  label:       string;
+  background:  string;
+  color?:      string;
+  border?:     string;
+  shadow?:     string;
 }) {
-  const { openCheckout } = useLemonSqueezy();
+  const { openCheckout } = useFastSpring();
 
-  if (!variantId) {
+  // Free plan — just link to signup
+  if (!productPath) {
     return (
       <Link
         href="/signup"
@@ -47,7 +58,7 @@ function PlanButton({
 
   return (
     <button
-      onClick={() => openCheckout(variantId)}
+      onClick={() => openCheckout(productPath)}
       style={{
         width: "100%", padding: "14px", borderRadius: "12px",
         background, border: border || "none",
@@ -90,7 +101,7 @@ const plans = [
     best: false,
   },
   {
-    id: VARIANTS.STARTER,
+    id: PRODUCTS.STARTER,
     badge: "Starter",
     badgeBg: "rgba(59,130,246,0.12)",
     badgeBorder: "1px solid rgba(59,130,246,0.35)",
@@ -120,7 +131,7 @@ const plans = [
     best: false,
   },
   {
-    id: VARIANTS.PRO,
+    id: PRODUCTS.PRO,
     badge: "Pro",
     badgeBg: "rgba(79,70,229,0.15)",
     badgeBorder: "1px solid rgba(79,70,229,0.4)",
@@ -152,7 +163,7 @@ const plans = [
     best: false,
   },
   {
-    id: VARIANTS.BUSINESS,
+    id: PRODUCTS.BUSINESS,
     badge: "Business",
     badgeBg: "rgba(16,185,129,0.12)",
     badgeBorder: "1px solid rgba(16,185,129,0.4)",
@@ -187,7 +198,7 @@ const plans = [
 
 const packs = [
   {
-    id: VARIANTS.STANDARD_PACK,
+    id: PRODUCTS.STANDARD_PACK,
     label: "Standard Pack",
     amount: "100 credits",
     price: "$9",
@@ -198,7 +209,7 @@ const packs = [
     border: "1px solid rgba(59,130,246,0.25)",
   },
   {
-    id: VARIANTS.HD_PACK,
+    id: PRODUCTS.HD_PACK,
     label: "HD Pack",
     amount: "20 HD credits",
     price: "$14",
@@ -215,7 +226,7 @@ function CheckIcon({ color }: { color: string }) {
 }
 
 export default function SaaSPricingSection() {
-  const { openCheckout } = useLemonSqueezy();
+  const { openCheckout } = useFastSpring();
 
   return (
     <section style={{ padding: "72px 0 60px", background: "#080d1a" }}>
@@ -337,7 +348,7 @@ export default function SaaSPricingSection() {
               </div>
 
               <PlanButton
-                variantId={plan.id}
+                productPath={plan.id}
                 label={plan.buttonLabel}
                 background={plan.buttonBg}
                 color={plan.buttonColor}
@@ -380,7 +391,7 @@ export default function SaaSPricingSection() {
                     </div>
                     <div style={{ display: "flex", alignItems: "baseline", gap: "6px", justifyContent: "flex-end" }}>
                       <div style={{ fontSize: "22px", fontWeight: 900, color: "#fff" }}>{pack.price}</div>
-                      <div style={{ fontSize: "13px", fontWeight: 700, color: "#475569", textDecoration: "line-through" }}>{(pack as { originalPrice?: string }).originalPrice}</div>
+                      <div style={{ fontSize: "13px", fontWeight: 700, color: "#475569", textDecoration: "line-through" }}>{pack.originalPrice}</div>
                     </div>
                     <div style={{ fontSize: "11px", color: "#475569" }}>{pack.desc}</div>
                   </div>
@@ -401,10 +412,10 @@ export default function SaaSPricingSection() {
           </div>
         </div>
 
-        {/* CTA */}
+        {/* Footer note */}
         <div style={{ textAlign: "center", marginTop: "48px" }}>
           <p style={{ fontSize: "14px", color: "#475569", marginBottom: "16px" }}>
-            All plans are billed through Lemon Squeezy · Cancel anytime · Questions?{" "}
+            Secure checkout powered by FastSpring · Cancel anytime · Questions?{" "}
             <a href="mailto:hello@poweryourhouse.io" style={{ color: "#60a5fa" }}>hello@poweryourhouse.io</a>
           </p>
         </div>
