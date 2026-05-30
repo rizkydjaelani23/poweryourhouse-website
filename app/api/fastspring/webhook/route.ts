@@ -149,9 +149,17 @@ export async function POST(request: Request) {
     const eventId      = String(event?.id ?? "");
     const isLive       = event?.live  !== false; // test webhooks have live:false
 
-    if (!isLive) {
+    // Set FS_ALLOW_TEST_EVENTS=true in Railway to process test-mode orders too,
+    // so you can verify the full credit-granting flow with the 4242 test card.
+    // Remove it (or set false) before going live so real test traffic is ignored.
+    const allowTest = (process.env.FS_ALLOW_TEST_EVENTS ?? "").trim() === "true";
+
+    if (!isLive && !allowTest) {
       console.log(`[fs/webhook] Skipping test event: ${type} (${eventId})`);
       continue;
+    }
+    if (!isLive && allowTest) {
+      console.log(`[fs/webhook] ⚠️ Processing TEST event (FS_ALLOW_TEST_EVENTS=true): ${type} (${eventId})`);
     }
 
     console.log(`[fs/webhook] Processing: ${type} (${eventId})`);
