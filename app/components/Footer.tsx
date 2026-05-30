@@ -48,6 +48,7 @@ export default function Footer() {
             <div style={{ display: "flex", flexDirection: "column", gap: "10px" }}>
               <Link href="/shopify-app-furniture-stores" style={{ fontSize: "14px", color: "#94a3b8" }}>For Furniture Stores</Link>
               <Link href="/blog" style={{ fontSize: "14px", color: "#94a3b8" }}>Blog</Link>
+              <Link href="/case-study-everest-beds" style={{ fontSize: "14px", color: "#94a3b8" }}>Case Study</Link>
               <Link href="/pricing" style={{ fontSize: "14px", color: "#94a3b8" }}>Pricing</Link>
               <Link href="/about" style={{ fontSize: "14px", color: "#94a3b8" }}>About</Link>
               <Link href="/contact" style={{ fontSize: "14px", color: "#94a3b8" }}>Contact</Link>

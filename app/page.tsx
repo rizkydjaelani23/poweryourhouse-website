@@ -3,6 +3,7 @@ import Link from "next/link";
 import HeroDemo from "./components/HeroDemo";
 import SaaSPricingSection from "./components/SaaSPricingSection";
 import ScrollReveal from "./components/ScrollReveal";
+import { getAllPosts } from "./blog/posts";
 
 export const metadata: Metadata = {
   title: "Skip the Photoshoot — Show Your Product in Every Colour | Power Your House",
@@ -74,7 +75,24 @@ const compare = [
   { label: "8 colour variations",       old: "$1,200 – $3,200",   ours: "Under $16" },
 ];
 
+// Server-render so the homepage blog hub always reflects today's published posts.
+export const dynamic = "force-dynamic";
+
+const blogCategoryColours: Record<string, { bg: string; text: string }> = {
+  "Shopify Tips":       { bg: "rgba(59,130,246,0.12)",  text: "#60a5fa" },
+  "Ecommerce Strategy": { bg: "rgba(16,185,129,0.12)",  text: "#34d399" },
+  "Product Updates":    { bg: "rgba(139,92,246,0.12)",  text: "#a78bfa" },
+  "Case Studies":       { bg: "rgba(234,179,8,0.12)",   text: "#fbbf24" },
+};
+
 export default function HomePage() {
+  // Internal-link hub: every published post gets a link from the homepage
+  // (our highest-authority, most-crawled page) so Google reaches them via
+  // links, not just the sitemap. Fixes "Discovered – currently not indexed".
+  const allPosts = getAllPosts();
+  const featuredPosts = allPosts.slice(0, 6);
+  const morePosts     = allPosts.slice(6);
+
   return (
     <>
       <style>{`
@@ -562,6 +580,85 @@ export default function HomePage() {
                 </div>
               ))}
             </div>
+          </div>
+        </div>
+      </section>
+
+      {/* ── FROM THE BLOG (internal-link hub for crawlability + SEO) ───────── */}
+      <section className="section" style={{ background: "#0b1120", borderTop: "1px solid rgba(255,255,255,0.05)" }}>
+        <div className="container" style={{ maxWidth: "1040px" }}>
+          <div style={{ display: "flex", alignItems: "flex-end", justifyContent: "space-between", flexWrap: "wrap", gap: "16px", marginBottom: "28px" }}>
+            <div>
+              <p style={{ fontSize: "11px", fontWeight: 800, color: "#334155", letterSpacing: "0.14em", textTransform: "uppercase", marginBottom: "10px" }}>
+                Guides &amp; resources
+              </p>
+              <h2 className="section-title" style={{ margin: 0 }}>From the blog</h2>
+              <p style={{ fontSize: "15px", color: "#64748b", marginTop: "10px", maxWidth: "520px", lineHeight: 1.7 }}>
+                Practical guides on colour visualisation, product photography and growing a furniture or home-goods store on Shopify.
+              </p>
+            </div>
+            <Link href="/blog" style={{
+              flexShrink: 0, padding: "11px 20px", borderRadius: "10px",
+              background: "rgba(255,255,255,0.06)", border: "1px solid rgba(255,255,255,0.12)",
+              color: "#cbd5e1", fontWeight: 700, fontSize: "14px", whiteSpace: "nowrap",
+            }}>
+              View all guides →
+            </Link>
+          </div>
+
+          {/* Featured post cards */}
+          {featuredPosts.length > 0 && (
+            <div style={{ display: "grid", gridTemplateColumns: "repeat(auto-fill, minmax(290px, 1fr))", gap: "16px" }}>
+              {featuredPosts.map((post) => {
+                const cat = blogCategoryColours[post.category] ?? { bg: "rgba(255,255,255,0.06)", text: "#94a3b8" };
+                return (
+                  <Link key={post.slug} href={`/blog/${post.slug}`} style={{
+                    display: "block", padding: "22px 24px", borderRadius: "16px",
+                    background: "#111827", border: "1px solid rgba(255,255,255,0.06)",
+                    textDecoration: "none",
+                  }}>
+                    <span style={{ display: "inline-block", fontSize: "11px", fontWeight: 700, padding: "2px 10px", borderRadius: "999px", background: cat.bg, color: cat.text, marginBottom: "12px" }}>
+                      {post.category}
+                    </span>
+                    <h3 style={{ fontSize: "16px", fontWeight: 700, color: "#fff", lineHeight: 1.4, marginBottom: "8px" }}>
+                      {post.title}
+                    </h3>
+                    <p style={{ fontSize: "13px", color: "#64748b", lineHeight: 1.6, marginBottom: "12px" }}>
+                      {post.description}
+                    </p>
+                    <span style={{ fontSize: "13px", fontWeight: 600, color: "#3b82f6" }}>Read article →</span>
+                  </Link>
+                );
+              })}
+            </div>
+          )}
+
+          {/* Compact links to every remaining published post + the case study */}
+          {(morePosts.length > 0) && (
+            <div style={{ marginTop: "28px", paddingTop: "24px", borderTop: "1px solid rgba(255,255,255,0.06)" }}>
+              <div style={{ fontSize: "12px", fontWeight: 700, color: "#475569", textTransform: "uppercase", letterSpacing: "0.08em", marginBottom: "14px" }}>
+                More guides
+              </div>
+              <div style={{ display: "grid", gridTemplateColumns: "repeat(auto-fill, minmax(280px, 1fr))", gap: "10px 28px" }}>
+                {morePosts.map((post) => (
+                  <Link key={post.slug} href={`/blog/${post.slug}`} style={{
+                    fontSize: "13px", color: "#94a3b8", lineHeight: 1.5, textDecoration: "none",
+                  }}>
+                    {post.title}
+                  </Link>
+                ))}
+              </div>
+            </div>
+          )}
+
+          {/* Case study (otherwise only reachable via sitemap) */}
+          <div style={{ marginTop: "24px" }}>
+            <Link href="/case-study-everest-beds" style={{
+              display: "inline-flex", alignItems: "center", gap: "8px",
+              fontSize: "14px", fontWeight: 700, color: "#fbbf24",
+            }}>
+              📈 Case study: how Everest Beds cut returns with colour previews →
+            </Link>
           </div>
         </div>
       </section>
