@@ -38,8 +38,10 @@ function loadFastSpring(): Promise<void> {
 
     const script = document.createElement("script");
     script.id    = "fsc-api";
-    script.src   = "https://sbl.onfastspring.com/sbl/1.0.6/fastspring-builder.min.js";
+    script.src   = "https://sbl.onfastspring.com/sbl/1.0.7/fastspring-builder.min.js";
     script.type  = "text/javascript";
+    // Test:  poweryourhouse.test.onfastspring.com/popup-main
+    // Live:  poweryourhouse.onfastspring.com/popup-main  (drop ".test." at go-live)
     script.setAttribute("data-storefront", FS_STORE);
     script.onload = () => { fsLoaded = true; resolve(); };
     document.head.appendChild(script);
