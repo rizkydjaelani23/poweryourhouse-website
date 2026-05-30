@@ -5,14 +5,21 @@ import { addCredits } from "../../../utils/credits";
 
 export async function GET(request: Request) {
   const { searchParams, origin } = new URL(request.url);
-  const code     = searchParams.get("code");
-  const next     = searchParams.get("next") ?? "/generate";
+  const code = searchParams.get("code");
+  // "next" is set to "/reset-password" by the password-reset flow; defaults to /generate
+  const next = searchParams.get("next") ?? "/generate";
 
   if (code) {
     const supabase = await createClient();
     const { data: { user }, error } = await supabase.auth.exchangeCodeForSession(code);
 
     if (!error && user) {
+      // Password-reset flow — session is established, just redirect to the
+      // new-password form. Skip profile creation / credit grant for recovery.
+      if (next === "/reset-password") {
+        return NextResponse.redirect(`${origin}/reset-password`);
+      }
+
       const admin = await createAdminClient();
 
       // Check if profile already exists (handles duplicate callbacks)
@@ -27,10 +34,10 @@ export async function GET(request: Request) {
         const marketing = user.user_metadata?.marketing_consent === true;
 
         await admin.from("saas_profiles").insert({
-          id:                 user.id,
-          email:              user.email,
-          marketing_consent:  marketing,
-          plan:               "free",
+          id:                user.id,
+          email:             user.email,
+          marketing_consent: marketing,
+          plan:              "free",
         });
 
         // Grant signup bonus: 5 standard + 1 HD
@@ -38,8 +45,7 @@ export async function GET(request: Request) {
         await addCredits(user.id, "HD",       1, "signup_bonus");
       }
 
-      const redirectUrl = `${origin}${next}`;
-      return NextResponse.redirect(redirectUrl);
+      return NextResponse.redirect(`${origin}${next}`);
     }
   }
 

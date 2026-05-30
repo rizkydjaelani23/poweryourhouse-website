@@ -1,5 +1,5 @@
 "use client";
-import { useState, useEffect } from "react";
+import { useState, useEffect, useRef } from "react";
 import Link from "next/link";
 import { usePathname, useRouter } from "next/navigation";
 import { createClient } from "../utils/supabase/client";
@@ -20,17 +20,30 @@ const mainLinks = [
 export default function Nav() {
   const pathname  = usePathname();
   const router    = useRouter();
-  const [open,    setOpen]    = useState(false);
-  const [scrolled, setScrolled] = useState(false);
-  const [user,    setUser]    = useState<User | null>(null);
+  const [open,        setOpen]        = useState(false);
+  const [userMenuOpen, setUserMenuOpen] = useState(false);
+  const [scrolled,    setScrolled]    = useState(false);
+  const [user,        setUser]        = useState<User | null>(null);
   const [loadingUser, setLoadingUser] = useState(true);
-  const [credits, setCredits] = useState<Credits | null>(null);
+  const [credits,     setCredits]     = useState<Credits | null>(null);
+  const userMenuRef = useRef<HTMLDivElement>(null);
 
   // Scroll shadow
   useEffect(() => {
     function onScroll() { setScrolled(window.scrollY > 20); }
     window.addEventListener("scroll", onScroll, { passive: true });
     return () => window.removeEventListener("scroll", onScroll);
+  }, []);
+
+  // Close user dropdown on outside click
+  useEffect(() => {
+    function onClick(e: MouseEvent) {
+      if (userMenuRef.current && !userMenuRef.current.contains(e.target as Node)) {
+        setUserMenuOpen(false);
+      }
+    }
+    document.addEventListener("mousedown", onClick);
+    return () => document.removeEventListener("mousedown", onClick);
   }, []);
 
   // Auth state
@@ -145,45 +158,33 @@ export default function Nav() {
             user ? (
               /* ── Logged-in user ── */
               <>
+                {/* Generate — always visible, it's the primary action */}
                 <Link href="/generate" style={{
-                  marginLeft: "4px",
-                  padding: "8px 12px", borderRadius: "8px",
-                  fontSize: "13px", fontWeight: 600,
-                  color: pathname === "/generate" ? "#60a5fa" : "#94a3b8",
-                  background: pathname === "/generate" ? "rgba(59,130,246,0.1)" : "transparent",
-                  transition: "color 0.15s, background 0.15s",
-                  whiteSpace: "nowrap", flexShrink: 0,
+                  display: "inline-flex", alignItems: "center", gap: "5px",
+                  marginLeft: "6px",
+                  padding: "8px 14px", borderRadius: "9px",
+                  fontSize: "13px", fontWeight: 700,
+                  background: pathname === "/generate"
+                    ? "rgba(139,92,246,0.2)" : "rgba(139,92,246,0.1)",
+                  border: pathname === "/generate"
+                    ? "1px solid rgba(139,92,246,0.5)" : "1px solid rgba(139,92,246,0.28)",
+                  color: "#c4b5fd",
+                  whiteSpace: "nowrap", flexShrink: 0, transition: "all 0.15s",
                 }}>
                   ✨ Generate
                 </Link>
 
-                {/* Bulk — featured for logged-in users */}
+                {/* Bulk */}
                 <Link href="/bulk" style={{
                   display: "inline-flex", alignItems: "center", gap: "5px",
-                  padding: "7px 12px", borderRadius: "8px",
+                  padding: "8px 12px", borderRadius: "8px",
                   fontSize: "13px", fontWeight: 700,
-                  background: pathname === "/bulk"
-                    ? "rgba(59,130,246,0.15)"
-                    : "rgba(59,130,246,0.06)",
-                  border: pathname === "/bulk"
-                    ? "1px solid rgba(59,130,246,0.4)"
-                    : "1px solid rgba(59,130,246,0.18)",
+                  background: pathname === "/bulk" ? "rgba(59,130,246,0.15)" : "rgba(59,130,246,0.06)",
+                  border: pathname === "/bulk" ? "1px solid rgba(59,130,246,0.4)" : "1px solid rgba(59,130,246,0.18)",
                   color: pathname === "/bulk" ? "#60a5fa" : "#7dd3fc",
-                  transition: "all 0.15s",
-                  whiteSpace: "nowrap", flexShrink: 0,
+                  transition: "all 0.15s", whiteSpace: "nowrap", flexShrink: 0,
                 }}>
                   ⚡ Bulk
-                </Link>
-
-                <Link href="/dashboard" style={{
-                  padding: "8px 12px", borderRadius: "8px",
-                  fontSize: "13px", fontWeight: 600,
-                  color: pathname === "/dashboard" ? "#60a5fa" : "#94a3b8",
-                  background: pathname === "/dashboard" ? "rgba(59,130,246,0.1)" : "transparent",
-                  transition: "color 0.15s, background 0.15s",
-                  whiteSpace: "nowrap", flexShrink: 0,
-                }}>
-                  Dashboard
                 </Link>
 
                 {/* Credits badge */}
@@ -192,39 +193,101 @@ export default function Nav() {
                     display: "inline-flex", alignItems: "center", gap: "6px",
                     padding: "5px 10px", borderRadius: "8px",
                     background: "rgba(255,255,255,0.04)",
-                    border: credits.standard === 0
-                      ? "1px solid rgba(239,68,68,0.3)"
-                      : "1px solid rgba(255,255,255,0.08)",
-                    textDecoration: "none",
-                    whiteSpace: "nowrap",
-                    flexShrink: 0,
+                    border: credits.standard === 0 ? "1px solid rgba(239,68,68,0.3)" : "1px solid rgba(255,255,255,0.08)",
+                    textDecoration: "none", whiteSpace: "nowrap", flexShrink: 0,
                   }}>
-                    <span style={{
-                      fontSize: "12px", fontWeight: 700,
-                      color: credits.standard === 0 ? "#ef4444" : "#60a5fa",
-                    }}>
+                    <span style={{ fontSize: "12px", fontWeight: 700, color: credits.standard === 0 ? "#ef4444" : "#60a5fa" }}>
                       ⚡ {credits.standard}
                     </span>
                     <span style={{ color: "rgba(255,255,255,0.15)", fontSize: "10px", lineHeight: 1 }}>|</span>
-                    <span style={{
-                      fontSize: "12px", fontWeight: 700,
-                      color: credits.hd > 0 ? "#a78bfa" : "#475569",
-                    }}>
+                    <span style={{ fontSize: "12px", fontWeight: 700, color: credits.hd > 0 ? "#a78bfa" : "#475569" }}>
                       ✨ {credits.hd}
                     </span>
                   </Link>
                 )}
 
-                <button onClick={handleSignOut} style={{
-                  marginLeft: "2px",
-                  padding: "8px 12px", borderRadius: "8px",
-                  fontSize: "13px", fontWeight: 600, cursor: "pointer",
-                  background: "transparent", border: "1px solid rgba(255,255,255,0.1)",
-                  color: "#64748b", transition: "color 0.15s, border-color 0.15s",
-                  whiteSpace: "nowrap", flexShrink: 0, lineHeight: 1,
-                }}>
-                  Sign out
-                </button>
+                {/* User dropdown */}
+                <div ref={userMenuRef} style={{ position: "relative", flexShrink: 0 }}>
+                  <button
+                    onClick={() => setUserMenuOpen(v => !v)}
+                    style={{
+                      display: "inline-flex", alignItems: "center", gap: "7px",
+                      padding: "5px 10px 5px 5px", borderRadius: "10px",
+                      background: userMenuOpen ? "rgba(255,255,255,0.08)" : "rgba(255,255,255,0.04)",
+                      border: "1px solid rgba(255,255,255,0.1)",
+                      cursor: "pointer", transition: "all 0.15s",
+                    }}
+                  >
+                    {/* Avatar circle */}
+                    <div style={{
+                      width: "28px", height: "28px", borderRadius: "50%",
+                      background: "linear-gradient(135deg, #3b82f6, #4f46e5)",
+                      display: "flex", alignItems: "center", justifyContent: "center",
+                      color: "#fff", fontWeight: 800, fontSize: "13px", flexShrink: 0,
+                    }}>
+                      {(user.user_metadata?.display_name as string)?.[0]?.toUpperCase() || user.email?.[0]?.toUpperCase() || "U"}
+                    </div>
+                    <span style={{ fontSize: "11px", color: "#64748b" }}>▾</span>
+                  </button>
+
+                  {userMenuOpen && (
+                    <div style={{
+                      position: "absolute", top: "calc(100% + 8px)", right: 0,
+                      width: "220px", background: "#0d1424",
+                      border: "1px solid rgba(255,255,255,0.1)",
+                      borderRadius: "14px", overflow: "hidden",
+                      boxShadow: "0 16px 48px rgba(0,0,0,0.6)", zIndex: 300,
+                    }}>
+                      {/* User info header */}
+                      <div style={{ padding: "14px 16px", borderBottom: "1px solid rgba(255,255,255,0.06)" }}>
+                        <div style={{ fontSize: "13px", fontWeight: 700, color: "#e2e8f0", marginBottom: "2px", overflow: "hidden", textOverflow: "ellipsis", whiteSpace: "nowrap" }}>
+                          {(user.user_metadata?.display_name as string) || user.email}
+                        </div>
+                        {(user.user_metadata?.display_name as string) && (
+                          <div style={{ fontSize: "11px", color: "#475569", overflow: "hidden", textOverflow: "ellipsis", whiteSpace: "nowrap" }}>{user.email}</div>
+                        )}
+                      </div>
+
+                      {/* Menu items */}
+                      {([
+                        { href: "/dashboard",                 icon: "🏠", label: "Dashboard" },
+                        { href: "/dashboard?tab=account",     icon: "⚙️", label: "Account settings" },
+                        { href: "/dashboard?tab=purchases",   icon: "🧾", label: "Purchase history" },
+                        { href: "/dashboard?tab=subscription",icon: "💳", label: "Subscription" },
+                      ] as const).map(item => (
+                        <Link
+                          key={item.href}
+                          href={item.href}
+                          onClick={() => setUserMenuOpen(false)}
+                          style={{
+                            display: "flex", alignItems: "center", gap: "10px",
+                            padding: "11px 16px", fontSize: "13px", fontWeight: 600,
+                            color: "#94a3b8", textDecoration: "none",
+                            borderBottom: "1px solid rgba(255,255,255,0.04)",
+                            transition: "background 0.1s, color 0.1s",
+                          }}
+                        >
+                          <span style={{ fontSize: "15px" }}>{item.icon}</span>
+                          {item.label}
+                        </Link>
+                      ))}
+
+                      {/* Sign out */}
+                      <button
+                        onClick={() => { setUserMenuOpen(false); handleSignOut(); }}
+                        style={{
+                          display: "flex", alignItems: "center", gap: "10px", width: "100%",
+                          padding: "11px 16px", fontSize: "13px", fontWeight: 600,
+                          color: "#64748b", background: "transparent", border: "none",
+                          cursor: "pointer", textAlign: "left",
+                        }}
+                      >
+                        <span style={{ fontSize: "15px" }}>🚪</span>
+                        Sign out
+                      </button>
+                    </div>
+                  )}
+                </div>
               </>
             ) : (
               /* ── Guest / not logged in ── */
@@ -339,20 +402,29 @@ export default function Nav() {
 
           {!loadingUser && user && (
             <>
-              <Link href="/generate" onClick={() => setOpen(false)} style={{ display: "block", padding: "12px 0", fontSize: "16px", fontWeight: 600, color: "#60a5fa", borderBottom: "1px solid rgba(255,255,255,0.05)" }}>
+              <Link href="/generate" onClick={() => setOpen(false)} style={{ display: "block", padding: "12px 0", fontSize: "16px", fontWeight: 600, color: "#c4b5fd", borderBottom: "1px solid rgba(255,255,255,0.05)" }}>
                 ✨ Generate
               </Link>
-              <Link href="/dashboard" onClick={() => setOpen(false)} style={{ display: "block", padding: "12px 0", fontSize: "16px", fontWeight: 600, color: "#94a3b8", borderBottom: "1px solid rgba(255,255,255,0.05)" }}>
-                Dashboard
+              <Link href="/dashboard" onClick={() => setOpen(false)} style={{ display: "block", padding: "12px 0", fontSize: "15px", fontWeight: 600, color: "#94a3b8", borderBottom: "1px solid rgba(255,255,255,0.05)" }}>
+                🏠 Dashboard
+              </Link>
+              <Link href="/dashboard?tab=account" onClick={() => setOpen(false)} style={{ display: "block", padding: "12px 0", fontSize: "15px", fontWeight: 600, color: "#94a3b8", borderBottom: "1px solid rgba(255,255,255,0.05)" }}>
+                ⚙️ Account settings
+              </Link>
+              <Link href="/dashboard?tab=purchases" onClick={() => setOpen(false)} style={{ display: "block", padding: "12px 0", fontSize: "15px", fontWeight: 600, color: "#94a3b8", borderBottom: "1px solid rgba(255,255,255,0.05)" }}>
+                🧾 Purchase history
+              </Link>
+              <Link href="/dashboard?tab=subscription" onClick={() => setOpen(false)} style={{ display: "block", padding: "12px 0", fontSize: "15px", fontWeight: 600, color: "#94a3b8", borderBottom: "1px solid rgba(255,255,255,0.05)" }}>
+                💳 Subscription
               </Link>
               <button onClick={() => { setOpen(false); handleSignOut(); }} style={{
                 display: "block", width: "100%", padding: "12px 0",
-                textAlign: "left", fontSize: "16px", fontWeight: 600,
+                textAlign: "left", fontSize: "15px", fontWeight: 600,
                 color: "#64748b", background: "transparent", border: "none",
                 borderBottom: "1px solid rgba(255,255,255,0.05)", cursor: "pointer",
                 lineHeight: 1.5,
               }}>
-                Sign out
+                🚪 Sign out
               </button>
             </>
           )}
