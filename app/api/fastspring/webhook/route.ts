@@ -46,6 +46,24 @@ const PRODUCT_PACK: Record<string, { type: "STANDARD" | "HD"; amount: number }> 
   [process.env.FS_PRODUCT_HD_PACK       || "___"]: { type: "HD",       amount: 20  },
 };
 
+// ── Manually-fulfilled social-media service products ──────────────────────────
+// These don't grant credits — they're done-for-you services fulfilled by hand.
+// We recognise them so a service sale logs cleanly instead of looking like an
+// "unknown product" error in the logs.
+const SERVICE_PRODUCTS = new Set([
+  process.env.FS_PRODUCT_SOCIAL_STARTER     || "pyh-social-starter",
+  process.env.FS_PRODUCT_SOCIAL_GROWTH      || "pyh-social-growth",
+  process.env.FS_PRODUCT_SOCIAL_MAINTENANCE || "pyh-social-maintenance",
+  process.env.FS_PRODUCT_SOCIAL_FIX         || "pyh-social-fix",
+  process.env.FS_PRODUCT_SOCIAL_REFRESH     || "pyh-social-refresh",
+]);
+
+// eslint-disable-next-line @typescript-eslint/no-explicit-any
+function logServiceOrder(product: string, data: any) {
+  const email = data?.customer?.email ?? data?.tags?.user_id ?? "unknown customer";
+  console.log(`[fs/webhook] 🛠️ SERVICE ORDER — "${product}" purchased by ${email}. Fulfil manually (no credits granted).`);
+}
+
 // ── Signature verification ────────────────────────────────────────────────────
 function verifySignature(rawBody: string, signature: string): boolean {
   const secret = process.env.FASTSPRING_WEBHOOK_SECRET || "";
@@ -146,12 +164,15 @@ export async function POST(request: Request) {
         const items: { product?: string }[] = Array.isArray(data?.items) ? data.items : [];
 
         for (const item of items) {
-          const pack = PRODUCT_PACK[item.product || ""];
+          const product = item.product || "";
+          const pack    = PRODUCT_PACK[product];
           if (userId && pack) {
             await addCredits(userId, pack.type, pack.amount, "pack_purchase", eventId);
             console.log(`[fs/webhook] pack_purchase: +${pack.amount} ${pack.type} → user ${userId}`);
+          } else if (SERVICE_PRODUCTS.has(product)) {
+            logServiceOrder(product, data);
           } else {
-            console.warn(`[fs/webhook] order.completed — unknown product "${item.product}" or user not found`);
+            console.warn(`[fs/webhook] order.completed — unknown product "${product}" or user not found`);
           }
         }
       }
@@ -167,6 +188,8 @@ export async function POST(request: Request) {
           await addCredits(userId, "HD",       plan.HD,       "subscription", eventId);
           await admin.from("saas_profiles").update({ plan: plan.planName }).eq("id", userId);
           console.log(`[fs/webhook] subscription.activated: plan=${plan.planName} → user ${userId}`);
+        } else if (SERVICE_PRODUCTS.has(product)) {
+          logServiceOrder(product, data);
         } else {
           console.warn(`[fs/webhook] subscription.activated — unknown product "${product}" or user not found`);
         }
@@ -182,6 +205,8 @@ export async function POST(request: Request) {
           await addCredits(userId, "STANDARD", plan.STANDARD, "subscription", eventId);
           await addCredits(userId, "HD",       plan.HD,       "subscription", eventId);
           console.log(`[fs/webhook] subscription.charge.completed: +credits plan=${plan.planName} → user ${userId}`);
+        } else if (SERVICE_PRODUCTS.has(product)) {
+          logServiceOrder(product, data);
         } else {
           console.warn(`[fs/webhook] subscription.charge.completed — unknown product "${product}" or user not found`);
         }

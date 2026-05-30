@@ -1,21 +1,22 @@
 "use client";
-import { useLemonSqueezy } from "../components/LemonSqueezyButton";
+import { useFastSpring } from "../components/FastSpringButton";
 
 interface BuyButtonProps {
-  variantId: string;
+  productPath: string;
   label: string;
   fallbackHref: string;
   style?: React.CSSProperties;
 }
 
 /**
- * If a LS variantId is set → opens the Lemon Squeezy overlay checkout.
- * If not (env var missing) → falls back to a mailto link so the page still works.
+ * If a FastSpring productPath is set → opens the FastSpring popup checkout.
+ * If not (env var missing AND no default) → falls back to a mailto link so the
+ * page still works.
  */
-export default function BuyButton({ variantId, label, fallbackHref, style }: BuyButtonProps) {
-  const { openCheckout } = useLemonSqueezy();
+export default function BuyButton({ productPath, label, fallbackHref, style }: BuyButtonProps) {
+  const { openCheckout } = useFastSpring();
 
-  if (!variantId) {
+  if (!productPath) {
     return (
       <a href={fallbackHref} style={style}>
         {label}
@@ -25,7 +26,7 @@ export default function BuyButton({ variantId, label, fallbackHref, style }: Buy
 
   return (
     <button
-      onClick={() => openCheckout(variantId)}
+      onClick={() => openCheckout(productPath)}
       style={{ cursor: "pointer", fontFamily: "inherit", outline: "none", ...style }}
     >
       {label}

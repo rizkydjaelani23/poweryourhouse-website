@@ -1,6 +1,12 @@
 import type { Metadata } from "next";
 import Link from "next/link";
 import SaaSPricingSection from "../components/SaaSPricingSection";
+import FastSpringButton from "../components/FastSpringButton";
+
+// FastSpring product paths for the social-media packages (defaults match the
+// documented paths; override via NEXT_PUBLIC_FS_PRODUCT_SOCIAL_* in Railway).
+const FS_SOCIAL_STARTER = process.env.NEXT_PUBLIC_FS_PRODUCT_SOCIAL_STARTER || "pyh-social-starter";
+const FS_SOCIAL_GROWTH  = process.env.NEXT_PUBLIC_FS_PRODUCT_SOCIAL_GROWTH  || "pyh-social-growth";
 
 export const metadata: Metadata = {
   title: "Pricing – Power Your House",
@@ -595,14 +601,16 @@ export default function PricingPage() {
                 ].map((f) => <FeatureRow key={f} text={f} color="#a78bfa" />)}
               </div>
 
-              <Link href="/services" style={{
-                display: "block", padding: "14px", borderRadius: "12px",
-                background: "rgba(139,92,246,0.15)", border: "1px solid rgba(139,92,246,0.35)",
-                color: "#a78bfa", textAlign: "center",
-                fontSize: "14px", fontWeight: 700, textDecoration: "none",
-              }}>
-                Get Starter →
-              </Link>
+              <FastSpringButton
+                productPath={FS_SOCIAL_STARTER}
+                label="Get Starter →"
+                style={{
+                  display: "block", width: "100%", padding: "14px", borderRadius: "12px",
+                  background: "rgba(139,92,246,0.15)", border: "1px solid rgba(139,92,246,0.35)",
+                  color: "#a78bfa", textAlign: "center",
+                  fontSize: "14px", fontWeight: 700,
+                }}
+              />
             </div>
 
             {/* Growth */}
@@ -651,16 +659,17 @@ export default function PricingPage() {
                 ].map((f) => <FeatureRow key={f} text={f} color="#a78bfa" />)}
               </div>
 
-              <Link href="/services" style={{
-                display: "block", padding: "15px", borderRadius: "12px",
-                background: "linear-gradient(135deg, #7c3aed, #8b5cf6)",
-                color: "#fff", textAlign: "center",
-                fontSize: "14px", fontWeight: 700,
-                boxShadow: "0 4px 20px rgba(139,92,246,0.4)",
-                textDecoration: "none",
-              }}>
-                Get Growth →
-              </Link>
+              <FastSpringButton
+                productPath={FS_SOCIAL_GROWTH}
+                label="Get Growth →"
+                style={{
+                  display: "block", width: "100%", padding: "15px", borderRadius: "12px",
+                  background: "linear-gradient(135deg, #7c3aed, #8b5cf6)",
+                  color: "#fff", textAlign: "center",
+                  fontSize: "14px", fontWeight: 700,
+                  boxShadow: "0 4px 20px rgba(139,92,246,0.4)",
+                }}
+              />
               <p style={{ textAlign: "center", fontSize: "11px", color: "#475569", marginTop: "12px" }}>
                 Launch sale pricing · Limited time
               </p>
