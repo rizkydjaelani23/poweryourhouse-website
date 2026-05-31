@@ -86,8 +86,25 @@ async function standardRecolour(inputBuffer: Buffer, hex: string, maskBuffer?: B
     .toBuffer();
 }
 
-/** HD recolour: FLUX.1 Kontext via fal.ai */
-async function hdRecolour(inputBuffer: Buffer, hex: string, colourName: string, userPrompt?: string): Promise<Buffer> {
+/** HD recolour: FLUX.1 Kontext Max via fal.ai
+ *
+ *  Key parameters:
+ *  - kontext/max:  better instruction-following than the base kontext model
+ *  - guidance_scale 4.0: tells the model to adhere closely to the prompt
+ *  - num_inference_steps 35: more steps → sharper, more accurate colour
+ *  - randomised seed: each run explores the colour space differently
+ *
+ *  Prompt strategy:
+ *  - If a swatch was uploaded the hex is real → include it for accuracy
+ *  - If no swatch (hex is the default #808080) → rely on userPrompt only,
+ *    don't mention a grey hex that would conflict with the description
+ */
+async function hdRecolour(
+  inputBuffer: Buffer,
+  hex: string,
+  colourName: string,
+  userPrompt?: string,
+): Promise<Buffer> {
   const { fal } = await import("@fal-ai/client");
   fal.config({ credentials: process.env.FAL_KEY! });
 
@@ -98,27 +115,53 @@ async function hdRecolour(inputBuffer: Buffer, hex: string, colourName: string, 
     new File([new Uint8Array(normalised)], "input.jpg", { type: "image/jpeg" })
   );
 
-  const baseInstruction =
-    `Change the colour to ${colourName || hex} (${hex}). ` +
-    `Keep the shape, structure, background, lighting and shadows completely identical. ` +
-    `Only the surface colour and texture changes. Photorealistic product photography.`;
+  // Detect "no colour specified" state (default hex with no name means the
+  // user is relying purely on the text prompt to describe the colour).
+  const hasRealColour = hex !== "#808080" || colourName.trim() !== "";
 
-  const prompt = userPrompt
-    ? `${baseInstruction} Additional detail: ${userPrompt}`
-    : baseInstruction;
+  let prompt: string;
+  if (hasRealColour) {
+    // Swatch or named colour provided — use the hex for maximum accuracy
+    const colourRef = colourName.trim() || hex;
+    const hexNote   = colourName.trim() ? ` (exact hex: ${hex})` : "";
+    const base =
+      `Change only the surface colour of this product to ${colourRef}${hexNote}. ` +
+      `Preserve everything else exactly: shape, silhouette, background, lighting, ` +
+      `shadows, highlights, texture detail, and perspective. ` +
+      `Photorealistic product photography, professional studio quality.`;
+    prompt = userPrompt?.trim()
+      ? `${base} Additional styling: ${userPrompt.trim()}`
+      : base;
+  } else {
+    // No colour selected — the description IS the colour instruction
+    const base =
+      `Recolour this product exactly as described below. ` +
+      `Preserve the original shape, silhouette, background, lighting, shadows, ` +
+      `highlights, texture detail, and perspective completely unchanged. ` +
+      `Only the surface colour and finish of the product changes. ` +
+      `Photorealistic product photography, professional studio quality.`;
+    prompt = userPrompt?.trim()
+      ? `${base} Description: ${userPrompt.trim()}`
+      : base;
+  }
+
+  // Randomise seed so each run produces genuinely different results
+  const seed = Math.floor(Math.random() * 2_147_483_647);
 
   // eslint-disable-next-line @typescript-eslint/no-explicit-any
-  const result = await (fal as any).subscribe("fal-ai/flux-pro/kontext", {
+  const result = await (fal as any).subscribe("fal-ai/flux-pro/kontext/max", {
     input: {
       image_url:           uploadedUrl,
       prompt,
-      num_inference_steps: 28,
-      guidance_scale:      2.5,
+      num_inference_steps: 35,
+      guidance_scale:      4.0,
       safety_tolerance:    "6",
-      seed:                42,
+      seed,
     },
     logs: false,
   });
+
+  console.log(`[hdRecolour] seed=${seed} model=kontext/max guidance=4.0 steps=35`);
 
   // eslint-disable-next-line @typescript-eslint/no-explicit-any
   const generatedUrl: string = (result as any)?.data?.images?.[0]?.url;
