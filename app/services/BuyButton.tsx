@@ -1,32 +1,27 @@
 "use client";
-import { useFastSpring } from "../components/FastSpringButton";
+import { useGumroad } from "../components/GumroadButton";
 
 interface BuyButtonProps {
-  productPath: string;
-  label: string;
+  permalink:    string;
+  label:        string;
   fallbackHref: string;
-  style?: React.CSSProperties;
+  style?:       React.CSSProperties;
 }
 
 /**
- * If a FastSpring productPath is set → opens the FastSpring popup checkout.
- * If not (env var missing AND no default) → falls back to a mailto link so the
- * page still works.
+ * If a Gumroad permalink is set → opens the Gumroad overlay checkout.
+ * If not → falls back to a mailto link so the page still works.
  */
-export default function BuyButton({ productPath, label, fallbackHref, style }: BuyButtonProps) {
-  const { openCheckout } = useFastSpring();
+export default function BuyButton({ permalink, label, fallbackHref, style }: BuyButtonProps) {
+  const { openCheckout } = useGumroad();
 
-  if (!productPath) {
-    return (
-      <a href={fallbackHref} style={style}>
-        {label}
-      </a>
-    );
+  if (!permalink) {
+    return <a href={fallbackHref} style={style}>{label}</a>;
   }
 
   return (
     <button
-      onClick={() => openCheckout(productPath)}
+      onClick={() => openCheckout(permalink)}
       style={{ cursor: "pointer", fontFamily: "inherit", outline: "none", ...style }}
     >
       {label}

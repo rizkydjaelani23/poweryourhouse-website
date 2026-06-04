@@ -2,15 +2,13 @@ import Link from "next/link";
 import type { Metadata } from "next";
 import BuyButton from "./BuyButton";
 
-// ── FastSpring product paths for social-media service products ────────────────
-// Defaults match the documented paths so buttons work even before env vars are
-// set; override per-product via NEXT_PUBLIC_FS_PRODUCT_SOCIAL_* in Railway.
+// ── Gumroad permalinks for social-media service products ──────────────────────
 const FS_SOCIAL = {
-  SERVICE_STARTER:     process.env.NEXT_PUBLIC_FS_PRODUCT_SOCIAL_STARTER     || "pyh-social-starter",
-  SERVICE_GROWTH:      process.env.NEXT_PUBLIC_FS_PRODUCT_SOCIAL_GROWTH      || "pyh-social-growth",
-  SERVICE_MAINTENANCE: process.env.NEXT_PUBLIC_FS_PRODUCT_SOCIAL_MAINTENANCE || "pyh-social-maintenance",
-  SERVICE_FIX:         process.env.NEXT_PUBLIC_FS_PRODUCT_SOCIAL_FIX         || "pyh-social-fix",
-  SERVICE_REFRESH:     process.env.NEXT_PUBLIC_FS_PRODUCT_SOCIAL_REFRESH     || "pyh-social-refresh",
+  SERVICE_STARTER:     process.env.NEXT_PUBLIC_GUMROAD_PRODUCT_SOCIAL_STARTER     || "",
+  SERVICE_GROWTH:      process.env.NEXT_PUBLIC_GUMROAD_PRODUCT_SOCIAL_GROWTH      || "",
+  SERVICE_MAINTENANCE: process.env.NEXT_PUBLIC_GUMROAD_PRODUCT_SOCIAL_MAINTENANCE || "",
+  SERVICE_FIX:         process.env.NEXT_PUBLIC_GUMROAD_PRODUCT_SOCIAL_FIX         || "",
+  SERVICE_REFRESH:     process.env.NEXT_PUBLIC_GUMROAD_PRODUCT_SOCIAL_REFRESH     || "",
 };
 
 export const metadata: Metadata = {
@@ -49,7 +47,7 @@ const plans = [
     highlight: false,
     cta: "Get Starter →",
     badge: null,
-    productPath: FS_SOCIAL.SERVICE_STARTER,
+    permalink: FS_SOCIAL.SERVICE_STARTER,
     mailtoSubject: "Starter Social Media Automation",
   },
   {
@@ -74,7 +72,7 @@ const plans = [
     highlight: true,
     cta: "Get Growth →",
     badge: "Most Popular",
-    productPath: FS_SOCIAL.SERVICE_GROWTH,
+    permalink: FS_SOCIAL.SERVICE_GROWTH,
     mailtoSubject: "Growth Social Media Automation",
   },
 ];
@@ -87,7 +85,7 @@ const addons = [
     freq: "/ month",
     desc: "We monitor the automation, fix any broken connections, and keep everything running smoothly. Ideal if you want peace of mind month to month.",
     colour: "#3b82f6",
-    productPath: FS_SOCIAL.SERVICE_MAINTENANCE,
+    permalink: FS_SOCIAL.SERVICE_MAINTENANCE,
   },
   {
     name: "One-Time Fix",
@@ -96,7 +94,7 @@ const addons = [
     freq: "flat fee",
     desc: "Something broke? We diagnose and fix the issue — broken connections, expired permissions, disconnected accounts — one flat charge, no subscription needed.",
     colour: "#8b5cf6",
-    productPath: FS_SOCIAL.SERVICE_FIX,
+    permalink: FS_SOCIAL.SERVICE_FIX,
   },
   {
     name: "Content Refresh — 30 Days",
@@ -105,7 +103,7 @@ const addons = [
     freq: "one-time",
     desc: "A brand-new batch of 30 days of AI-generated images and captions delivered to your automation. New month, new content, without lifting a finger.",
     colour: "#10b981",
-    productPath: FS_SOCIAL.SERVICE_REFRESH,
+    permalink: FS_SOCIAL.SERVICE_REFRESH,
   },
 ];
 
@@ -330,7 +328,7 @@ export default function ServicesPage() {
                 </div>
 
                 <BuyButton
-                  productPath={plan.productPath}
+                  permalink={plan.permalink}
                   label={plan.cta}
                   fallbackHref={`mailto:hello@poweryourhouse.io?subject=${encodeURIComponent(plan.mailtoSubject)}&body=${encodeURIComponent("Hi,\n\nI'd like to get started with the " + plan.name + " package (" + plan.price + ").\n\nBusiness name: \nFacebook Page: \nInstagram handle: \nProducts I sell: \n\nThanks!")}`}
                   style={{
@@ -348,7 +346,7 @@ export default function ServicesPage() {
             ))}
           </div>
           <p style={{ fontSize: "12px", color: "#334155", textAlign: "center", marginTop: "16px" }}>
-            Delivered within 2–4 business days · Payments processed securely via FastSpring
+            Delivered within 2–4 business days · Payments processed securely via Gumroad
           </p>
         </div>
 
@@ -387,8 +385,8 @@ export default function ServicesPage() {
                 <div style={{ fontSize: "14px", fontWeight: 700, color: "#e2e8f0", marginBottom: "8px" }}>{a.name}</div>
                 <p style={{ fontSize: "12px", color: "#475569", lineHeight: 1.7, marginBottom: "16px" }}>{a.desc}</p>
                 <BuyButton
-                  productPath={a.productPath}
-                  label={a.productPath ? `Buy ${a.name} →` : "Enquire →"}
+                  permalink={a.permalink}
+                  label={a.permalink ? `Buy ${a.name} →` : "Enquire →"}
                   fallbackHref={`mailto:hello@poweryourhouse.io?subject=${encodeURIComponent(a.name + " Enquiry")}`}
                   style={{
                     display: "block", textAlign: "center",

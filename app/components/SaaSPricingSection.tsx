@@ -1,25 +1,24 @@
 "use client";
 /**
- * SaaS Pricing Section — FastSpring popup checkout.
+ * SaaS Pricing Section — Gumroad popup checkout.
  *
  * Env vars (NEXT_PUBLIC_ so they are embedded at build time):
- *   NEXT_PUBLIC_FS_STORE               — e.g. "poweryourhouse.onfastspring.com/popup"
- *   NEXT_PUBLIC_FS_PRODUCT_STARTER     — FastSpring product path for Starter plan
- *   NEXT_PUBLIC_FS_PRODUCT_PRO         — FastSpring product path for Pro plan
- *   NEXT_PUBLIC_FS_PRODUCT_BUSINESS    — FastSpring product path for Business plan
- *   NEXT_PUBLIC_FS_PRODUCT_STANDARD_PACK — FastSpring product path for Standard credit pack
- *   NEXT_PUBLIC_FS_PRODUCT_HD_PACK       — FastSpring product path for HD credit pack
+ *   NEXT_PUBLIC_GUMROAD_PRODUCT_STARTER       — Gumroad product permalink
+ *   NEXT_PUBLIC_GUMROAD_PRODUCT_PRO           — Gumroad product permalink
+ *   NEXT_PUBLIC_GUMROAD_PRODUCT_BUSINESS      — Gumroad product permalink
+ *   NEXT_PUBLIC_GUMROAD_PRODUCT_STANDARD_PACK — Gumroad product permalink
+ *   NEXT_PUBLIC_GUMROAD_PRODUCT_HD_PACK       — Gumroad product permalink
  */
 
 import Link from "next/link";
-import { useFastSpring } from "./FastSpringButton";
+import { useGumroad } from "./GumroadButton";
 
 const PRODUCTS = {
-  STARTER:       process.env.NEXT_PUBLIC_FS_PRODUCT_STARTER       || "",
-  PRO:           process.env.NEXT_PUBLIC_FS_PRODUCT_PRO           || "",
-  BUSINESS:      process.env.NEXT_PUBLIC_FS_PRODUCT_BUSINESS      || "",
-  STANDARD_PACK: process.env.NEXT_PUBLIC_FS_PRODUCT_STANDARD_PACK || "",
-  HD_PACK:       process.env.NEXT_PUBLIC_FS_PRODUCT_HD_PACK       || "",
+  STARTER:       process.env.NEXT_PUBLIC_GUMROAD_PRODUCT_STARTER       || "",
+  PRO:           process.env.NEXT_PUBLIC_GUMROAD_PRODUCT_PRO           || "",
+  BUSINESS:      process.env.NEXT_PUBLIC_GUMROAD_PRODUCT_BUSINESS      || "",
+  STANDARD_PACK: process.env.NEXT_PUBLIC_GUMROAD_PRODUCT_STANDARD_PACK || "",
+  HD_PACK:       process.env.NEXT_PUBLIC_GUMROAD_PRODUCT_HD_PACK       || "",
 };
 
 function PlanButton({
@@ -37,7 +36,7 @@ function PlanButton({
   border?:     string;
   shadow?:     string;
 }) {
-  const { openCheckout } = useFastSpring();
+  const { openCheckout } = useGumroad();
 
   // Free plan — just link to signup
   if (!productPath) {
@@ -226,7 +225,7 @@ function CheckIcon({ color }: { color: string }) {
 }
 
 export default function SaaSPricingSection() {
-  const { openCheckout } = useFastSpring();
+  const { openCheckout } = useGumroad();
 
   return (
     <section style={{ padding: "72px 0 60px", background: "#080d1a" }}>
@@ -397,7 +396,7 @@ export default function SaaSPricingSection() {
                   </div>
                 </div>
                 <button
-                  onClick={() => openCheckout(pack.id)}
+                  onClick={() => openCheckout(pack.id || "")}
                   style={{
                     width: "100%", padding: "10px", borderRadius: "10px",
                     background: pack.colour, color: "#fff",
@@ -415,7 +414,7 @@ export default function SaaSPricingSection() {
         {/* Footer note */}
         <div style={{ textAlign: "center", marginTop: "48px" }}>
           <p style={{ fontSize: "14px", color: "#475569", marginBottom: "16px" }}>
-            Secure checkout powered by FastSpring · Cancel anytime · Questions?{" "}
+            Secure checkout powered by Gumroad · Cancel anytime · Questions?{" "}
             <a href="mailto:hello@poweryourhouse.io" style={{ color: "#60a5fa" }}>hello@poweryourhouse.io</a>
           </p>
         </div>

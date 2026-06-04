@@ -1,12 +1,11 @@
 import type { Metadata } from "next";
 import Link from "next/link";
 import SaaSPricingSection from "../components/SaaSPricingSection";
-import FastSpringButton from "../components/FastSpringButton";
+import GumroadButton from "../components/GumroadButton";
 
-// FastSpring product paths for the social-media packages (defaults match the
-// documented paths; override via NEXT_PUBLIC_FS_PRODUCT_SOCIAL_* in Railway).
-const FS_SOCIAL_STARTER = process.env.NEXT_PUBLIC_FS_PRODUCT_SOCIAL_STARTER || "pyh-social-starter";
-const FS_SOCIAL_GROWTH  = process.env.NEXT_PUBLIC_FS_PRODUCT_SOCIAL_GROWTH  || "pyh-social-growth";
+// Gumroad permalinks for social-media packages
+const GR_SOCIAL_STARTER = process.env.NEXT_PUBLIC_GUMROAD_PRODUCT_SOCIAL_STARTER || "";
+const GR_SOCIAL_GROWTH  = process.env.NEXT_PUBLIC_GUMROAD_PRODUCT_SOCIAL_GROWTH  || "";
 
 export const metadata: Metadata = {
   title: "Pricing – Power Your House",
@@ -601,8 +600,8 @@ export default function PricingPage() {
                 ].map((f) => <FeatureRow key={f} text={f} color="#a78bfa" />)}
               </div>
 
-              <FastSpringButton
-                productPath={FS_SOCIAL_STARTER}
+              <GumroadButton
+                permalink={GR_SOCIAL_STARTER}
                 label="Get Starter →"
                 style={{
                   display: "block", width: "100%", padding: "14px", borderRadius: "12px",
@@ -659,8 +658,8 @@ export default function PricingPage() {
                 ].map((f) => <FeatureRow key={f} text={f} color="#a78bfa" />)}
               </div>
 
-              <FastSpringButton
-                productPath={FS_SOCIAL_GROWTH}
+              <GumroadButton
+                permalink={GR_SOCIAL_GROWTH}
                 label="Get Growth →"
                 style={{
                   display: "block", width: "100%", padding: "15px", borderRadius: "12px",
