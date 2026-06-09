@@ -86,13 +86,11 @@ async function standardRecolour(inputBuffer: Buffer, hex: string, maskBuffer?: B
     .toBuffer();
 }
 
-/** HD recolour: FLUX.1 dev image-to-image via fal.ai
+/** HD recolour: OpenAI gpt-image-1 image edit
  *
- *  Uses img2img (not Kontext) — preserves the original product composition
- *  while enhancing photorealism and applying the colour name naturally.
- *
- *  strength 0.65: enough to enhance realism and colour, low enough to keep
- *  the original shape, lighting, and background intact.
+ *  Sends the product image + a colour instruction to OpenAI's image edit
+ *  endpoint. gpt-image-1 understands the scene and recolours only the
+ *  product fabric while leaving everything else untouched.
  */
 async function hdRecolour(
   inputBuffer: Buffer,
@@ -100,57 +98,49 @@ async function hdRecolour(
   colourName: string,
   userPrompt?: string,
 ): Promise<Buffer> {
-  const { fal } = await import("@fal-ai/client");
-  fal.config({ credentials: process.env.FAL_KEY! });
+  const { default: OpenAI, toFile } = await import("openai");
+  const openai = new OpenAI({ apiKey: process.env.OPENAI_API_KEY! });
 
-  // Normalise EXIF orientation before uploading — fal.ai does not read EXIF
-  const normalised = await sharp(inputBuffer).rotate().jpeg({ quality: 95 }).toBuffer();
-
-  const uploadedUrl = await fal.storage.upload(
-    new File([new Uint8Array(normalised)], "input.jpg", { type: "image/jpeg" })
-  );
+  // Normalise EXIF orientation and convert to PNG (required by the edit endpoint)
+  const normalised = await sharp(inputBuffer).rotate().png().toBuffer();
 
   const colourRef = colourName.trim() || hex;
   const hasRealColour = hex !== "#808080" || colourName.trim() !== "";
 
   let prompt: string;
   if (hasRealColour) {
-    const base =
-      `Photorealistic professional product photograph, ${colourRef} colour, ` +
-      `ultra-detailed surface texture, studio lighting, sharp focus, high-end commercial quality.`;
-    prompt = userPrompt?.trim() ? `${base} ${userPrompt.trim()}` : base;
+    prompt =
+      `Change the upholstery/fabric colour of the bed in this image to "${colourRef}". ` +
+      `Keep the room, walls, floor, mattress, pillows, bedding, furniture, and all ` +
+      `background elements completely unchanged. ` +
+      `Photorealistic professional product photography.`;
+    if (userPrompt?.trim()) prompt += ` ${userPrompt.trim()}`;
   } else {
-    const base =
-      `Photorealistic professional product photograph, ultra-detailed surface texture, ` +
-      `studio lighting, sharp focus, high-end commercial quality.`;
-    prompt = userPrompt?.trim() ? `${base} ${userPrompt.trim()}` : base;
+    prompt =
+      `Enhance this product image to look more photorealistic. ` +
+      `Keep the composition, room, furniture, and all elements exactly the same. ` +
+      `Professional studio-quality product photography.`;
+    if (userPrompt?.trim()) prompt += ` ${userPrompt.trim()}`;
   }
 
-  // Randomise seed so each run produces genuinely different results
-  const seed = Math.floor(Math.random() * 2_147_483_647);
+  const file = await toFile(
+    new Blob([normalised], { type: "image/png" }),
+    "input.png",
+    { type: "image/png" }
+  );
 
-  // eslint-disable-next-line @typescript-eslint/no-explicit-any
-  const result = await (fal as any).subscribe("fal-ai/flux/dev/image-to-image", {
-    input: {
-      image_url:           uploadedUrl,
-      prompt,
-      strength:            0.65,
-      num_inference_steps: 28,
-      guidance_scale:      3.5,
-      seed,
-    },
-    logs: false,
+  console.log(`[hdRecolour] model=gpt-image-1 colour="${colourRef}"`);
+
+  const response = await openai.images.edit({
+    model:  "gpt-image-1",
+    image:  file,
+    prompt,
+    size:   "1024x1024",
   });
 
-  console.log(`[hdRecolour] seed=${seed} model=flux/dev/img2img strength=0.65 steps=28`);
-
-  // eslint-disable-next-line @typescript-eslint/no-explicit-any
-  const generatedUrl: string = (result as any)?.data?.images?.[0]?.url;
-  if (!generatedUrl) throw new Error("fal.ai returned no image URL");
-
-  const res = await fetch(generatedUrl);
-  if (!res.ok) throw new Error("Failed to download generated image");
-  return Buffer.from(await res.arrayBuffer());
+  const b64 = response.data[0].b64_json;
+  if (!b64) throw new Error("OpenAI returned no image data");
+  return Buffer.from(b64, "base64");
 }
 
 // ── Route handler ──────────────────────────────────────────────────────────
