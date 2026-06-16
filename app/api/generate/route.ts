@@ -124,7 +124,7 @@ async function hdRecolour(
   }
 
   const file = await toFile(
-    new Blob([normalised], { type: "image/png" }),
+    new Blob([new Uint8Array(normalised)], { type: "image/png" }),
     "input.png",
     { type: "image/png" }
   );
