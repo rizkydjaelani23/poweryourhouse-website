@@ -86,62 +86,6 @@ async function standardRecolour(inputBuffer: Buffer, hex: string, maskBuffer?: B
     .toBuffer();
 }
 
-/** HD recolour: OpenAI gpt-image-1 image edit
- *
- *  Sends the product image + a colour instruction to OpenAI's image edit
- *  endpoint. gpt-image-1 understands the scene and recolours only the
- *  product fabric while leaving everything else untouched.
- */
-async function hdRecolour(
-  inputBuffer: Buffer,
-  hex: string,
-  colourName: string,
-  userPrompt?: string,
-): Promise<Buffer> {
-  const { default: OpenAI, toFile } = await import("openai");
-  const openai = new OpenAI({ apiKey: process.env.OPENAI_API_KEY! });
-
-  // Normalise EXIF orientation and convert to PNG (required by the edit endpoint)
-  const normalised = await sharp(inputBuffer).rotate().png().toBuffer();
-
-  const colourRef = colourName.trim() || hex;
-  const hasRealColour = hex !== "#808080" || colourName.trim() !== "";
-
-  let prompt: string;
-  if (hasRealColour) {
-    prompt =
-      `Change the upholstery/fabric colour of the bed in this image to "${colourRef}". ` +
-      `Keep the room, walls, floor, mattress, pillows, bedding, furniture, and all ` +
-      `background elements completely unchanged. ` +
-      `Photorealistic professional product photography.`;
-    if (userPrompt?.trim()) prompt += ` ${userPrompt.trim()}`;
-  } else {
-    prompt =
-      `Enhance this product image to look more photorealistic. ` +
-      `Keep the composition, room, furniture, and all elements exactly the same. ` +
-      `Professional studio-quality product photography.`;
-    if (userPrompt?.trim()) prompt += ` ${userPrompt.trim()}`;
-  }
-
-  const file = await toFile(
-    new Blob([new Uint8Array(normalised)], { type: "image/png" }),
-    "input.png",
-    { type: "image/png" }
-  );
-
-  console.log(`[hdRecolour] model=gpt-image-1 colour="${colourRef}"`);
-
-  const response = await openai.images.edit({
-    model:  "gpt-image-1",
-    image:  file,
-    prompt,
-    size:   "1024x1024",
-  });
-
-  const b64 = response.data[0].b64_json;
-  if (!b64) throw new Error("OpenAI returned no image data");
-  return Buffer.from(b64, "base64");
-}
 
 // ── Route handler ──────────────────────────────────────────────────────────
 
@@ -167,8 +111,6 @@ export async function POST(request: Request) {
     const type       = (form.get("type") as string | null)?.toUpperCase() === "HD" ? "HD" : "STANDARD";
     let   colourHex  = (form.get("colourHex")  as string | null) || "#808080";
     const colourName = (form.get("colourName") as string | null) || "";
-    const userPrompt = (form.get("prompt")     as string | null) || "";
-
     if (!imageFile) return NextResponse.json({ error: "imageFile is required" }, { status: 400 });
 
     // Extract hex from swatch if provided
@@ -346,11 +288,7 @@ export async function POST(request: Request) {
     // Generate output — mark failed in DB if generation throws
     let outputBuffer: Buffer;
     try {
-      if (type === "HD") {
-        outputBuffer = await hdRecolour(inputBuffer, colourHex, colourName, userPrompt || undefined);
-      } else {
-        outputBuffer = await standardRecolour(inputBuffer, colourHex, maskBuffer || undefined);
-      }
+      outputBuffer = await standardRecolour(inputBuffer, colourHex, maskBuffer || undefined);
     } catch (genErr) {
       await admin.from("saas_generations").update({ status: "failed", error: String(genErr) }).eq("id", genId);
       throw genErr; // re-throw so the outer catch returns 500

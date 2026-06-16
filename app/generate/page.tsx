@@ -3,7 +3,6 @@ import { useState, useRef, useCallback, useEffect } from "react";
 import Link from "next/link";
 import SelectionEditor, { SelectionEditorHandle } from "../components/SelectionEditor";
 
-type GenType = "STANDARD" | "HD";
 type GenMode = "single" | "multi";
 
 interface MultiColour { id: string; hex: string; name: string; }
@@ -31,8 +30,6 @@ export default function GeneratePage() {
   const [colourHex,     setColourHex]     = useState("#5b3a8b");
   const [colourName,    setColourName]    = useState("");
   const [colourMode,    setColourMode]    = useState<"picker" | "swatch">("picker");
-  const [genType,       setGenType]       = useState<GenType>("STANDARD");
-  const [prompt,        setPrompt]        = useState("");
 
   // ── Single mode: generation state ─────────────────────────────────────────
   const [loading,             setLoading]             = useState(false);
@@ -56,7 +53,7 @@ export default function GeneratePage() {
   const [zipping,        setZipping]        = useState(false);
 
   // ── Auth / credits ─────────────────────────────────────────────────────────
-  const [credits,        setCredits]        = useState<{ standard: number; hd: number; plan?: string } | null>(null);
+  const [credits,        setCredits]        = useState<{ standard: number; plan?: string } | null>(null);
   const [showColourUpsell, setShowColourUpsell] = useState(false);
 
   // ── Guest state ────────────────────────────────────────────────────────────
@@ -214,19 +211,14 @@ export default function GeneratePage() {
     setInsufficientCredits(false);
     setLastCreditUsed(false);
 
-    const isLastAuthCredit =
-      !isGuest && (
-        (genType === "STANDARD" && (credits?.standard ?? 2) === 1) ||
-        (genType === "HD"       && (credits?.hd       ?? 2) === 1)
-      );
+    const isLastAuthCredit = !isGuest && (credits?.standard ?? 2) === 1;
 
     const form = new FormData();
     form.append("imageFile",  imageFile);
-    form.append("type",       genType);
+    form.append("type",       "STANDARD");
     form.append("colourHex",  colourHex);
     form.append("colourName", colourName);
     if (colourMode === "swatch" && swatchFile) form.append("swatchFile", swatchFile);
-    if (genType === "HD" && prompt) form.append("prompt", prompt);
 
     const maskBlob = selectionRef.current ? await selectionRef.current.getMask() : null;
     if (maskBlob) form.append("maskFile", maskBlob, "mask.png");
@@ -294,11 +286,10 @@ export default function GeneratePage() {
 
       const form = new FormData();
       form.append("imageFile",  imageFile);
-      form.append("type",       genType);
+      form.append("type",       "STANDARD");
       form.append("colourHex",  c.hex);
       form.append("colourName", c.name);
       if (maskBlob) form.append("maskFile", maskBlob, "mask.png");
-      if (genType === "HD" && prompt) form.append("prompt", prompt);
 
       const headers: Record<string, string> = {};
       if (isGuest && guestToken) headers["x-guest-token"] = guestToken;
@@ -378,10 +369,7 @@ export default function GeneratePage() {
   }
 
   // ── Derived ────────────────────────────────────────────────────────────────
-  const creditsLow = !isGuest && credits !== null && (
-    (genType === "STANDARD" && credits.standard <= 2) ||
-    (genType === "HD" && credits.hd === 0)
-  );
+  const creditsLow = !isGuest && credits !== null && credits.standard <= 2;
   const canGenerate       = !loading && !!imageFile && (!isGuest || !guestLimitReached);
   const canGenerateMulti  = !multiGenerating && !!imageFile && (!isGuest || !guestLimitReached) && multiColours.length > 0;
   const freeLeft          = Math.max(0, GUEST_LIMIT - guestUsed);
@@ -415,21 +403,7 @@ export default function GeneratePage() {
               }}>
                 <div style={{ textAlign: "center" }}>
                   <div style={{ fontSize: "16px", fontWeight: 800, lineHeight: 1, color: credits.standard === 0 ? "#ef4444" : "#60a5fa" }}>{credits.standard}</div>
-                  <div style={{ fontSize: "10px", color: "#475569", marginTop: "2px" }}>⚡ Standard</div>
-                </div>
-                <div style={{ width: "1px", height: "28px", background: "#1e293b" }} />
-                <div style={{ textAlign: "center" }}>
-                  {credits.hd > 0 ? (
-                    <>
-                      <div style={{ fontSize: "16px", fontWeight: 800, color: "#a78bfa", lineHeight: 1 }}>{credits.hd}</div>
-                      <div style={{ fontSize: "10px", color: "#475569", marginTop: "2px" }}>✨ HD</div>
-                    </>
-                  ) : (
-                    <>
-                      <div style={{ fontSize: "11px", fontWeight: 700, color: "#475569", lineHeight: 1 }}>✨ HD</div>
-                      <div style={{ fontSize: "10px", color: "#334155", marginTop: "3px" }}>not purchased</div>
-                    </>
-                  )}
+                  <div style={{ fontSize: "10px", color: "#475569", marginTop: "2px" }}>⚡ Credits</div>
                 </div>
               </div>
               {creditsLow && (
@@ -466,8 +440,8 @@ export default function GeneratePage() {
             <div>
               <div style={{ color: "#60a5fa", fontWeight: 700, fontSize: "14px", marginBottom: "3px" }}>👋 Try it free — no account needed</div>
               <div style={{ color: "#475569", fontSize: "13px" }}>
-                You get <strong style={{ color: "#94a3b8" }}>2 free standard colour changes</strong>.{" "}
-                Sign up free for <strong style={{ color: "#94a3b8" }}>5 standard + 1 HD</strong> generation.
+                You get <strong style={{ color: "#94a3b8" }}>2 free colour changes</strong>.{" "}
+                Sign up free for <strong style={{ color: "#94a3b8" }}>5 more</strong> — no card required.
               </div>
             </div>
             <div style={{ display: "flex", gap: "8px", flexShrink: 0 }}>
@@ -568,33 +542,12 @@ export default function GeneratePage() {
             </Card>
           )}
 
-          {/* ── Steps 3 & 4: Colour + Quality ── */}
-          <div style={{ display: "grid", gridTemplateColumns: "1fr 1fr", gap: "16px" }} className="ctrl-grid">
-
-            {/* ── Colour card ── */}
-            <Card title={genMode === "multi" ? `${stepNum(3)}. Pick your colours (up to ${maxColours})` : genType === "HD" ? `${stepNum(3)}. Colour swatch` : `${stepNum(3)}. Target colour`}>
+          {/* ── Step 3: Colour ── */}
+          <div>
+            <Card title={genMode === "multi" ? `${stepNum(3)}. Pick your colours (up to ${maxColours})` : `${stepNum(3)}. Target colour`}>
 
               {genMode === "single" ? (
-                genType === "HD" ? (
-                  /* ── HD mode: swatch upload only (colour comes from swatch + prompt) ── */
-                  <label style={{ display: "flex", gap: "12px", alignItems: "center", cursor: "pointer", padding: "14px", borderRadius: "10px", border: `1px dashed ${swatchFile ? "rgba(139,92,246,0.5)" : "#1e293b"}`, background: swatchFile ? "rgba(139,92,246,0.05)" : "#0d1424", transition: "all 0.15s" }}>
-                    {swatchPreview
-                      // eslint-disable-next-line @next/next/no-img-element
-                      ? <img src={swatchPreview} alt="swatch" style={{ width: "56px", height: "56px", borderRadius: "8px", objectFit: "cover", flexShrink: 0, border: "1px solid rgba(139,92,246,0.3)" }} />
-                      : <div style={{ width: "56px", height: "56px", borderRadius: "8px", background: "#111827", display: "flex", alignItems: "center", justifyContent: "center", fontSize: "24px", flexShrink: 0 }}>🧵</div>
-                    }
-                    <div style={{ flex: 1 }}>
-                      <div style={{ color: swatchFile ? "#a78bfa" : "#64748b", fontSize: "13px", fontWeight: 700, marginBottom: "3px" }}>
-                        {swatchFile ? `✓ ${swatchFile.name}` : "Upload a colour swatch (optional)"}
-                      </div>
-                      <div style={{ color: "#334155", fontSize: "11px", lineHeight: 1.5 }}>
-                        The AI will match this colour · or just describe it in the prompt below
-                      </div>
-                    </div>
-                    <input type="file" accept="image/*" style={{ display: "none" }}
-                      onChange={(e) => { const f = e.target.files?.[0]; if (f) handleSwatchFile(f); }} />
-                  </label>
-                ) : (
+                (
                 /* ── Standard mode: picker / swatch toggle ── */
                 <>
                   <div style={{ display: "flex", gap: "8px", marginBottom: "14px" }}>
@@ -638,7 +591,7 @@ export default function GeneratePage() {
                   )}
                 </>
                 )
-              ) : (
+              ) : /* multi */ (
                 /* ── Multi-colour palette builder ── */
                 <div style={{ display: "flex", flexDirection: "column", gap: "8px" }}>
                   {/* Colour swatches preview row */}
@@ -719,84 +672,25 @@ export default function GeneratePage() {
                 </div>
               )}
             </Card>
-
-            {/* Quality */}
-            <Card title={`${stepNum(4)}. Quality`}>
-              <div style={{ display: "flex", flexDirection: "column", gap: "10px" }}>
-                <button onClick={() => setGenType("STANDARD")} style={{
-                  padding: "14px", borderRadius: "12px", textAlign: "left", cursor: "pointer",
-                  border: genType === "STANDARD" ? "1.5px solid #3b82f6" : "1.5px solid #1e293b",
-                  background: genType === "STANDARD" ? "rgba(59,130,246,0.1)" : "#0d1424",
-                }}>
-                  <div style={{ fontSize: "20px", marginBottom: "2px" }}>⚡</div>
-                  <div style={{ fontWeight: 700, color: genType === "STANDARD" ? "#3b82f6" : "#94a3b8", fontSize: "14px" }}>Standard</div>
-                  <div style={{ fontSize: "12px", color: "#475569", marginTop: "2px" }}>Fast colour shift · 1 credit</div>
-                </button>
-
-                <div style={{ position: "relative" }}>
-                  <button onClick={() => { if (!isGuest) setGenType("HD"); }} style={{
-                    width: "100%", padding: "14px", borderRadius: "12px", textAlign: "left",
-                    cursor: isGuest ? "default" : "pointer",
-                    border: !isGuest && genType === "HD" ? "1.5px solid #8b5cf6" : "1.5px solid #1e293b",
-                    background: !isGuest && genType === "HD" ? "rgba(139,92,246,0.1)" : "#0d1424",
-                    opacity: isGuest ? 0.5 : 1,
-                  }}>
-                    <div style={{ fontSize: "20px", marginBottom: "2px" }}>✨</div>
-                    <div style={{ fontWeight: 700, color: !isGuest && genType === "HD" ? "#8b5cf6" : "#94a3b8", fontSize: "14px" }}>HD Realistic</div>
-                    <div style={{ fontSize: "12px", color: "#475569", marginTop: "2px" }}>AI photorealistic · 1 HD credit</div>
-                  </button>
-                  {isGuest && (
-                    <Link href="/signup" style={{ position: "absolute", top: "10px", right: "10px", padding: "3px 10px", borderRadius: "999px", background: "rgba(139,92,246,0.18)", border: "1px solid rgba(139,92,246,0.35)", fontSize: "10px", fontWeight: 700, color: "#a78bfa", whiteSpace: "nowrap" }}>
-                      Sign up free →
-                    </Link>
-                  )}
-                </div>
-              </div>
-            </Card>
           </div>
 
-          {/* ── Prompt (HD only, auth users) ── */}
-          {genType === "HD" && !isGuest && (
-            <Card title={`${stepNum(5)}. Describe the result (optional)`}>
-              <textarea
-                value={prompt}
-                onChange={(e) => setPrompt(e.target.value)}
-                placeholder={`e.g. "Dusty rose velvet with a soft matte finish" or "Deep forest green, glossy lacquer paint"`}
-                rows={3}
-                style={{ ...inputStyle, resize: "vertical", minHeight: "72px", lineHeight: "1.6", fontFamily: "inherit" }}
-              />
-              <p style={{ fontSize: "11px", color: "#334155", marginTop: "6px" }}>
-                {genMode === "multi" ? "This prompt applies to all colours." : "The AI uses this alongside the hex colour. Leave blank to use the colour alone."}
-              </p>
-            </Card>
-          )}
-
           {/* ── Zero-credits warning ── */}
-          {!isGuest && credits !== null && !loading && !multiGenerating && (() => {
-            const outOfStandard = genType === "STANDARD" && credits.standard === 0;
-            const outOfHd      = genType === "HD"       && credits.hd === 0;
-            if (!outOfStandard && !outOfHd) return null;
-            return (
-              <div style={{ padding: "14px 16px", borderRadius: "12px", background: "rgba(245,158,11,0.07)", border: "1px solid rgba(245,158,11,0.2)", display: "flex", alignItems: "center", justifyContent: "space-between", gap: "12px" }}>
-                <div>
-                  <div style={{ color: "#fbbf24", fontWeight: 700, fontSize: "14px", marginBottom: "2px" }}>
-                    {outOfHd ? "No HD credits" : "No standard credits left"}
-                  </div>
-                  <div style={{ color: "#78716c", fontSize: "12px" }}>
-                    {outOfHd ? "HD credits are purchased separately — standard credits won't be used for HD." : "Top up to keep generating. Your work is still here when you come back."}
-                  </div>
-                </div>
-                <Link href="/pricing" style={{ flexShrink: 0, padding: "9px 16px", borderRadius: "9px", fontSize: "13px", fontWeight: 700, background: "linear-gradient(135deg, #f59e0b, #d97706)", color: "#fff", whiteSpace: "nowrap" }}>Top up →</Link>
+          {!isGuest && credits !== null && !loading && !multiGenerating && credits.standard === 0 && (
+            <div style={{ padding: "14px 16px", borderRadius: "12px", background: "rgba(245,158,11,0.07)", border: "1px solid rgba(245,158,11,0.2)", display: "flex", alignItems: "center", justifyContent: "space-between", gap: "12px" }}>
+              <div>
+                <div style={{ color: "#fbbf24", fontWeight: 700, fontSize: "14px", marginBottom: "2px" }}>No credits left</div>
+                <div style={{ color: "#78716c", fontSize: "12px" }}>Top up to keep generating. Your work is still here when you come back.</div>
               </div>
-            );
-          })()}
+              <Link href="/pricing" style={{ flexShrink: 0, padding: "9px 16px", borderRadius: "9px", fontSize: "13px", fontWeight: 700, background: "linear-gradient(135deg, #f59e0b, #d97706)", color: "#fff", whiteSpace: "nowrap" }}>Top up →</Link>
+            </div>
+          )}
 
           {/* ── Guest limit reached ── */}
           {isGuest && guestLimitReached && (
             <div style={{ padding: "20px 22px", borderRadius: "12px", background: "rgba(59,130,246,0.07)", border: "1px solid rgba(59,130,246,0.22)" }}>
               <div style={{ color: "#60a5fa", fontWeight: 800, fontSize: "16px", marginBottom: "6px" }}>🎉 You&apos;ve used your 2 free generations!</div>
               <div style={{ color: "#475569", fontSize: "14px", marginBottom: "16px" }}>
-                Create a free account in 10 seconds and get <strong style={{ color: "#94a3b8" }}>5 standard generations + 1 HD realistic image</strong> — no card required.
+                Create a free account in 10 seconds and get <strong style={{ color: "#94a3b8" }}>5 more generations</strong> — no card required.
               </div>
               <div style={{ display: "flex", gap: "10px", flexWrap: "wrap" }}>
                 <Link href="/signup" style={{ padding: "12px 24px", borderRadius: "10px", fontWeight: 700, fontSize: "14px", background: "linear-gradient(135deg, #3b82f6, #4f46e5)", color: "#fff", boxShadow: "0 4px 16px rgba(59,130,246,0.35)" }}>Create free account →</Link>
@@ -810,16 +704,16 @@ export default function GeneratePage() {
             <button onClick={generate} disabled={!canGenerate} style={{
               padding: "18px", borderRadius: "12px", fontWeight: 800, fontSize: "17px",
               border: "none", cursor: !canGenerate ? "not-allowed" : "pointer",
-              background: !canGenerate ? "#1e293b" : genType === "HD" ? "linear-gradient(135deg, #7c3aed, #4f46e5)" : "linear-gradient(135deg, #3b82f6, #0ea5e9)",
+              background: !canGenerate ? "#1e293b" : "linear-gradient(135deg, #3b82f6, #0ea5e9)",
               color: !canGenerate ? "#475569" : "#fff",
               transition: "all 0.15s",
-              boxShadow: canGenerate ? (genType === "HD" ? "0 4px 24px rgba(124,58,237,0.35)" : "0 4px 24px rgba(59,130,246,0.35)") : "none",
+              boxShadow: canGenerate ? "0 4px 24px rgba(59,130,246,0.35)" : "none",
             }}>
               {loading
-                ? (genType === "HD" ? "⏳ Generating HD — 30 to 60 seconds…" : "⏳ Applying colour…")
+                ? "⏳ Applying colour…"
                 : isGuest
                   ? `⚡ Try it free (${guestUsed}/${GUEST_LIMIT} used) →`
-                  : `${genType === "HD" ? "✨ HD Render" : "⚡ Generate"} →`}
+                  : "⚡ Generate →"}
             </button>
           )}
 
@@ -855,8 +749,7 @@ export default function GeneratePage() {
                 <Card title="Result">
                   <div style={{ aspectRatio: "16/9", borderRadius: "10px", background: "#060c19", display: "flex", flexDirection: "column", alignItems: "center", justifyContent: "center", gap: "14px" }}>
                     <div style={{ fontSize: "42px", animation: "spin 1.5s linear infinite" }}>✨</div>
-                    <div style={{ color: "#64748b", fontSize: "14px" }}>{genType === "HD" ? "Running FLUX AI — hang tight…" : "Applying your colour…"}</div>
-                    {genType === "HD" && <div style={{ color: "#334155", fontSize: "12px" }}>This usually takes 30–60 seconds</div>}
+                    <div style={{ color: "#64748b", fontSize: "14px" }}>Applying your colour…</div>
                   </div>
                 </Card>
               )}
@@ -896,7 +789,7 @@ export default function GeneratePage() {
                     <div style={{ marginTop: "12px", padding: "16px 18px", borderRadius: "10px", background: "rgba(59,130,246,0.07)", border: "1px solid rgba(59,130,246,0.2)" }}>
                       <div style={{ color: "#60a5fa", fontWeight: 700, fontSize: "14px", marginBottom: "4px" }}>🎉 That was your last free generation!</div>
                       <div style={{ color: "#475569", fontSize: "13px", marginBottom: "12px" }}>
-                        Sign up free — takes 10 seconds — and unlock <strong style={{ color: "#94a3b8" }}>5 standard + 1 HD</strong> generation instantly.
+                        Sign up free — takes 10 seconds — and unlock <strong style={{ color: "#94a3b8" }}>5 more generations</strong> instantly.
                       </div>
                       <div style={{ display: "flex", gap: "8px" }}>
                         <Link href="/signup" style={{ padding: "10px 20px", borderRadius: "9px", fontWeight: 700, fontSize: "13px", background: "linear-gradient(135deg, #3b82f6, #4f46e5)", color: "#fff" }}>Create free account →</Link>
@@ -1004,7 +897,7 @@ export default function GeneratePage() {
               <span>Use <strong style={{ color: "#64748b" }}>Brush</strong> to paint freehand</span>
               <span>Leave selection blank to recolour the whole image</span>
               <span>Scroll to zoom · Alt+drag to pan · Ctrl+Z to undo</span>
-              <span>HD mode works best with a descriptive prompt</span>
+              <span>Name your colour (e.g. "Navy Blue") for better accuracy</span>
               <span>Multiple colours: recolour into up to 6 shades at once (up to 20 on Pro &amp; Business)</span>
             </div>
           </div>
