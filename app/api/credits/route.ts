@@ -10,15 +10,14 @@ export async function GET() {
     const { data: { user } } = await supabase.auth.getUser();
     if (!user) return NextResponse.json({ error: "Unauthorised" }, { status: 401 });
 
-    const [standard, hd, profileResult] = await Promise.all([
+    const [standard, profileResult] = await Promise.all([
       getBalance(user.id, "STANDARD"),
-      getBalance(user.id, "HD"),
       supabase.from("saas_profiles").select("plan").eq("id", user.id).single(),
     ]);
 
     const plan = profileResult.data?.plan ?? "free";
 
-    return NextResponse.json({ standard, hd, plan });
+    return NextResponse.json({ standard, plan });
   } catch (err) {
     console.error("[api/credits]", err);
     return NextResponse.json({ error: "Failed" }, { status: 500 });

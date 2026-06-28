@@ -4,14 +4,14 @@
  * Body (multipart/form-data):
  *   imageFile  — the product / room photo
  *   colourHex  — target hex colour e.g. "#5b3a8b"
+ *   colourName — optional name e.g. "Navy Blue"
  *   swatchFile — optional swatch image (hex extracted from it instead)
- *   type       — "STANDARD" | "HD"
+ *   maskFile   — optional B&W PNG mask (white = recolour area)
  *
- * Standard: Sharp tint blend (fast, uses 1 STANDARD credit)
- * HD:       FLUX.1 Kontext via fal.ai (photorealistic, uses 1 HD credit)
+ * Uses Sharp tint blend. 1 credit per generation.
  *
  * Guest path (no auth, x-guest-token header):
- *   - STANDARD only, max 2 generations per token
+ *   - Max 2 generations per token
  *   - Tracked in saas_guest_usage table
  *   - Output stored at guest/{token}/{genId}.jpg in R2
  */

@@ -6,10 +6,6 @@ import AccountForm from "../components/AccountForm";
 
 export const dynamic = "force-dynamic";
 
-// FastSpring account-management URL (derived from the same store env var)
-const FS_STORE      = process.env.NEXT_PUBLIC_FS_STORE || "";
-const FS_BASE       = FS_STORE.split("/")[0]; // e.g. "poweryourhouse.test.onfastspring.com"
-const FS_ACCOUNT_URL = FS_BASE ? `https://${FS_BASE}/account` : "https://poweryourhouse.onfastspring.com/account";
 
 type Tab = "overview" | "purchases" | "account" | "subscription";
 const TABS: Tab[] = ["overview", "purchases", "account", "subscription"];
@@ -34,10 +30,10 @@ const REASON_LABELS: Record<string, string> = {
 };
 
 const PLAN_FEATURES: Record<string, string[]> = {
-  free:     ["5 Standard credits", "1 HD credit", "Signup bonus only"],
-  starter:  ["100 Standard / month", "10 HD / month", "Credits refresh monthly"],
-  pro:      ["500 Standard / month", "60 HD / month", "Up to 20 colours/gen", "Priority support"],
-  business: ["∞ Unlimited Standard", "200 HD / month", "Up to 20 colours/gen", "Priority support"],
+  free:     ["5 Standard credits", "Signup bonus only"],
+  starter:  ["100 Standard / month", "Credits refresh monthly"],
+  pro:      ["500 Standard / month", "Up to 20 colours/gen", "Priority support"],
+  business: ["∞ Unlimited Standard", "Up to 20 colours/gen", "Priority support"],
 };
 
 export default async function DashboardPage({
@@ -55,9 +51,8 @@ export default async function DashboardPage({
   const admin = await createAdminClient();
 
   // Always fetch credits + profile
-  const [standardBalance, hdBalance, { data: profile }] = await Promise.all([
+  const [standardBalance, { data: profile }] = await Promise.all([
     getBalance(user.id, "STANDARD"),
-    getBalance(user.id, "HD"),
     admin.from("saas_profiles")
       .select("plan, created_at, marketing_consent")
       .eq("id", user.id)
@@ -155,7 +150,6 @@ export default async function DashboardPage({
             {/* Credit cards */}
             <div style={{ display: "grid", gridTemplateColumns: "repeat(auto-fit, minmax(190px, 1fr))", gap: "14px" }}>
               <CreditCard icon="⚡" label="Standard credits" balance={standardBalance} colour="#3b82f6" unlimited={plan === "business"} />
-              <CreditCard icon="✨" label="HD credits"       balance={hdBalance}       colour="#8b5cf6" unlimited={false} />
               <div style={{ padding: "20px", borderRadius: "14px", background: "#0d1424", border: "1px solid rgba(59,130,246,0.12)" }}>
                 <div style={{ fontSize: "11px", fontWeight: 700, color: "#64748b", marginBottom: "8px", textTransform: "uppercase", letterSpacing: "0.07em" }}>Current plan</div>
                 <div style={{ fontSize: "22px", fontWeight: 800, color: "#fff", textTransform: "capitalize", marginBottom: "10px" }}>{plan}</div>
@@ -166,7 +160,7 @@ export default async function DashboardPage({
             </div>
 
             {/* Low-credits warning */}
-            {(standardBalance < 2 || hdBalance < 1) && (
+            {standardBalance < 2 && (
               <div style={{ padding: "14px 18px", borderRadius: "12px", background: "rgba(251,191,36,0.07)", border: "1px solid rgba(251,191,36,0.2)", display: "flex", alignItems: "center", justifyContent: "space-between", gap: "12px", flexWrap: "wrap" }}>
                 <span style={{ color: "#fbbf24", fontWeight: 700, fontSize: "14px" }}>⚠️ Running low on credits</span>
                 <Link href="/pricing" style={{ padding: "7px 14px", borderRadius: "8px", background: "#fbbf24", color: "#000", fontWeight: 700, fontSize: "13px" }}>
@@ -349,9 +343,8 @@ export default async function DashboardPage({
             </div>
 
             {/* Credits summary */}
-            <div style={{ display: "grid", gridTemplateColumns: "1fr 1fr", gap: "14px" }}>
+            <div style={{ display: "grid", gridTemplateColumns: "1fr", gap: "14px" }}>
               <CreditCard icon="⚡" label="Standard credits" balance={standardBalance} colour="#3b82f6" unlimited={plan === "business"} />
-              <CreditCard icon="✨" label="HD credits"       balance={hdBalance}       colour="#8b5cf6" unlimited={false} />
             </div>
 
             {/* Paid plan: manage info */}
@@ -359,10 +352,10 @@ export default async function DashboardPage({
               <div style={{ padding: "18px 22px", borderRadius: "12px", background: "rgba(59,130,246,0.05)", border: "1px solid rgba(59,130,246,0.15)" }}>
                 <div style={{ fontSize: "13px", fontWeight: 700, color: "#60a5fa", marginBottom: "6px" }}>Managing your subscription</div>
                 <p style={{ fontSize: "13px", color: "#475569", margin: "0 0 12px", lineHeight: 1.7 }}>
-                  Billing is handled by FastSpring. Click &quot;Manage subscription&quot; above to cancel, change plan, update payment method, or download invoices.
+                  Billing is handled by Gumroad. To cancel, update payment details, or download invoices, visit your Gumroad library or check your purchase confirmation email.
                 </p>
-                <a href={FS_ACCOUNT_URL} target="_blank" rel="noopener noreferrer" style={{ fontSize: "13px", color: "#60a5fa", fontWeight: 600 }}>
-                  Open subscription portal →
+                <a href="https://gumroad.com/library" target="_blank" rel="noopener noreferrer" style={{ fontSize: "13px", color: "#60a5fa", fontWeight: 600 }}>
+                  Open Gumroad library →
                 </a>
               </div>
             )}
@@ -372,7 +365,7 @@ export default async function DashboardPage({
               <div style={{ padding: "22px 24px", borderRadius: "12px", background: "rgba(139,92,246,0.06)", border: "1px solid rgba(139,92,246,0.2)" }}>
                 <div style={{ fontSize: "15px", fontWeight: 800, color: "#a78bfa", marginBottom: "8px" }}>Upgrade for more credits</div>
                 <p style={{ fontSize: "13px", color: "#64748b", margin: "0 0 16px", lineHeight: 1.7 }}>
-                  Starter from $9/month — 100 standard + 10 HD credits, refreshed each billing cycle.
+                  Starter from $9/month — 100 standard credits, refreshed each billing cycle.
                 </p>
                 <Link href="/pricing" style={{
                   display: "inline-block", padding: "10px 22px", borderRadius: "10px",
