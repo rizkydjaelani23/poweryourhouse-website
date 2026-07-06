@@ -6,6 +6,9 @@ import AccountForm from "../components/AccountForm";
 
 export const dynamic = "force-dynamic";
 
+// Subscriptions are billed through Gumroad; customers manage them from their
+// Gumroad library (the same place their receipts/manage links live).
+const GUMROAD_MANAGE_URL = "https://app.gumroad.com/library";
 
 type Tab = "overview" | "purchases" | "account" | "subscription";
 const TABS: Tab[] = ["overview", "purchases", "account", "subscription"];
@@ -314,7 +317,7 @@ export default async function DashboardPage({
                   <div style={{ fontSize: "28px", fontWeight: 900, color: "#fff", textTransform: "capitalize" }}>{plan}</div>
                 </div>
                 {isPaidPlan ? (
-                  <a href={FS_ACCOUNT_URL} target="_blank" rel="noopener noreferrer" style={{
+                  <a href={GUMROAD_MANAGE_URL} target="_blank" rel="noopener noreferrer" style={{
                     padding: "10px 20px", borderRadius: "10px",
                     background: "rgba(59,130,246,0.12)", border: "1px solid rgba(59,130,246,0.3)",
                     color: "#60a5fa", fontWeight: 700, fontSize: "14px",

@@ -1,6 +1,6 @@
 "use client";
 import { useState, useEffect, useCallback } from "react";
-import { verifyAdminPassword, getAdminData, adminAddCredits, getUserBalances } from "./actions";
+import { verifyAdminPassword, getAdminData, adminAddCredits, getUserBalances, type AdminData } from "./api";
 
 // ── tiny helpers ──────────────────────────────────────────────────────────────
 
@@ -178,8 +178,6 @@ function UserRow({ u, balanceMap, password }: { u: { id: string; email?: string;
 }
 
 // ── Main dashboard ────────────────────────────────────────────────────────────
-
-type AdminData = Awaited<ReturnType<typeof getAdminData>> & { error?: never };
 
 function Dashboard({ password, onLogout }: { password: string; onLogout: () => void }) {
   const [data, setData]       = useState<AdminData | null>(null);
