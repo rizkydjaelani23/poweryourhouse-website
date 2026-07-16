@@ -39,3 +39,7 @@ yarn-error.log*
 # typescript
 *.tsbuildinfo
 next-env.d.ts
+
+# Local recolour test harness (swatches, generated comparisons)
+scripts/test-input/
+scripts/test-output/

@@ -21,6 +21,7 @@ import { createClient } from "../../utils/supabase/server";
 import { createAdminClient } from "../../utils/supabase/server";
 import { getBalance, deductCredit } from "../../utils/credits";
 import { uploadToR2 } from "../../utils/r2";
+import { recolourFabric } from "../../utils/recolour";
 import { v4 as uuid } from "uuid";
 import sharp from "sharp";
 
@@ -31,59 +32,14 @@ const GUEST_LIMIT = 2;
 
 // ── Helpers ────────────────────────────────────────────────────────────────
 
-function hexToRgb(hex: string): { r: number; g: number; b: number } {
-  const clean = hex.replace("#", "");
-  return {
-    r: parseInt(clean.slice(0, 2), 16),
-    g: parseInt(clean.slice(2, 4), 16),
-    b: parseInt(clean.slice(4, 6), 16),
-  };
-}
-
+/** Representative hex from a swatch — stored on the generation record for
+ *  display/history. The actual recolour uses the full swatch image (colour +
+ *  texture) via recolourFabric, not just this single value. */
 async function extractHexFromSwatch(swatchBuffer: Buffer): Promise<string> {
   const stats = await sharp(swatchBuffer).resize(50, 50, { fit: "cover" }).stats();
   const { r, g, b } = stats.dominant;
   const toHex = (n: number) => Math.round(n).toString(16).padStart(2, "0");
   return `#${toHex(r)}${toHex(g)}${toHex(b)}`;
-}
-
-/** Standard recolour: tint preserving luminance via sharp's built-in tint()
- *  If a mask (B&W PNG) is provided, only the white areas are tinted.
- *
- *  We normalise EXIF orientation first (.rotate() with no args reads the EXIF
- *  tag and bakes the rotation into pixels, then strips the tag).  This ensures
- *  the image dimensions on the server always match what the browser showed when
- *  the user drew the mask — preventing coordinate misalignment on portrait /
- *  rotated phone photos.
- */
-async function standardRecolour(inputBuffer: Buffer, hex: string, maskBuffer?: Buffer): Promise<Buffer> {
-  const { r, g, b } = hexToRgb(hex);
-
-  // Normalise EXIF orientation so pixel-space matches the browser display
-  const normalised = await sharp(inputBuffer).rotate().toBuffer();
-
-  if (!maskBuffer) {
-    return sharp(normalised).tint({ r, g, b }).jpeg({ quality: 92 }).toBuffer();
-  }
-
-  const tinted = await sharp(normalised).tint({ r, g, b }).png().toBuffer();
-
-  // Dimensions after EXIF normalisation (portrait photos are now portrait)
-  const meta = await sharp(normalised).metadata();
-  const w = meta.width  || 800;
-  const h = meta.height || 600;
-  const mask = await sharp(maskBuffer).resize(w, h, { fit: "fill" }).greyscale().png().toBuffer();
-
-  const tintedMasked = await sharp(tinted)
-    .ensureAlpha()
-    .composite([{ input: mask, blend: "dest-in" }])
-    .png()
-    .toBuffer();
-
-  return sharp(normalised)
-    .composite([{ input: tintedMasked, blend: "over" }])
-    .jpeg({ quality: 92 })
-    .toBuffer();
 }
 
 
@@ -113,15 +69,16 @@ export async function POST(request: Request) {
     const colourName = (form.get("colourName") as string | null) || "";
     if (!imageFile) return NextResponse.json({ error: "imageFile is required" }, { status: 400 });
 
-    // Extract hex from swatch if provided
-    if (swatchFile) {
-      const swatchBuf = Buffer.from(await swatchFile.arrayBuffer());
-      colourHex = await extractHexFromSwatch(swatchBuf);
-    }
-
     // Read buffers (needed by both paths)
-    const inputBuffer = Buffer.from(await imageFile.arrayBuffer());
-    const maskBuffer  = maskFile ? Buffer.from(await maskFile.arrayBuffer()) : null;
+    const inputBuffer  = Buffer.from(await imageFile.arrayBuffer());
+    const maskBuffer   = maskFile   ? Buffer.from(await maskFile.arrayBuffer())   : null;
+    const swatchBuffer = swatchFile ? Buffer.from(await swatchFile.arrayBuffer()) : null;
+
+    // If a swatch was uploaded, derive a representative hex for the record.
+    // (The recolour itself uses the whole swatch — colour + texture.)
+    if (swatchBuffer) {
+      colourHex = await extractHexFromSwatch(swatchBuffer);
+    }
 
     // ── GUEST PATH ─────────────────────────────────────────────────────────
     if (!user && guestToken) {
@@ -182,7 +139,7 @@ export async function POST(request: Request) {
 
       // Generate (STANDARD only, no record in saas_generations for guests)
       const genId = uuid();
-      const outputBuffer = await standardRecolour(inputBuffer, colourHex, maskBuffer || undefined);
+      const outputBuffer = await recolourFabric({ inputBuffer, maskBuffer, swatchBuffer, hex: colourHex });
 
       const { publicUrl: outputUrl } = await uploadToR2({
         path:        `guest/${guestToken}/${genId}.jpg`,
@@ -288,7 +245,7 @@ export async function POST(request: Request) {
     // Generate output — mark failed in DB if generation throws
     let outputBuffer: Buffer;
     try {
-      outputBuffer = await standardRecolour(inputBuffer, colourHex, maskBuffer || undefined);
+      outputBuffer = await recolourFabric({ inputBuffer, maskBuffer, swatchBuffer, hex: colourHex });
     } catch (genErr) {
       await admin.from("saas_generations").update({ status: "failed", error: String(genErr) }).eq("id", genId);
       throw genErr; // re-throw so the outer catch returns 500
