@@ -112,9 +112,14 @@ export async function recolourFabric(opts: RecolourOptions): Promise<Buffer> {
   // Texture (swatch only)
   const grain = swatchBuffer ? await swatchGrain(swatchBuffer) : null;
 
+  // Yield the event loop every CHUNK pixels so a generation doesn't block other
+  // HTTP requests for its whole duration.
+  const CHUNK = 40_000;
+
   // Pass 1: mean lightness of the region we're recolouring
   let sum = 0, count = 0;
   for (let p = 0, i = 0; i < data.length; i += channels, p++) {
+    if (p > 0 && p % CHUNK === 0) await new Promise<void>((r) => setImmediate(r));
     if (maskData && maskData[p] < 128) continue;
     sum += rgb2lab(data[i], data[i + 1], data[i + 2])[0];
     count++;
@@ -124,6 +129,7 @@ export async function recolourFabric(opts: RecolourOptions): Promise<Buffer> {
   // Pass 2: recolour
   const out = Buffer.from(data);
   for (let p = 0, i = 0; i < data.length; i += channels, p++) {
+    if (p > 0 && p % CHUNK === 0) await new Promise<void>((r) => setImmediate(r));
     if (maskData && maskData[p] < 128) continue;
 
     const L0 = rgb2lab(data[i], data[i + 1], data[i + 2])[0];
