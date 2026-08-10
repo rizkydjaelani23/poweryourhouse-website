@@ -10,6 +10,37 @@ export type BlogPost = {
 
 export const posts: BlogPost[] = [
   {
+    slug: "winter-bedroom-refresh-furniture-shopify-stores",
+    title: "Winter Bedroom Refresh: A Seasonal Playbook for Furniture Shopify Stores",
+    description: "Winter drives a genuine spike in bedroom furniture searches. Here's how furniture Shopify stores can merchandise, market and colour-match for the seasonal opportunity.",
+    date: "2026-08-10",
+    category: "Ecommerce Strategy",
+    readTime: 6,
+    content: `
+      <p>While outdoor furniture retailers slow down over winter, bedroom furniture merchants see the opposite. Colder months push customers indoors, and the bedroom — the room they spend the most time in — becomes the one they're most motivated to fix. If your Shopify store sells beds, headboards or bedroom furniture, winter is one of your highest-intent seasons. Most merchants don't merchandise for it.</p>
+
+      <h2>Why winter is a genuine demand spike, not just a sales opportunity</h2>
+      <p>Search behaviour shifts noticeably once the weather turns. Customers start searching for "cosy bedroom ideas," "warm bedroom colours," and "upholstered bed frame" at meaningfully higher volumes than in warmer months. This isn't manufactured urgency from a sale banner — it's a genuine seasonal change in what customers want their home to feel like. A store that merchandises around that shift captures demand that's already there. A store that runs the same product grid year-round leaves it on the table.</p>
+
+      <h2>Lean into richer, darker colour options</h2>
+      <p>Customer colour preference shifts with the season. Light linen and pale neutral fabrics that sell well in spring and summer get passed over in winter in favour of charcoal, deep green, burgundy and rich navy — colours that read as warm and enveloping rather than light and airy.</p>
+      <p>If your product photography only shows the lighter fabrics you shot for a summer campaign, you're not showing customers what they're currently searching for. This is where colour visualisation tools earn their keep: rather than commissioning a new winter photoshoot, you can generate accurate previews of your existing bed frames and headboards in deeper, seasonal tones using a tool like Image Colour Remake, and get a winter-ready gallery live in a day rather than a month.</p>
+
+      <h2>Build a dedicated seasonal landing page</h2>
+      <p>A "Winter Bedroom Edit" or "Cosy Bedroom Refresh" collection page — curating your warmest fabrics, your best-insulating quilt covers, and any layering accessories you stock — gives you a single link to drive email, social and paid traffic toward. It also gives Google a fresh, seasonally relevant page to index, which can pick up long-tail search traffic that a generic "Bed Frames" collection won't catch.</p>
+      <p>Keep the page simple: a short intro paragraph about winter bedroom styling, then a curated grid of 8–12 products in your richest colourways. Update the hero banner and meta description each season rather than leaving last year's copy live.</p>
+
+      <h2>Bundle for the season, not just the product</h2>
+      <p>Winter is the easiest time of year to sell a bedroom as a set rather than a single item. A customer buying a new bed frame in July or August is very often also in the market for a heavier quilt, flannelette sheets, or extra pillows. Offering a simple bundle — bed frame plus a curated linen pack at a small discount — increases average order value without discounting your hero product.</p>
+
+      <h2>Time your campaigns to the weather, not the calendar</h2>
+      <p>Don't wait for a fixed date to launch winter messaging. Watch your local forecast and search trends, and start your seasonal email and social push as soon as temperatures genuinely drop — customers respond to how they feel that week, not to a marketing calendar. A cold snap in early winter is often a better trigger for your first "refresh your bedroom" email than the first day of the season.</p>
+
+      <h2>The practical takeaway</h2>
+      <p>Winter bedroom demand is real and measurable, but it rewards merchants who actively merchandise for it. Refresh your colour options toward warmer, richer tones, build one dedicated landing page, bundle sensibly, and time your campaigns to the actual weather rather than a fixed date. None of this requires a big budget — it requires treating winter as a season worth merchandising for, not just a quieter stretch on the calendar.</p>
+    `,
+  },
+  {
     slug: "multi-colour-mode-guide",
     title: "How to Generate Your Product in 6 Colours at Once with Multi-Colour Mode",
     description: "Multi-colour mode lets you upload one product photo, pick up to 6 colours, and generate all variations in a single run. Here's how to use it effectively.",
